@@ -1,11 +1,13 @@
+import uproot
+
 Flavntuple_list_VBFH125_gamgam = [
-#        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-0.root",
-#        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-1.root",
-#        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-2.root",
-#        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-3.root",
-#        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-4.root",
-#        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-5.root",
-#        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-6.root",
+        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-0.root",
+        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-1.root",
+        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-2.root",
+        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-3.root",
+        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-4.root",
+        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-5.root",
+        "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-6.root",
         "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-7.root"
 ]
 
@@ -25,18 +27,24 @@ Status = {
     'outgoing': 23
 }
 
-def is_outgoing_quark(pdg, status): return (pdg in PDG['quarks'] and status == Status['outgoing'])
-
 Pt_min = 30 #GeV
 Eta_max = 4
+
+
+def is_outgoing_quark(pdg, status): return (pdg in PDG['quarks'] and status == Status['outgoing'])
+
+
 def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
 
-def event_iterator(ntuple_list, tree_name, branch_list, step_size):
+
+def event_iterator(ntuple_list, tree_name, branch_list, step_size, bucket_limit):
     for ntuple_file in ntuple_list:
         tree = uproot.rootio.open(ntuple_file)[tree_name]
-        for basket_number, basket in enumerate( tree.iterate(branches=branch_list, entrysteps=10000) ):
+        tree_iterator = tree.iterate(branches=branch_list, entrysteps=step_size) 
+        for basket_number, basket in enumerate(tree_iterator):
             print('Basket: ' + str(basket_number) )
             for event in zip(*basket.values()): yield event
+            if bucket_limit != None and basket_number >= 0: break
      
 
 def jet_iterator(branches, jet_list):
