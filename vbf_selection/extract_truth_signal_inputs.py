@@ -1,9 +1,9 @@
 import sys
 sys.path.append('/nfs/slac/g/atlas/u02/cmilke/analysis/util')
-import cmilke_analysis_utils as cutils
 import math
 import uproot
 import pickle
+import cmilke_analysis_utils as cutils
 
 def jet_matches(tparteta, tpartphi, truthjeta, truthjphi):
     delta_eta = abs(tparteta - truthjeta)
@@ -23,21 +23,22 @@ for ntuple_file in cutils.Flavntuple_list_VBFH125_gamgam:
     for basket_number, basket in enumerate( tree.iterate(branches=branch_list, entrysteps=10000) ):
         print('Basket: ' + str(basket_number) )
         for event in zip(*basket.values()):
+#for event in cutile.event_iterator(cutils.Flavntuple_list_VBFH125_gamgam, 'Nominal', branch_list, step_size):
             truth_particles = event[:len(tpart_branches)]
             truth_jets = event[len(tpart_branches):]
 
             num_non_gam_truth_jets = 0
             num_quark_jets = 0
             recorded_truth_jets = []
-            for tj in cutils.package_jets(tjet_branches, truth_jets):
+            for tj in cutils.jet_iterator(tjet_branches, truth_jets):
                 if tj['truthjpT'] < 30: continue #skip jets with <30 GeV pt
 
-                for tpartpdgID, tpartstatus, tpartpT, tparteta, tpartphi in zip( *truth_particles ):
-                    if tpartstatus != cutils.Status['outgoing'] or tpartpdgID == cutils.PDG['photon']: continue
-                    if jet_matches(tparteta, tpartphi, tj['truthjeta'], tj['truthjphi']):
+                for tp in cutils.jet_iterator(tpart_branches, truth_particles):
+                    if tp['tpartstatus'] != cutils.Status['outgoing'] or tp['tpartpdgID'] == cutils.PDG['photon']: continue
+                    if jet_matches(tp['tparteta'], tp['tpartphi'], tj['truthjeta'], tj['truthjphi']):
                         num_non_gam_truth_jets += 1
                         jet_properties = [False, tj['truthjpT'], tj['truthjeta'], tj['truthjphi'], tj['truthjm']]
-                        if tpartpdgID in cutils.PDG['quarks']:
+                        if tp['tpartpdgID'] in cutils.PDG['quarks']:
                             num_quark_jets += 1
                             jet_properties[0] = True
                         recorded_truth_jets.append(jet_properties)

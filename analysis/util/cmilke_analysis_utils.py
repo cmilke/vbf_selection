@@ -31,7 +31,15 @@ Pt_min = 30 #GeV
 Eta_max = 4
 def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
 
-def package_jets(branches, jet_list):
+def event_iterator(ntuple_list, tree_name, branch_list, step_size):
+    for ntuple_file in ntuple_list:
+        tree = uproot.rootio.open(ntuple_file)[tree_name]
+        for basket_number, basket in enumerate( tree.iterate(branches=branch_list, entrysteps=10000) ):
+            print('Basket: ' + str(basket_number) )
+            for event in zip(*basket.values()): yield event
+     
+
+def jet_iterator(branches, jet_list):
     package = {}
     for branch_collection in zip(*jet_list):
         for index, key in enumerate(branches):
