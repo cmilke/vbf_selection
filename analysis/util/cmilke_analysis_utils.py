@@ -30,3 +30,10 @@ def is_outgoing_quark(pdg, status): return (pdg in PDG['quarks'] and status == S
 Pt_min = 30 #GeV
 Eta_max = 4
 def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
+
+def package_jets(branches, jet_list):
+    package = {}
+    for branch_collection in zip(*jet_list):
+        for index, key in enumerate(branches):
+            package[key] = branch_collection[index]
+        yield package

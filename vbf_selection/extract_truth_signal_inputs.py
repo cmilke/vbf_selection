@@ -14,31 +14,29 @@ def jet_matches(tparteta, tpartphi, truthjeta, truthjphi):
 
 event_data_dump = []
 
-branch_list = [
-    'tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi',
-    'truthjpT', 'truthjeta', 'truthjphi', 'truthjm'
-]
-tjet_index = branch_list.index('truthjpT')
+tpart_branches = [ 'tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi' ]
+tjet_branches = [ 'truthjpT', 'truthjeta', 'truthjphi', 'truthjm' ]
+branch_list = tpart_branches+tjet_branches
 
 for ntuple_file in cutils.Flavntuple_list_VBFH125_gamgam:
     tree = uproot.rootio.open(ntuple_file)['Nominal']
-    for basket_number, basket in enumerate( tree.iterate(branches=branch_list, entrysteps=100) ):
+    for basket_number, basket in enumerate( tree.iterate(branches=branch_list, entrysteps=10000) ):
         print('Basket: ' + str(basket_number) )
         for event in zip(*basket.values()):
-            truth_particles = event[:tjet_index]
-            truth_jets = event[tjet_index:]
+            truth_particles = event[:len(tpart_branches)]
+            truth_jets = event[len(tpart_branches):]
 
             num_non_gam_truth_jets = 0
             num_quark_jets = 0
             recorded_truth_jets = []
-            for truthjpT, truthjeta, truthjphi, truthjm in zip(*truth_jets):
-                if truthjpT < 30: continue #skip jets with <30 GeV pt
+            for tj in cutils.package_jets(tjet_branches, truth_jets):
+                if tj['truthjpT'] < 30: continue #skip jets with <30 GeV pt
 
                 for tpartpdgID, tpartstatus, tpartpT, tparteta, tpartphi in zip( *truth_particles ):
                     if tpartstatus != cutils.Status['outgoing'] or tpartpdgID == cutils.PDG['photon']: continue
-                    if jet_matches(tparteta, tpartphi, truthjeta, truthjphi):
+                    if jet_matches(tparteta, tpartphi, tj['truthjeta'], tj['truthjphi']):
                         num_non_gam_truth_jets += 1
-                        jet_properties = [False, truthjpT, truthjeta, truthjphi, truthjm]
+                        jet_properties = [False, tj['truthjpT'], tj['truthjeta'], tj['truthjphi'], tj['truthjm']]
                         if tpartpdgID in cutils.PDG['quarks']:
                             num_quark_jets += 1
                             jet_properties[0] = True
@@ -50,5 +48,5 @@ for ntuple_file in cutils.Flavntuple_list_VBFH125_gamgam:
         if basket_number >= 0: break
 
 #for event in event_data_dump: print(event)
-#print( len(event_data_dump) )
-pickle.dump( event_data_dump, open('signal_events.p', 'wb') )
+print( len(event_data_dump) )
+#pickle.dump( event_data_dump, open('signal_events.p', 'wb') )
