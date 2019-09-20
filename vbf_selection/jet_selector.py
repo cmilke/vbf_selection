@@ -1,8 +1,10 @@
 import sys
 import pickle
 
+input_type = sys.argv[1]
+
 processed_output = {2:[], 3:[], 4:[], 5:[], 6:[], 7:[]}
-unprocessed_input = pickle.load( open('data/inputs_signal_truth.p', 'rb') )
+unprocessed_input = pickle.load( open('data/inputs_'+input_type+'_truth.p', 'rb') )
 
 for jet_count, event_list in unprocessed_input.items():
     for event_count, event in enumerate(event_list):
@@ -20,4 +22,4 @@ for key,value in processed_output.items(): print( '{}: {}'.format(key, len(value
 #    print(key)
 #    for event in value: print(event)
 #    print()
-pickle.dump( processed_output, open('data/processed_inputs_signal_truth.p', 'wb') )
+pickle.dump( processed_output, open('data/processed_inputs_'+input_type+'_truth.p', 'wb') )

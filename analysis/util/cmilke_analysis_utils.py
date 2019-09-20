@@ -57,6 +57,7 @@ def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
 
 def event_iterator(ntuple_list, tree_name, branch_list, step_size, bucket_limit):
     for ntuple_file in ntuple_list:
+        print('nutple file: ' + ntuple_file)
         tree = uproot.rootio.open(ntuple_file)[tree_name]
         tree_iterator = tree.iterate(branches=branch_list, entrysteps=step_size) 
         for basket_number, basket in enumerate(tree_iterator):

@@ -2,11 +2,14 @@ import sys
 import math
 import pickle
 
+input_type = sys.argv[1]
+
 tagger_output = {2:[], 3:[]}
-processed_input = pickle.load( open('data/processed_inputs_signal_truth.p', 'rb') )
+processed_input = pickle.load( open('data/processed_inputs_'+input_type+'_truth.p', 'rb') )
 
 for jet_count, event_list in processed_input.items():
     for event_count, event in enumerate(event_list):
+        #if event_count >= 20: break
         vbf_eta_couple = []
         for jet in event:
             is_truth_quark, pt, eta, phi, m, is_marked_vbf = jet
@@ -16,11 +19,10 @@ for jet_count, event_list in processed_input.items():
 
         delta_eta = abs(vbf_eta_couple[0]-vbf_eta_couple[1])
         if jet_count in tagger_output: tagger_output[jet_count].append(delta_eta)
-        #if event_count >= 20: break
 for key,value in tagger_output.items(): print( '{}: {}'.format(key, len(value) ) )
 #print()
 #for key,value in tagger_output.items():
 #    print(key)
 #    for event in value: print(event)
 #    print()
-pickle.dump( tagger_output, open('data/tagged_signal_truth.p', 'wb') )
+pickle.dump( tagger_output, open('data/tagged_'+input_type+'_truth.p', 'wb') )
