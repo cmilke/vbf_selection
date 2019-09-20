@@ -45,87 +45,81 @@ _num_restrictions = len(_restriction_base)
 availability = []
 
 
-branch_list = [
-    'tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi',
-    'truthjpT', 'truthjeta', 'truthjphi',
-    'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 'j0pT', 'j0eta'
-]
-tjet_index = branch_list.index('truthjpT')
-reco_index = branch_list.index('j0truthid')
+tpart_branches = ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi']
+truthj_branches = ['truthjpT', 'truthjeta', 'truthjphi']
+reco_branches = ['j0truthid', 'j0_isTightPhoton', 'j0_isPU', 'j0pT', 'j0eta']
+branch_list = tpart_branches + truthj_branches + reco_branches
+truthj_branch_index = len(tpart_branches)
+reco_branch_index = truthj_branch_index + len(truthj_branches)
 
-for ntuple_file in cutils.Flavntuple_list_VBFH125_gamgam:
-    tree = uproot.rootio.open(ntuple_file)['Nominal']
-    for basket_number, basket in enumerate( tree.iterate(branches=branch_list, entrysteps=10000) ):
-        print('Basket: ' + str(basket_number) )
-        for event in zip(*basket.values()):
-            truth_particles = event[0:tjet_index]
-            truth_jets = event[tjet_index:reco_index]
-            reco_jets = event[reco_index:]
+for event in cutils.event_iterator(cutils.Flavntuple_list_VBFH125_gamgam[:1], 'Nominal', branch_list, 10000, 0):
+    truth_particles = event[:truthj_branch_index]
+    truth_jets = event[truthj_branch_index:reco_branch_index]
+    reco_jets = event[reco_branch_index:]
 
-            restrictions = _restriction_base.copy()
+    restrictions = _restriction_base.copy()
 
-            #iterate through truth jets by themselves
-            num_minpt_truth_jets = 0
-            valid_truthjets = []
-            for truthjpT, truthjeta, truthjphi in zip( *truth_jets ):
-                if truthjpT > 20:
-                    num_minpt_truth_jets += 1
-                    valid_truthjets.append((truthjpT, truthjeta, truthjphi))
-            
-            #iterate through truth particles
-            num_outgoing_quarks = 0
-            num_non_gam_jets = 0
-            num_matched_truth_jets = 0
-            matched_valid_jet_indices = {}
-            for tpartpdgID, tpartstatus, tpartpT, tparteta, tpartphi in zip( *truth_particles ):
-                if cutils.is_outgoing_quark(tpartpdgID, tpartstatus): num_outgoing_quarks += 1
-                if tpartstatus == cutils.Status['outgoing']:
-                    if tpartpdgID in cutils.PDG['quarks']: num_outgoing_quarks += 1
+    #iterate through truth jets by themselves
+    num_minpt_truth_jets = 0
+    valid_truthjets = []
+    for tj in cutils.jet_iterator(truthj_branches, truth_jets):
+        if tj['truthjpT'] > 30:
+            num_minpt_truth_jets += 1
+            valid_truthjets.append((tj['truthjpT'], tj['truthjeta'], tj['truthjphi']))
+    
+    #iterate through truth particles
+    num_outgoing_quarks = 0
+    num_non_gam_jets = 0
+    num_matched_truth_jets = 0
+    matched_valid_jet_indices = {}
+    for tp in cutils.jet_iterator(tpart_branches, truth_particles):
+        if cutils.is_outgoing_quark(tp['tpartpdgID'], tp['tpartstatus']): num_outgoing_quarks += 1
+        if tp['tpartstatus'] == cutils.Status['outgoing']:
+            if tp['tpartpdgID'] in cutils.PDG['quarks']: num_outgoing_quarks += 1
 
-                    #match truth particle to truth jet
-                    for index, (truthjpT, truthjeta, truthjphi) in enumerate(valid_truthjets):
-                        #if index in matched_valid_jet_indices: continue
-                        if jet_matches(tparteta, tpartphi, truthjeta, truthjphi):
-                            if tpartpdgID != cutils.PDG['photon']: num_non_gam_jets += 1
-                            if tpartpdgID in cutils.PDG['quarks']: num_matched_truth_jets += 1
-                            matched_valid_jet_indices[index] = None
-                            break
+            #match truth particle to truth jet
+            for index, (truthjpT, truthjeta, truthjphi) in enumerate(valid_truthjets):
+                if index in matched_valid_jet_indices: continue
+                if jet_matches(tp['tparteta'], tp['tpartphi'], truthjeta, truthjphi):
+                    if tp['tpartpdgID'] != cutils.PDG['photon']: num_non_gam_jets += 1
+                    if tp['tpartpdgID'] in cutils.PDG['quarks']: num_matched_truth_jets += 1
+                    matched_valid_jet_indices[index] = None
+                    break
 
-            #iterate through reco jets
-            num_quark_matched = 0
-            num_marked_notTightPhoton = 0
-            num_not_pileup = 0
-            num_pass_cuts = 0
-            for j0truthid, j0_isTightPhoton, j0_isPU, j0pT, j0eta in zip( *reco_jets ):
-                if j0truthid in cutils.PDG['quarks']: num_quark_matched += 1
-                if not j0_isTightPhoton:
-                    num_marked_notTightPhoton += 1
-                    if not j0_isPU:
-                        num_not_pileup += 1
-                        if cutils.passes_std_jet_cuts(j0pT, j0eta): num_pass_cuts += 1
+    #iterate through reco jets
+    num_quark_matched = 0
+    num_marked_notTightPhoton = 0
+    num_not_pileup = 0
+    num_pass_cuts = 0
+    for rj in cutils.jet_iterator(reco_branches, reco_jets):
+        if rj['j0truthid'] in cutils.PDG['quarks']: num_quark_matched += 1
+        if not rj['j0_isTightPhoton']:
+            num_marked_notTightPhoton += 1
+            if not rj['j0_isPU']:
+                num_not_pileup += 1
+                if cutils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']): num_pass_cuts += 1
 
-            #tally up all the restrictions
-            if num_minpt_truth_jets >= 2: restrictions['>=2 minpt truth jets'] = 1
-            if num_minpt_truth_jets >= 3: restrictions['>=3 minpt truth jets'] = 1
-            if num_non_gam_jets >= 2: restrictions['>=2 non-gam truth jets'] = 1
-            if num_non_gam_jets >= 3: restrictions['>=3 non-gam truth jets'] = 1
-            if num_matched_truth_jets >= 2: restrictions['>=2 q-matched truth jets'] = 1
-            if num_matched_truth_jets >= 3: restrictions['>=3 q-matched truth jets'] = 1
-            #if num_outgoing_quarks >= 2: restrictions['2 quarks'] = 1
-            #if len(event[reco_index]) >= 2: restrictions['>=2 reco jets'] = 1
-            #if num_marked_notTightPhoton >= 2: restrictions['not tightPhoton'] = 1
-            #if num_not_pileup >= 2: restrictions['not pileup'] = 1
-            #if num_pass_cuts >= 2: restrictions['2 pass cuts'] = 1
-            #if num_quark_matched == 2: restrictions['2 quark-matched'] = 1
-            #if num_pass_cuts >= 3: restrictions['3 pass cuts'] = 1
-            #if num_pass_cuts >= 4: restrictions['4 pass cuts'] = 1
-            #if num_pass_cuts >= 5: restrictions['5 pass cuts'] = 1
-            #if num_pass_cuts >= 6: restrictions['6 pass cuts'] = 1
+    #tally up all the restrictions
+    if num_minpt_truth_jets >= 2: restrictions['>=2 minpt truth jets'] = 1
+    if num_minpt_truth_jets >= 3: restrictions['>=3 minpt truth jets'] = 1
+    if num_non_gam_jets >= 2: restrictions['>=2 non-gam truth jets'] = 1
+    if num_non_gam_jets >= 3: restrictions['>=3 non-gam truth jets'] = 1
+    if num_matched_truth_jets >= 2: restrictions['>=2 q-matched truth jets'] = 1
+    if num_matched_truth_jets >= 3: restrictions['>=3 q-matched truth jets'] = 1
+    #if num_outgoing_quarks >= 2: restrictions['2 quarks'] = 1
+    #if len(event[reco_index]) >= 2: restrictions['>=2 reco jets'] = 1
+    #if num_marked_notTightPhoton >= 2: restrictions['not tightPhoton'] = 1
+    #if num_not_pileup >= 2: restrictions['not pileup'] = 1
+    #if num_pass_cuts >= 2: restrictions['2 pass cuts'] = 1
+    #if num_quark_matched == 2: restrictions['2 quark-matched'] = 1
+    #if num_pass_cuts >= 3: restrictions['3 pass cuts'] = 1
+    #if num_pass_cuts >= 4: restrictions['4 pass cuts'] = 1
+    #if num_pass_cuts >= 5: restrictions['5 pass cuts'] = 1
+    #if num_pass_cuts >= 6: restrictions['6 pass cuts'] = 1
 
-            #Find which restriction failed first, then append that to the final list
-            restriction_bin = list( restrictions.values() ).index(0) - 1
-            availability.append(restriction_bin)
-        if basket_number >= 0: break
+    #Find which restriction failed first, then append that to the final list
+    restriction_bin = list( restrictions.values() ).index(0) - 1
+    availability.append(restriction_bin)
 
 #print(availability)
 pickle.dump( availability, open('availability.p', 'wb') )

@@ -1,0 +1,25 @@
+ntuple*.root: the current starting point, ntuple generated from a raw AOD
+    |
+    |- extract*.py: iterate through ntuple and strip out only events we care about
+    |
+    |
+    V
+inputs*.p: a list of events, which are each a list of jets, which are a list of jet parameters
+    |
+    |- jet_selector.py: strips all events down to only two jets
+    |
+    |
+    V
+processed_inputs*.p: identical to inputs*.p, each jet has additional information (for now just a true/false on whether we think its a VBF jet)
+    |
+    |- vbf_tagger.py: use jet inputs (and possibly more) to distinguish VBF signal events from background (ggF for now)
+    |
+    |
+    V
+outputs*.p: a list of confidences, one per event, stating how likely the event is to be a VBF event
+    |
+    |- evaluate_performance.py: just make a roc curve with the background and signal outputs
+    |
+    |
+    V
+performance.pdf: probably just a ROC curve of performance
