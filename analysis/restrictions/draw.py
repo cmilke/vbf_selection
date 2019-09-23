@@ -1,8 +1,10 @@
+import sys
 import pickle
 import numpy
 from matplotlib import pyplot as plt
 
-availability = pickle.load( open('availability_b.p', 'rb') )
+input_type = sys.argv[1]
+availability = pickle.load( open('availability_'+input_type+'.p', 'rb') )
 xlabels = [
       'No Limits'
     #, '$\geq$2 Truth Jets\n$p_t>20$GeV'
@@ -36,4 +38,4 @@ ax.xaxis.grid(True, which='minor')
 ax.yaxis.grid(True)
 plt.tight_layout()
 plt.show()
-fig.savefig('fig_availability_b.pdf')
+fig.savefig('fig_availability_'+input_type+'.pdf')

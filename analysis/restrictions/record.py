@@ -5,6 +5,13 @@ import math
 import uproot
 import pickle
 
+input_type = sys.argv[1]
+input_type_options = {
+    'sig': cutils.Flavntuple_list_VBFH125_gamgam[:1],
+    'bgd': cutils.Flavntuple_list_ggH125_gamgam[:1]
+}
+input_list = input_type_options[input_type]
+
 def jet_matches(tparteta, tpartphi, truthjeta, truthjphi):
     delta_eta = abs(tparteta - truthjeta)
     delta_phi = abs(tpartphi - truthjphi)
@@ -35,10 +42,9 @@ _restriction_base = {
     #'2 quarks': 0,
     #'>=2 minpt truth jets': 0,
     #'>=3 minpt truth jets': 0,
-    #'2 quark-matched': 0,
+    #'2 quark-matched': 0, ^ 2 pass cuts
     #'5 pass cuts': 0, # ^ not pileup
     #'6 pass cuts': 0, # ^ not pileup
-
 }
 
 _num_restrictions = len(_restriction_base)
@@ -52,10 +58,7 @@ branch_list = tpart_branches + truthj_branches + reco_branches
 truthj_branch_index = len(tpart_branches)
 reco_branch_index = truthj_branch_index + len(truthj_branches)
 
-#files = cutils.Flavntuple_list_VBFH125_gamgam[:1]
-files = cutils.Flavntuple_list_ggH125_gamgam[:1]
-
-for event in cutils.event_iterator(files, 'Nominal', branch_list, 10000, 0):
+for event in cutils.event_iterator(input_list, 'Nominal', branch_list, 10000, 0):
     truth_particles = event[:truthj_branch_index]
     truth_jets = event[truthj_branch_index:reco_branch_index]
     reco_jets = event[reco_branch_index:]
@@ -72,7 +75,7 @@ for event in cutils.event_iterator(files, 'Nominal', branch_list, 10000, 0):
     num_non_gam_jets = 0
     num_matched_truth_jets = 0
     for tj in cutils.jet_iterator(truthj_branches, truth_jets):
-        if tj['truthjpT'] < 30: continue
+        if not cutils.passes_std_jet_cuts(tj['truthjpT'],tj['truthjeta']): continue
         num_minpt_truth_jets += 1
         for tp in cutils.jet_iterator(tpart_branches, truth_particles):
             if tp['tpartstatus'] != cutils.Status['outgoing']: continue
@@ -92,12 +95,13 @@ for event in cutils.event_iterator(files, 'Nominal', branch_list, 10000, 0):
     num_pass_cuts = 0
     for rj in cutils.jet_iterator(reco_branches, reco_jets):
         num_reco_jets += 1
-        if rj['j0truthid'] in cutils.PDG['quarks']: num_quark_matched += 1
         if not rj['j0_isTightPhoton']:
             num_marked_notTightPhoton += 1
             if not rj['j0_isPU']:
                 num_not_pileup += 1
-                if cutils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']): num_pass_cuts += 1
+                if cutils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']):
+                    num_pass_cuts += 1
+                    if rj['j0truthid'] in cutils.PDG['quarks']: num_quark_matched += 1
 
     #tally up all the restrictions
     #if num_minpt_truth_jets >= 2: restrictions['>=2 minpt truth jets'] = 1
@@ -122,4 +126,4 @@ for event in cutils.event_iterator(files, 'Nominal', branch_list, 10000, 0):
     availability.append(restriction_bin)
 
 #print(availability)
-pickle.dump( availability, open('availability_b.p', 'wb') )
+pickle.dump( availability, open('availability_'+input_type+'.p', 'wb') )
