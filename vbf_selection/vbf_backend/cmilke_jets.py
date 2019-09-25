@@ -8,7 +8,7 @@ class cmilke_jet:
         self.is_marked_vbf = False
 
     def __repr__(self):
-        representation = 'pt: {: 4.0f}, eta: {: 1.2f}, phi: {: 2.2f}, m: {: 2.1f}, tq: {}, mq: {}'.format(
+        representation = '(pt:{: 4.0f}, eta:{: 1.2f}, phi:{: 2.2f}, m:{: 2.1f}, tq:{}, mq:{})'.format(
             self.pt,
             self.eta,
             self.phi,
