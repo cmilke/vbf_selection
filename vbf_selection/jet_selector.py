@@ -13,11 +13,11 @@ selector = {
 }
 
 output_classifiers = {
-    '2'        : ['2maxpt']
-  , '3'        : ['2maxpt']
-  , '3 with PU': ['2maxpt']
-  , '4'        : ['2maxpt']
-  , '4 with PU': ['2maxpt']
+    '2'      : ['2maxpt']
+  , '3'      : ['2maxpt']
+  , '3inclPU': ['2maxpt']
+  , '4'      : ['2maxpt']
+  , '4inclPU': ['2maxpt']
 }
 
 for jet_type, event_list in unprocessed_input.items():

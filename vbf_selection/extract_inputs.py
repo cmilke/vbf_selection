@@ -25,9 +25,9 @@ def jet_matches(tparteta, tpartphi, truthjeta, truthjphi):
 event_data_dump = {
     '2': []
   , '3': []
-  , '3 with PU': []
+  , '3inclPU': []
   , '4': []
-  , '4 with PU': []
+  , '4inclPU': []
 }
 
 tpart_branches = [ 'tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi' ]
