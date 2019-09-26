@@ -43,8 +43,10 @@ tagger_name = sys.argv[2]
 tagger = available_taggers[tagger_name]
 
 if input_type == 'all':
-    tag_events('bgd', tagger)
-    print()
+    print('signal')
     tag_events('sig', tagger)
+    print()
+    print('background')
+    tag_events('bgd', tagger)
 else:
     tag_events(input_type, tagger)

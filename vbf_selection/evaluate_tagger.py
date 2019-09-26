@@ -9,6 +9,12 @@ _discriminator_titles = {
   , 'mjj'      : '$m_{jj}$'
   #, 'mjjj'     : '$m_{jjj}$'
 }
+
+_jet_selection_titles = {
+    '2_2maxpt': '2 Jets,\nVBF Jets Chosen by Highest $p_t$'
+  , '3_2maxpt': '3 Jets,\nVBF Jets Chosen by Highest $p_t$'
+  , '3inclPU_2maxpt':  '3 Jets (incl. PU),\nVBF Jets Chosen by Highest $p_t$'
+}
     
 
 def plot_performance(input_dict, plot_type, tagger_name, labels):
@@ -20,7 +26,7 @@ def plot_performance(input_dict, plot_type, tagger_name, labels):
 
     fig,ax = plt.subplots()
     counts, bins, hist = plt.hist(input_dict.values(), 
-        label=labels, histtype='step', bins=20,
+        label=labels, histtype='step', bins=50,
         cumulative=cumulative, density=True, linewidth=3)
 
     discriminator_name = _discriminator_titles[tagger_name]
@@ -38,19 +44,18 @@ def evaluate_individual_performances(tagger_name):
     discriminator_name = _discriminator_titles[tagger_name]
     tagger_output_sig = pickle.load( open('data/tagged_'+tagger_name+'_sig.p', 'rb') )
     tagger_output_bgd = pickle.load( open('data/tagged_'+tagger_name+'_bgd.p', 'rb') )
-    
-    bins = 30
     labels = list(tagger_output_sig)
     
     #evaluate efficiency and rejection
     sig_counts = plot_performance(tagger_output_sig, 'efficiency', tagger_name, labels)
     bgd_counts = plot_performance(tagger_output_bgd, 'rejection', tagger_name, labels)
     
-    
     #evaluate overall performance
     roc_curves = {}
     roc_ax = plt.subplots()
-    for eff,rej,label in zip(sig_counts, bgd_counts, labels):
+    for raw_eff,raw_rej,label in zip(sig_counts, bgd_counts, labels):
+        eff = [1] + list(raw_eff)
+        rej = [0] + list(raw_rej)
         roc_curves[label] = (eff, rej)
         plt.plot(eff, rej, label=label)
     
@@ -61,7 +66,7 @@ def evaluate_individual_performances(tagger_name):
     plt.grid(True)
     plt.savefig('plots/fig_'+tagger_name+'_roc_efficiency.pdf')
     plt.close()
-    return (labels, roc_curves)
+    return roc_curves
 
 
 def plot_cross_tagger_roc(selector_label, roc_collection): 
@@ -72,26 +77,22 @@ def plot_cross_tagger_roc(selector_label, roc_collection):
     plt.legend()
     plt.xlabel(r'Signal Efficiency')
     plt.ylabel(r'Background Rejection')
-    plt.title(r'Tagger Performance for Events with '+selector_label)
+    selector_title = _jet_selection_titles[selector_label]
+    plt.title(r'Tagger Performance for Events with '+selector_title)
     plt.grid(True)
-    plt.savefig('plots/fig_cross_tagger'+selector_label+'_roc_efficiency.pdf')
+    plt.savefig('plots/fig_allTaggers_'+selector_label+'_roc_efficiency.pdf')
     plt.close()
-    return (labels, roc_curves)
 
 
 all_rocs = {}
-all_labels = {}
 #produce individual performance plots
 for tagger_name in _discriminator_titles.keys():
-    labels, roc_curves = evaluate_individual_performances(tagger_name)
+    roc_curves = evaluate_individual_performances(tagger_name)
     all_rocs[tagger_name] = roc_curves
-    for label in labels:
-        if label not in all_labels:
-            all_labels[label] = None
 
 
 #produce cross-tagger performance plots
-for selector_label in all_labels.keys():
+for selector_label in _jet_selection_titles.keys():
     roc_collection = []
     for tagger, tagger_rocs in all_rocs.items():
         if selector_label in tagger_rocs:
