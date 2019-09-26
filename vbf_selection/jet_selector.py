@@ -1,33 +1,40 @@
 import sys
 import pickle
 from vbf_backend.cmilke_jets import cmilke_jet
+from vbf_backend import basic_jet_selection_algorithms
 
 input_type = sys.argv[1]
 
 unprocessed_input = pickle.load( open('data/input_'+input_type+'.p', 'rb') )
-processed_output = {
-    '2': []
-  , '3': []
-  , '3 with PU': []
-  , '4': []
-  , '4 with PU': []
+processed_output = {}
+
+selector = {
+    '2maxpt': basic_jet_selection_algorithms.highest_pt
+}
+
+output_classifiers = {
+    '2'        : ['2maxpt']
+  , '3'        : ['2maxpt']
+  , '3 with PU': ['2maxpt']
+  , '4'        : ['2maxpt']
+  , '4 with PU': ['2maxpt']
 }
 
 for jet_type, event_list in unprocessed_input.items():
+    processed_output[jet_type] = {}
+    for algorithm in output_classifiers[jet_type]:
+        processed_output[jet_type][algorithm] = []
+
     for event_count, event in enumerate(event_list):
-        #if event_count >= 100: break
+        #if event_count >= 20: break
+        for algorithm in output_classifiers[jet_type]:
+            jet_idents = selector[algorithm](event)
+            processed_output[jet_type][algorithm].append(jet_idents)
 
-        #select two highest pt jets
-        processed_event = sorted( event, reverse=True, key=(lambda x: x.pt) ) #sort by pt, highest first
-        for jet in processed_event[:2]:
-            jet.is_marked_vbf = True #label the first two (highest pt) jets as VBF
-        processed_output[jet_type].append(processed_event)
 
-#for key,value in processed_output.items():
-#    print(key)
-#    for event in value:
-#        for jet in event: print(jet)
-#        print()
-#    print()
-for key,value in processed_output.items(): print( '{}: {}'.format(key, len(value) ) )
-pickle.dump( processed_output, open('data/processed_input_'+input_type+'.p', 'wb') )
+#for jet_type, selections in processed_output.items():
+#    print(jet_type)
+#    for algorithm, events in selections.items():
+#        print('|---'+algorithm+': '+str(events))
+
+pickle.dump( processed_output, open('data/jet_selections_'+input_type+'.p', 'wb') )

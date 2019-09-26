@@ -31,7 +31,6 @@ tagger_output_bgd = pickle.load( open('data/tagged_bgd.p', 'rb') )
 
 bins = numpy.arange(0,8,0.1)
 labels = list(tagger_output_sig)
-for i in range(len(labels)): labels[i] = 'Jets: '+labels[i]
 
 discriminator_name = '$\Delta \eta$'
 
