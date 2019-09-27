@@ -8,6 +8,8 @@ def tag_events(input_type, tagger):
     tagger_output = {
         '2_2maxpt': []
       , '3_2maxpt': []
+      , '3_etamax': []
+      , '3_truth': []
       , '3inclPU_2maxpt': []
     }
 
@@ -33,20 +35,22 @@ def tag_events(input_type, tagger):
 
 
 available_taggers = {
-    'delta_eta': basic_vbf_tagging_algorithms.delta_eta_tagger
-  , 'mjj': basic_vbf_tagging_algorithms.mjj_tagger
-  , 'mjjj': basic_vbf_tagging_algorithms.mjjj_tagger
+    #'delta_eta': basic_vbf_tagging_algorithms.delta_eta_tagger
+   'mjj': basic_vbf_tagging_algorithms.mjj_tagger
+  #, 'mjjj': basic_vbf_tagging_algorithms.mjjj_tagger
 }
 
 input_type = sys.argv[1]
-tagger_name = sys.argv[2]
-tagger = available_taggers[tagger_name]
+tagger_list = available_taggers.keys()
+if len(sys.argv) == 3: tagger_list = [sys.argv[2]]
 
-if input_type == 'all':
-    print('signal')
-    tag_events('sig', tagger)
-    print()
-    print('background')
-    tag_events('bgd', tagger)
-else:
-    tag_events(input_type, tagger)
+for tagger_name in tagger_list:
+    tagger = available_taggers[tagger_name]
+    if input_type == 'all':
+        print('signal')
+        tag_events('sig', tagger)
+        print()
+        print('background')
+        tag_events('bgd', tagger)
+    else:
+        tag_events(input_type, tagger)

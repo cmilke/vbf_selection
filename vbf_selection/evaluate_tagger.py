@@ -2,6 +2,8 @@ import sys
 import math
 import pickle
 import numpy
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 _discriminator_titles = {
@@ -13,6 +15,8 @@ _discriminator_titles = {
 _jet_selection_titles = {
     '2_2maxpt': '2 Jets,\nVBF Jets Chosen by Highest $p_t$'
   , '3_2maxpt': '3 Jets,\nVBF Jets Chosen by Highest $p_t$'
+  , '3_etamax': '3 Jets,\nVBF Jets Chosen by Maximized $\eta$'
+  , '3_truth':  '3 Jets,\nVBF Jets Chosen at Truth Level'
   , '3inclPU_2maxpt':  '3 Jets (incl. PU),\nVBF Jets Chosen by Highest $p_t$'
 }
     

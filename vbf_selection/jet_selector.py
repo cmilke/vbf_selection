@@ -4,12 +4,15 @@ from vbf_backend.cmilke_jets import cmilke_jet
 from vbf_backend import basic_jet_selection_algorithms
 
 _selectors = {
-    '2maxpt': basic_jet_selection_algorithms.highest_pt
+    '2maxpt': basic_jet_selection_algorithms.highest_pt_selector
+  , 'etamax': basic_jet_selection_algorithms.maximal_eta_selector
+  , 'null': basic_jet_selection_algorithms.null_selector
+  , 'truth': basic_jet_selection_algorithms.truth_selector
 }
 
 _output_classifiers = {
     '2'      : ['2maxpt']
-  , '3'      : ['2maxpt']
+  , '3'      : ['2maxpt', 'etamax', 'truth']
   , '3inclPU': ['2maxpt']
   , '4'      : ['2maxpt']
   , '4inclPU': ['2maxpt']
