@@ -5,52 +5,40 @@ from vbf_backend.cmilke_jets import cmilke_jet
 from vbf_backend import basic_vbf_tagging_algorithms
 
 def tag_events(input_type, tagger):
-    tagger_output = {
-        '2_2maxpt': []
-      , '3_2maxpt': []
-      , '3_etamax': []
-      , '3_truth': []
-      , '3inclPU_2maxpt': []
-    }
-
+    tagger_output = {}
     jet_input = pickle.load( open('data/input_'+input_type+'.p', 'rb') )
     selector_input = pickle.load( open('data/jet_selections_'+input_type+'.p', 'rb') )
 
     for jet_type, event_list in jet_input.items():
-        for event_count, event in enumerate(event_list):
-            #if event_count >= 20: break
-            for algorithm, selections in selector_input[jet_type].items():
-                tag_label = jet_type + '_' + algorithm
-                if tag_label not in tagger_output: continue
-
+        for algorithm, selections in selector_input[jet_type].items():
+            tag_label = jet_type + '_' + algorithm
+            tagger_output[tag_label] = []
+            for event_count, event in enumerate(event_list):
+                #if event_count >= 20: break
                 vbf_jets = selections[event_count]
                 discriminant = tagger(event,vbf_jets)
                 tagger_output[tag_label].append(discriminant)
 
+    print(input_type)
     #for key,value in tagger_output.items():
     #    print(key, value)
     #    print()
     for key,value in tagger_output.items(): print( '{}: {}'.format(key, len(value) ) )
+    print()
     pickle.dump( tagger_output, open('data/tagged_'+tagger_name+'_'+input_type+'.p', 'wb') )
 
 
 available_taggers = {
-    #'delta_eta': basic_vbf_tagging_algorithms.delta_eta_tagger
-   'mjj': basic_vbf_tagging_algorithms.mjj_tagger
-  #, 'mjjj': basic_vbf_tagging_algorithms.mjjj_tagger
+    'delta_eta': basic_vbf_tagging_algorithms.delta_eta_tagger
+  , 'mjj': basic_vbf_tagging_algorithms.mjj_tagger
+  , 'mjjj': basic_vbf_tagging_algorithms.mjjj_tagger
 }
 
-input_type = sys.argv[1]
-tagger_list = available_taggers.keys()
-if len(sys.argv) == 3: tagger_list = [sys.argv[2]]
-
-for tagger_name in tagger_list:
+for tagger_name in available_taggers.keys():
+    print('\n*****'+tagger_name+'******')
     tagger = available_taggers[tagger_name]
-    if input_type == 'all':
-        print('signal')
+    if len(sys.argv) < 2:
         tag_events('sig', tagger)
-        print()
-        print('background')
         tag_events('bgd', tagger)
     else:
-        tag_events(input_type, tagger)
+        tag_events(sys.argv[1], tagger)

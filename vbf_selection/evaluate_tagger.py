@@ -9,19 +9,24 @@ from matplotlib import pyplot as plt
 _discriminator_titles = {
     'delta_eta': '$\Delta \eta$'
   , 'mjj'      : '$m_{jj}$'
-  #, 'mjjj'     : '$m_{jjj}$'
+  , 'mjjj'     : '$m_{jjj}$'
 }
 
 _jet_selection_titles = {
-    '2_2maxpt': '2 Jets,\nVBF Jets Chosen by Highest $p_t$'
+    '2_null': '2 Jets'
+    #'2_2maxpt': '2 Jets,\nVBF Jets Chosen by Highest $p_t$'
   , '3_2maxpt': '3 Jets,\nVBF Jets Chosen by Highest $p_t$'
-  , '3_etamax': '3 Jets,\nVBF Jets Chosen by Maximized $\eta$'
-  , '3_truth':  '3 Jets,\nVBF Jets Chosen at Truth Level'
-  , '3inclPU_2maxpt':  '3 Jets (incl. PU),\nVBF Jets Chosen by Highest $p_t$'
+  #, '3_etamax': '3 Jets,\nVBF Jets Chosen by Maximized $\eta$'
+  , '3noPU_2maxpt':  '3 Jets (No PU),\nVBF Jets Chosen by Highest $p_t$'
+  , '3noPU_truth':  '3 Jets (No PU),\nVBF Jets Chosen at Truth Level'
+  , '3withPU_truth':  '3 Jets, One of Which is PU,\nVBF Jets Chosen at Truth Level'
 }
     
 
 def plot_performance(input_dict, plot_type, tagger_name, labels):
+    values = []
+    for key in labels: values.append(input_dict[key])
+
     ytitle = 'Efficiency'
     cumulative = -1
     if plot_type == 'rejection':
@@ -29,7 +34,7 @@ def plot_performance(input_dict, plot_type, tagger_name, labels):
         cumulative = 1
 
     fig,ax = plt.subplots()
-    counts, bins, hist = plt.hist(input_dict.values(), 
+    counts, bins, hist = plt.hist(values, 
         label=labels, histtype='step', bins=50,
         cumulative=cumulative, density=True, linewidth=3)
 
@@ -48,7 +53,8 @@ def evaluate_individual_performances(tagger_name):
     discriminator_name = _discriminator_titles[tagger_name]
     tagger_output_sig = pickle.load( open('data/tagged_'+tagger_name+'_sig.p', 'rb') )
     tagger_output_bgd = pickle.load( open('data/tagged_'+tagger_name+'_bgd.p', 'rb') )
-    labels = list(tagger_output_sig)
+
+    labels = _jet_selection_titles.keys()
     
     #evaluate efficiency and rejection
     sig_counts = plot_performance(tagger_output_sig, 'efficiency', tagger_name, labels)
@@ -66,7 +72,7 @@ def evaluate_individual_performances(tagger_name):
     plt.legend()
     plt.xlabel(r'Signal Efficiency')
     plt.ylabel(r'Background Rejection')
-    plt.title(r'Efficiency/Rejection Performance of'+discriminator_name+'-Based Tagging')
+    plt.title(r'Efficiency/Rejection Performance of '+discriminator_name+'-Based Tagging')
     plt.grid(True)
     plt.savefig('plots/fig_'+tagger_name+'_roc_efficiency.pdf')
     plt.close()

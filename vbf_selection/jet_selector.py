@@ -11,11 +11,12 @@ _selectors = {
 }
 
 _output_classifiers = {
-    '2'      : ['2maxpt']
-  , '3'      : ['2maxpt', 'etamax', 'truth']
-  , '3inclPU': ['2maxpt']
-  , '4'      : ['2maxpt']
-  , '4inclPU': ['2maxpt']
+    '2'       : ['null']
+  , '3'       : ['2maxpt', 'etamax', 'truth']
+  , '3noPU'   : ['2maxpt', 'truth']
+  , '3withPU' : ['2maxpt', 'truth']
+  , '4'       : ['2maxpt']
+  , '4withPU' : ['2maxpt']
 }
 
 def select_jets(input_type):
@@ -26,15 +27,12 @@ def select_jets(input_type):
         processed_output[jet_type] = {}
         for algorithm in _output_classifiers[jet_type]:
             processed_output[jet_type][algorithm] = []
-    
-        for event_count, event in enumerate(event_list):
-            #if event_count >= 20: break
-            for algorithm in _output_classifiers[jet_type]:
+            for event_count, event in enumerate(event_list):
+                #if event_count >= 20: break
                 jet_idents = _selectors[algorithm](event)
                 processed_output[jet_type][algorithm].append(jet_idents)
     
-    
-    
+    print('\n******'+input_type+'******')
     for jet_type, selections in processed_output.items():
         print(jet_type)
         for algorithm, events in selections.items():
@@ -42,12 +40,7 @@ def select_jets(input_type):
     pickle.dump( processed_output, open('data/jet_selections_'+input_type+'.p', 'wb') )
 
 
-input_type = sys.argv[1]
-
-if input_type == 'all':
-    print('signal')
+if len(sys.argv) < 2:
     select_jets('sig')
-    print()
-    print('background')
     select_jets('bgd')
-else: select_jets(input_type)
+else: select_jets(sys.argv[1])

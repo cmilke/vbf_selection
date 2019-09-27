@@ -1,7 +1,6 @@
 import sys
 sys.path.append('/nfs/slac/g/atlas/u02/cmilke/analysis/util')
 import math
-import copy
 import pickle
 from vbf_backend.cmilke_jets import cmilke_jet
 import cmilke_analysis_utils as cutils
@@ -57,22 +56,31 @@ def record_truth_jets(input_type, truth_particles, truth_jets, event_data_dump):
 def record_reco_jets(input_type, truth_particles, truth_jets, reco_jets, event_data_dump):
     num_quark_jets = 0
     recorded_jets = []
+    recorded_jets_no_pu = []
     recorded_jets_with_pu = []
     for rj in cutils.jet_iterator(_reco_branches, reco_jets):
         if not cutils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']): continue
         if rj['j0_isTightPhoton']: continue
-        jet = cmilke_jet(rj['j0pT'], rj['j0eta'], rj['j0phi'], rj['j0m'], False)
+        is_truth_quark = False
         if rj['j0truthid'] in cutils.PDG['quarks'] and not rj['j0_isPU']:
             num_quark_jets += 1
-            jet.is_truth_quark = True
-        recorded_jets_with_pu.append( copy.copy(jet) )
-        if not rj['j0_isPU']: recorded_jets.append( copy.copy(jet) )
+            is_truth_quark = True
+        jet_params = [ rj['j0pT'], rj['j0eta'], rj['j0phi'], rj['j0m'], is_truth_quark ]
+
+        recorded_jets.append( cmilke_jet(*jet_params) )
+        if not rj['j0_isPU']: recorded_jets_no_pu.append( cmilke_jet(*jet_params) )
+        if input_type == 'sig':
+            if is_truth_quark or rj['j0_isPU']: recorded_jets_with_pu.append( cmilke_jet(*jet_params) )
+        else:
+            recorded_jets_with_pu.append( cmilke_jet(*jet_params) )
 
     key = str( len(recorded_jets) )
-    pu_key = str( len(recorded_jets_with_pu) ) + 'inclPU'
-    valid_for_insertion = (input_type == 'sig' and num_quark_jets >= 2) or input_type == 'bgd'
+    nopu_key = str( len(recorded_jets_no_pu) ) + 'noPU'
+    pu_key = str( len(recorded_jets_with_pu) ) + 'withPU'
+    valid_for_insertion = (input_type == 'sig' and num_quark_jets == 2) or input_type == 'bgd'
     if valid_for_insertion:
         if key in event_data_dump: event_data_dump[key].append(recorded_jets)
+        if nopu_key in event_data_dump: event_data_dump[nopu_key].append(recorded_jets_no_pu)
         if pu_key in event_data_dump: event_data_dump[pu_key].append(recorded_jets_with_pu)
 
     return num_quark_jets
@@ -82,9 +90,10 @@ def record_events(input_type, use_truth):
     event_data_dump = {
         '2': []
       , '3': []
-      , '3inclPU': []
+      , '3noPU': []
+      , '3withPU': []
       , '4': []
-      , '4inclPU': []
+      , '4withPU': []
     }
 
     input_list = _input_type_options[input_type]
@@ -97,6 +106,7 @@ def record_events(input_type, use_truth):
         else: 
             num_quark_jets = record_reco_jets(input_type, truth_particles, truth_jets, reco_jets, event_data_dump)
 
+    print('\n'+input_type)
     for key,value in event_data_dump.items(): print( '{}: {}'.format(key, len(value) ) )
     #print()
     #for key,value in event_data_dump.items():
@@ -108,12 +118,11 @@ def record_events(input_type, use_truth):
     pickle.dump( event_data_dump, open('data/input_'+input_type+'.p', 'wb') )
 
 
-input_type = sys.argv[1]
 #use_truth = sys.argv[2] == 'truth'
+use_truth = False
 
-if input_type == 'all':
-    record_events('sig', False)
-    print()
-    record_events('bgd', False)
+if len(sys.argv) < 2:
+    record_events('sig', use_truth)
+    record_events('bgd', use_truth)
 else:
-    record_events(_input_type_options[input_type], False)
+    record_events(_input_type_options[sys.argv[1]], use_truth)
