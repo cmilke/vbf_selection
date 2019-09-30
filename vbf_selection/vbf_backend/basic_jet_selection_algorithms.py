@@ -1,3 +1,6 @@
+import random
+
+
 #Select two highest pt jets
 def highest_pt_selector(event):
     jet_idents = [-1,-1]
@@ -32,6 +35,13 @@ def maximal_eta_selector(event):
 #Return the first two jets.
 #Should really only be used for 2 jet events
 def null_selector(event): return [0,1]
+
+
+def random_selector(event):
+    jet_indices = list( range(0,len(event)) )
+    random.shuffle(jet_indices)
+    chosen_jets = jet_indices[:2]
+    return chosen_jets
 
 
 #Selects the correct vbf jets based on truth info

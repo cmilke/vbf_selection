@@ -13,13 +13,17 @@ _discriminator_titles = {
 }
 
 _jet_selection_titles = {
-    '2_null': '2 Jets'
-    #'2_2maxpt': '2 Jets,\nVBF Jets Chosen by Highest $p_t$'
-  , '3_2maxpt': '3 Jets,\nVBF Jets Chosen by Highest $p_t$'
-  #, '3_etamax': '3 Jets,\nVBF Jets Chosen by Maximized $\eta$'
-  , '3noPU_2maxpt':  '3 Jets (No PU),\nVBF Jets Chosen by Highest $p_t$'
-  , '3noPU_truth':  '3 Jets (No PU),\nVBF Jets Chosen at Truth Level'
-  , '3withPU_truth':  '3 Jets, One of Which is PU,\nVBF Jets Chosen at Truth Level'
+    '2_null'        : '2 Jets'
+  , '3_2maxpt'      : '3 Jets,\nVBF Jets Chosen by Highest $p_t$'
+  , '3_etamax'      : '3 Jets,\nVBF Jets Chosen by Maximized $\eta$'
+  , '3_truth'       : '3 Jets,\nVBF Jets Chosen at Truth Level'
+  , '3_random'      : '3 Jets,\nVBF Jets Chosen Randomly'
+  , '3noPU_2maxpt'  : '3 Jets (No PU),\nVBF Jets Chosen by Highest $p_t$'
+  , '3noPU_etamax'  : '3 Jets (No PU),\nVBF Jets Chosen by Maximized $\eta$'
+  , '3noPU_truth'   : '3 Jets (No PU),\nVBF Jets Chosen at Truth Level'
+  , '3withPU_2maxpt': '3 Jets, One of Which is PU,\nVBF Jets Chosen by Highest $p_t$'
+  , '3withPU_etamax'  : '3 Jets, One of Which is PU,\nVBF Jets Chosen by Maximized $\eta$'
+  , '3withPU_truth' : '3 Jets, One of Which is PU,\nVBF Jets Chosen at Truth Level'
 }
     
 

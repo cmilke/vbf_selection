@@ -1,7 +1,23 @@
 from uproot_methods import TLorentzVector
 
+
 def delta_eta_tagger(event, vbf_jets):
     delta_eta = abs( event[vbf_jets[0]].eta - event[vbf_jets[1]].eta )
+    return delta_eta
+
+
+def unified_delta_eta_tagger(event, vbf_jets):
+    if len(vbf_jets) == 2: return delta_eta_tagger(event, vbf_jets)
+
+    simple_eta = event[vbf_jets[0]].eta
+    j1 = event[vbf_jets[1]]
+    j2 = event[vbf_jets[2]]
+    v1 = TLorentzVector.from_ptetaphim(j0.pt, j0.eta, j0.phi, j0.m)
+    v2 = TLorentzVector.from_ptetaphim(j2.pt, j2.eta, j2.phi, j2.m)
+    unified_vector = v1+v2
+    unified_eta = unified_vector.eta
+
+    delta_eta = abs( simple_eta - unified_eta )
     return delta_eta
 
 

@@ -8,13 +8,14 @@ _selectors = {
   , 'etamax': basic_jet_selection_algorithms.maximal_eta_selector
   , 'null': basic_jet_selection_algorithms.null_selector
   , 'truth': basic_jet_selection_algorithms.truth_selector
+  , 'random': basic_jet_selection_algorithms.random_selector
 }
 
 _output_classifiers = {
     '2'       : ['null']
-  , '3'       : ['2maxpt', 'etamax', 'truth']
-  , '3noPU'   : ['2maxpt', 'truth']
-  , '3withPU' : ['2maxpt', 'truth']
+  , '3'       : ['2maxpt', 'etamax', 'truth', 'random']
+  , '3noPU'   : ['2maxpt', 'etamax', 'truth']
+  , '3withPU' : ['2maxpt', 'etamax', 'truth']
   , '4'       : ['2maxpt']
   , '4withPU' : ['2maxpt']
 }
