@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 import math
 import pickle
@@ -32,6 +34,6 @@ def tag_events():
 
 
 
-    for key,value in display: print( '{}: {}'.format(key, value) )
+    for key,value in display: print( '{}: {:.2}'.format(key, value) )
 
 tag_events()

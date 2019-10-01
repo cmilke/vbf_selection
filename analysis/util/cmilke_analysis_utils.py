@@ -37,6 +37,7 @@ PDG = {
     'bottom' : 5,
     'top' : 6,
     'quarks': range(1,7),
+    'gluon': 21,
     'photon': 22,
     'higgs': 25
 }
