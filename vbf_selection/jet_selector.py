@@ -12,8 +12,7 @@ to the selected jets in the event_data_dump.
 
 import sys
 import pickle
-from vbf_backend.cmilke_jets import cmilke_jet
-from vbf_backend import basic_jet_selection_algorithms
+from acorn_backend import basic_jet_selection_algorithms
 
 # A dict of the algorithms that can be used
 # to distinguish vbf jets from other jets
@@ -27,16 +26,13 @@ _selectors = {
 
 # A mapping of which algorithms are to be used
 # with which jet categories
-_output_classifiers = {
-    '2'       : ['null']
-  , '3'       : ['2maxpt', 'etamax', 'truth', 'random']
-  , '3noPU'   : ['2maxpt', 'etamax', 'truth']
-  , '3withPU' : ['2maxpt', 'etamax', 'truth']
-  , '3noFSR'  : ['2maxpt', 'etamax', 'truth']
-  , '3withFSR': ['2maxpt', 'etamax', 'truth']
-  , '4'       : ['2maxpt']
-  , '4withPU' : ['2maxpt']
-}
+_output_classifiers = [
+    [], #0
+    [], #1
+    ['null'], #2
+    ['2maxpt', 'etamax', 'truth', 'random'], #3
+    ['2maxpt'] #4
+]
 
 
 # Iterate over jet categories
@@ -45,20 +41,19 @@ _output_classifiers = {
 # For each event, have the algorithm select the vbf jets in the event
 def select_jets(input_type):
     unprocessed_input = pickle.load( open('data/input_'+input_type+'.p', 'rb') )
-    processed_output = {} #Filled below, with a structure similar to the unprocessed_input
+    processed_output = [ {} for i in range( len(unprocessed_input) ) ]
 
-    for jet_type, event_list in unprocessed_input.items():
-        processed_output[jet_type] = {}
-        for algorithm in _output_classifiers[jet_type]:
-            processed_output[jet_type][algorithm] = []
+    for jet_count, event_list in enumerate(unprocessed_input):
+        for algorithm in _output_classifiers[jet_count]:
+            processed_output[jet_count][algorithm] = []
             for event_count, event in enumerate(event_list):
                 #if event_count >= 20: break
                 jet_idents = _selectors[algorithm](event)
-                processed_output[jet_type][algorithm].append(jet_idents)
+                processed_output[jet_count][algorithm].append(jet_idents)
     
     print('\n******'+input_type+'******')
-    for jet_type, selections in processed_output.items():
-        print(jet_type)
+    for jet_count, selections in enumerate(processed_output):
+        print(jet_count)
         for algorithm, events in selections.items():
             print('|---'+algorithm+': '+str(len(events)))
 

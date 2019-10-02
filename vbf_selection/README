@@ -1,3 +1,5 @@
+ACORN: A Contrived acrOnym for a Reconstruction Network
+
 ntuple*.root: the current starting point, ntuple generated from a raw AOD
     |
     |- extract*.py: iterate through ntuple and strip out only events we care about
