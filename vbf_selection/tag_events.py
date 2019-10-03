@@ -23,7 +23,8 @@ _available_taggers = {
 }
 
 
-def tag_events(input_type, tagger):
+def apply_tagger(input_type, tagger_name):
+    tagger = _available_taggers[tagger_name]
     event_input = pickle.load( open('data/input_'+input_type+'.p', 'rb') )
     selector_input = pickle.load( open('data/jet_selections_'+input_type+'.p', 'rb') )
     tagger_output = [ {} for i in range( len(event_input) ) ]
@@ -46,11 +47,13 @@ def tag_events(input_type, tagger):
     pickle.dump( tagger_output, open('data/tagged_'+tagger_name+'_'+input_type+'.p', 'wb') )
 
 
-for tagger_name in _available_taggers.keys():
-    print('\n*****'+tagger_name+'******')
-    tagger = _available_taggers[tagger_name]
-    if len(sys.argv) < 2:
-        tag_events('sig', tagger)
-        tag_events('bgd', tagger)
-    else:
-        tag_events(sys.argv[1], tagger)
+def tag_events():
+    for tagger_name in _available_taggers.keys():
+        print('\n*****'+tagger_name+'******')
+        if len(sys.argv) < 2:
+            apply_tagger('sig', tagger_name)
+            apply_tagger('bgd', tagger_name)
+        else:
+            apply_tagger(sys.argv[1], tagger_name)
+
+tag_events()

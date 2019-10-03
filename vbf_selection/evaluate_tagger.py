@@ -7,17 +7,17 @@ import numpy
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-from acorn_backend import evaluation_filters
+from acorn_backend.evaluation_filters import filter_events
 
-_hist_bins = 20
+_hist_bins = 50
 
 _plot_specifications = {
     2: {
-        ''    : ['null']
+        '': ['null']
     },
     3: {
-        ''    : ['2maxpt', 'etamax', 'truth', 'random']
-      , 'noPU': ['2maxpt', 'etamax']
+        ''      : ['2maxpt', 'etamax', 'truth', 'random']
+      , 'noPU'  : ['2maxpt', 'etamax']
       , 'withPU': ['2maxpt', 'etamax']
     }
 }
@@ -28,19 +28,10 @@ _discriminator_titles = {
   , 'mjjj'     : '$m_{jjj}$'
 }
 
-_event_filters = {
-    '': (
-        '',
-        None
-    ),
-    'noPU': (
-        ' (no PU)',
-        evaluation_filters.no_pileup
-    ),
-    'withPU': (
-        ' (with PU)',
-        evaluation_filters.with_pileup
-    ),
+_filter_titles = {
+    '': ''
+  , 'noPU': ' (no PU)'
+  , 'withPU': ' (with PU)'
 }
 
 _jet_selection_titles = {
@@ -57,18 +48,10 @@ for jet_count, filter_list in _plot_specifications.items():
         for selector in selector_list:
             key = str(jet_count)+event_filter+'_'+selector
             label_string = str(jet_count) + ' Jets'
-            label_string += _event_filters[event_filter][0]
+            label_string += _filter_titles[event_filter]
             label_string += _jet_selection_titles[selector]
             _jet_category_titles[key] = label_string
 
-
-def filter_events(filter_function, event_list, discriminant_list):
-    if filter_function == None: return discriminant_list
-    filtered_discriminants = []
-    for event, discriminant in zip(event_list, discriminant_list):
-        if filter_function(event): filtered_discriminants.append(discriminant)
-    return filtered_discriminants
-    
 
 def plot_performance(plot_type, tagger_name):
     input_type = 'sig'
@@ -88,13 +71,12 @@ def plot_performance(plot_type, tagger_name):
     # the efficiency counts, rejection counts, and labels
     flattened_discriminants = _jet_category_titles.copy()
     for jet_count, selector_dict in enumerate(tagger_output):
-        for filter_key in _event_filters.keys():
+        for filter_key in _filter_titles.keys():
             for selector_name, discriminant_list in selector_dict.items():
                 category_label = str(jet_count)+filter_key+'_'+selector_name
                 if category_label not in _jet_category_titles: continue
                 event_list = event_input[jet_count]
-                filter_function = _event_filters[filter_key][1]
-                filtered_discriminant_list = filter_events(filter_function, event_list, discriminant_list)
+                filtered_discriminant_list = filter_events(filter_key, event_list, discriminant_list)
                 flattened_discriminants[category_label] = filtered_discriminant_list
 
 

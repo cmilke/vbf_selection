@@ -70,7 +70,7 @@ def record_events(input_type):
     # storing/sorting/filtering events into the data_dump as it goes
     input_list = _input_type_options[input_type]
     is_bgd = input_type == 'bgd'
-    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, 0):
+    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, None):
         truth_particles = event[:_truthj_branch_index]
         truth_jets = event[_truthj_branch_index:_reco_branch_index]
         reco_jets = event[_reco_branch_index:]
