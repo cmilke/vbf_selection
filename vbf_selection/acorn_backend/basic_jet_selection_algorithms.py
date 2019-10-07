@@ -1,7 +1,7 @@
 import random
 
 
-#Select two highest pt jets
+# Select two highest pt jets
 def highest_pt_selector(event):
     jet_idents = [-1,-1]
     max_pts = [-1,-1]
@@ -17,6 +17,8 @@ def highest_pt_selector(event):
     return tuple(jet_idents)
 
 
+# Select the two jets with the
+# largest Delta-eta between them
 def maximal_eta_selector(event):
     jet_idents = [-1,-1]
     max_delta_eta = -1
@@ -32,12 +34,13 @@ def maximal_eta_selector(event):
     return tuple(jet_idents)
 
 
-
-#Return the first two jets.
-#Should really only be used for 2 jet events
+# Return the first two jets.
+# Should really only be used for 2 jet events
 def null_selector(event): return (0,1)
 
 
+# Select the vbf jets at random...
+# This is just to establish a lower bound on performance
 def random_selector(event):
     jet_indices = list( range(0,len(event.jets)) )
     random.shuffle(jet_indices)
@@ -45,8 +48,8 @@ def random_selector(event):
     return tuple(chosen_jets)
 
 
-#Selects the correct vbf jets based on truth info
-#Returns the first two if background
+# Selects the correct vbf jets based on truth info
+# Returns the first two if background
 def truth_selector(event):
     jet_idents = []
     for index, jet in enumerate(event.jets):
