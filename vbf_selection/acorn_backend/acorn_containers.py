@@ -9,7 +9,7 @@ class acorn_jet:
         self.m = m
         self.truth_id = pdgid
         self.is_pileup = pu
-        self.marked_pileup = (JVT or fJVT)
+        self.passes_JVT = (JVT and fJVT)
 
     @classmethod
     def from_reco(cls, rj):
@@ -31,9 +31,8 @@ class acorn_jet:
         
 
 class acorn_event:
-    def __init__(self, jet_list, is_bgd):
+    def __init__(self, jet_list):
         self.jets = jet_list
-        self.is_background = is_bgd
         self.selectors = []
 
         selector_class_list = selector_options[ len(jet_list) ]
@@ -42,7 +41,7 @@ class acorn_event:
             self.selectors.append(new_selector)
 
     def __repr__(self):
-        rep = '|---|---Signal Jets:\n'
+        rep = '|---|---Jets:\n'
         for jet in self.jets: rep += str(jet)+'\n'
         rep += '|---|\n|---|---Selectors:\n'
         for selector in self.selectors: rep += str(selector) + '\n'

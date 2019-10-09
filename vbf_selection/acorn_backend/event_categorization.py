@@ -22,6 +22,11 @@ excludes an event from existing at all. However, most of the categories do not i
 and instead allow one of them to default to the base_categorizer's version.
 '''
 
+_min_jets = 2
+_max_jets = len(selector_options)-1
+_leading_jet_min_pt = 50 #GeV
+_demanded_number_of_quarks = 2
+
 
 class base_categorizer():
     def __init__(self):
@@ -40,15 +45,32 @@ class base_categorizer():
     # Filter jets as per the child class's rules,
     # then check if the remaining jets pass the overall event filter.
     # If so, then create a new event.
-    def new_event(self, jet_list, is_bgd):
+    def add_event(self, jet_list, is_sig):
         filtered_jets = self.filter_jets(jet_list)
         num_jets = len(filtered_jets)
-        min_jets = 2
-        max_jets = len(selector_options)-1
-        if (    min_jets <= num_jets and num_jets <= max_jets and
-                self.passes_event_filter(filtered_jets) ):
-            new_event = acorn_event(filtered_jets, is_bgd)
-            self.events.append(new_event)
+
+        if num_jets < _min_jets: return
+        if num_jets > _max_jets: return
+        if not self.passes_event_filter(filtered_jets): return
+
+        # Iterate over jets to ensure general event requirements are still met
+        # (Yes I know running over the jet list twice is inneficient,
+        # But I've run speed tests and it doesn't make a difference to performance,
+        # so I'm leaving it b/c it's cleaner code-wise)
+        leading_jet_pt = 0.0
+        num_quark_jets = 0
+        for jet in jet_list:
+            if jet.is_truth_quark():
+                num_quark_jets += 1
+            if jet.pt > leading_jet_pt:
+                leading_jet_pt = jet.pt
+
+        #if leading_jet_pt < _leading_jet_min_pt: return
+        if is_sig and num_quark_jets != _demanded_number_of_quarks: return
+
+        #Create new event, which will immediately tag itself
+        new_event = acorn_event(filtered_jets)
+        self.events.append(new_event)
 
     def summary(self):
         summary  = 'Category ' + self.__class__.__name__ + ': '
@@ -90,6 +112,6 @@ class filter_with_JVT(base_categorizer):
     def filter_jets(self, jet_list):
         filtered_jet_list = []
         for jet in jet_list:
-            if not jet.marked_pileup:
+            if jet.passes_JVT:
                 filtered_jet_list.append(jet)
         return filtered_jet_list
