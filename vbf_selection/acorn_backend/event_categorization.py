@@ -29,6 +29,8 @@ _demanded_number_of_quarks = 2
 
 
 class base_categorizer():
+    key = ''
+
     def __init__(self):
         self.events = []
 
@@ -65,7 +67,7 @@ class base_categorizer():
             if jet.pt > leading_jet_pt:
                 leading_jet_pt = jet.pt
 
-        #if leading_jet_pt < _leading_jet_min_pt: return
+        if leading_jet_pt < _leading_jet_min_pt: return
         if is_sig and num_quark_jets != _demanded_number_of_quarks: return
 
         #Create new event, which will immediately tag itself
@@ -89,6 +91,8 @@ class base_categorizer():
 
 # Do not allow any truth pileup jets in event
 class no_pileup(base_categorizer):
+    key = 'noPU'
+
     def filter_jets(self, jet_list):
         filtered_jet_list = []
         for jet in jet_list:
@@ -99,6 +103,8 @@ class no_pileup(base_categorizer):
 
 # Allow only two truth non-pileup jets. 
 class with_pileup(base_categorizer):
+    key = 'withPU'
+
     def passes_event_filter(self, jet_list):
         num_not_pu = 0
         for jet in jet_list:
@@ -109,6 +115,8 @@ class with_pileup(base_categorizer):
 
 # Do not allow any jets marked by JVT or fJVT
 class filter_with_JVT(base_categorizer):
+    key = 'JVT'
+
     def filter_jets(self, jet_list):
         filtered_jet_list = []
         for jet in jet_list:

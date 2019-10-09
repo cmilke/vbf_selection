@@ -5,6 +5,8 @@ from acorn_backend.event_taggers import tagger_class_list
 # Return the first two jets.
 # Should only be used for 2 jet events
 class base_selector():
+    key = 'null'
+
     def select(self, event):
         return (0,1)
         
@@ -28,6 +30,8 @@ class base_selector():
 # Select the vbf jets at random...
 # This is just to establish a lower bound on performance
 class random_selector(base_selector):
+    key = 'random'
+
     def select(self, event):
         jet_indices = list( range(0,len(event.jets)) )
         random.shuffle(jet_indices)
@@ -37,6 +41,8 @@ class random_selector(base_selector):
    
 # Select two highest pt jets
 class highest_pt_selector(base_selector):
+    key = '2maxpt'
+
     def select(self, event):
         jet_idents = [-1,-1]
         max_pts = [-1,-1]
@@ -55,6 +61,8 @@ class highest_pt_selector(base_selector):
 # Select the two jets with the
 # largest Delta-eta between them
 class maximal_eta_selector(base_selector):
+    key = 'etamax'
+
     def select(self, event):
         jet_idents = [-1,-1]
         max_delta_eta = -1
@@ -73,6 +81,8 @@ class maximal_eta_selector(base_selector):
 # Selects the correct vbf jets based on truth info
 # Returns the first two if background
 class truth_selector(base_selector):
+    key = 'truth'
+
     def select(self, event):
         jet_idents = []
         for index, jet in enumerate(event.jets):
