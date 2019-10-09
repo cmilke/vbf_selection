@@ -10,16 +10,18 @@ class base_selector():
         
     def __init__(self, event):
         self.selections = self.select(event)
-
         self.taggers = []
+
         for tagger_class in tagger_class_list:
             new_tagger = tagger_class(event, self.selections)
             self.taggers.append(new_tagger)
 
     def __repr__(self):
-        rep = '|---|---|---'
+        rep  = '|---|---|---'
         rep += self.__class__.__name__ + ': '
-        rep += str(self.selections)
+        rep += str(self.selections) + '\n'
+        for tagger in self.taggers: rep += str(tagger) + '\n'
+        rep += '|---|---|'
         return rep
 
 

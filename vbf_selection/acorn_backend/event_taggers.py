@@ -1,13 +1,26 @@
 from uproot_methods import TLorentzVector
 
-class delta_eta_tagger():
+# Don't use the base tagger. Ever.
+class base_tagger():
+    def __init__(self, event, selections):
+        self.discriminant = 5 # Because I like 5
+
+    def __repr__(self):
+        rep  = '|---|---|---|---'
+        rep += 'Disc. from '
+        rep += self.__class__.__name__ + ': '
+        rep += str(self.discriminant)
+        return rep
+
+
+class delta_eta_tagger(base_tagger):
     def __init__(self, event, selections):
         jet_list = event.jets
         delta_eta = abs( jet_list[selections[0]].eta - jet_list[selections[1]].eta )
         self.discriminant = delta_eta
 
 
-class unified_delta_eta_tagger():
+class unified_delta_eta_tagger(base_tagger):
     def __init__(self, event, selections):
         jet_list = event.jets
         if len(selections) == 2: self.discriminant =  delta_eta_tagger(jet_list, selections)
@@ -24,7 +37,7 @@ class unified_delta_eta_tagger():
         self.discriminant = delta_eta
 
 
-class mjj_tagger():
+class mjj_tagger(base_tagger):
     def __init__(self, event, selections):
         jet_list = event.jets
         j0 = jet_list[selections[0]]
@@ -36,7 +49,7 @@ class mjj_tagger():
         self.discriminant = mjj
 
 
-class mjjj_tagger():
+class mjjj_tagger(base_tagger):
     def __init__(self, event, selections):
         jet_list = event.jets
         total_4vector = TLorentzVector(0,0,0,0)
