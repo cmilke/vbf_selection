@@ -1,4 +1,5 @@
 from acorn_backend.jet_selectors import selector_options
+from acorn_backend.acorn_containers import acorn_event
 
 
 '''
@@ -44,10 +45,24 @@ class base_categorizer():
         num_jets = len(filtered_jets)
         min_jets = 2
         max_jets = len(selector_options)-1
-        if min_jets <= num_jets and num_jets <= max_jets
-                and self.passes_event_filter(filtered_jets):
-            new_event = acorn_event(filter_jets, is_bgd)
+        if (    min_jets <= num_jets and num_jets <= max_jets and
+                self.passes_event_filter(filtered_jets) ):
+            new_event = acorn_event(filtered_jets, is_bgd)
             self.events.append(new_event)
+
+    def summary(self):
+        summary  = 'Category ' + self.__class__.__name__ + ': '
+        summary += str(len(self.events)) + ' Events'
+        return summary
+
+    def __repr__(self):
+        rep = self.summary() + '\n'
+        for i,event in enumerate(self.events):
+            rep += '|---Event ' + str(i) + '\n'
+            rep += str(event)
+            rep += '|\n'
+        rep += '==============\n\n'
+        return rep
 
 
 # Do not allow any truth pileup jets in event
@@ -73,6 +88,8 @@ class with_pileup(base_categorizer):
 # Do not allow any jets marked by JVT or fJVT
 class filter_with_JVT(base_categorizer):
     def filter_jets(self, jet_list):
-        for jet in event.jets:
-            if jet.marked_pileup: return False
-        return True
+        filtered_jet_list = []
+        for jet in jet_list:
+            if not jet.marked_pileup:
+                filtered_jet_list.append(jet)
+        return filtered_jet_list

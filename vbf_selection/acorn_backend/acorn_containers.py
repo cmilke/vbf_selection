@@ -20,7 +20,8 @@ class acorn_jet:
         )
 
     def __repr__(self):
-        representation = '(pt:{: 4.0f}, eta:{: 1.2f}, phi:{: 2.2f}, m:{: 2.1f}, id:{})'.format(
+        representation = '|---|---|---'
+        representation += '(pt:{: 4.0f}, eta:{: 1.2f}, phi:{: 2.2f}, m:{: 2.1f}, id:{})'.format(
             self.pt, self.eta, self.phi, self.m, self.truth_id,
         )
         return representation
@@ -33,14 +34,16 @@ class acorn_event:
     def __init__(self, jet_list, is_bgd):
         self.jets = jet_list
         self.is_background = is_bgd
-
         self.selectors = []
+
         selector_class_list = selector_options[ len(jet_list) ]
         for selector_class in selector_class_list:
             new_selector = selector_class(self)
             self.selectors.append(new_selector)
 
     def __repr__(self):
-        representation = ''
-        for jet in self.jets: representation += str(jet)+'\n'
-        return representation
+        rep = '|---|---Signal Jets:\n'
+        for jet in self.jets: rep += str(jet)+'\n'
+        rep += '|---|\n|---|---Selectors:\n'
+        for selector in self.selectors: rep += str(selector) + '\n'
+        return rep

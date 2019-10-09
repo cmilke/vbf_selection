@@ -16,6 +16,12 @@ class base_selector():
             new_tagger = tagger_class(event, self.selections)
             self.taggers.append(new_tagger)
 
+    def __repr__(self):
+        rep = '|---|---|---'
+        rep += self.__class__.__name__ + ': '
+        rep += str(self.selections)
+        return rep
+
 
 # Select the vbf jets at random...
 # This is just to establish a lower bound on performance

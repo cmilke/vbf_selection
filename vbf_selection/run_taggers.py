@@ -21,7 +21,10 @@ _input_type_options = {
 }
 _tpart_branches = [ 'tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi' ]
 _tjet_branches = [ 'truthjpT', 'truthjeta', 'truthjphi', 'truthjm' ]
-_reco_branches = ['j0truthid', 'j0_isTightPhoton', 'j0_isPU', 'j0pT', 'j0eta', 'j0phi', 'j0m']
+_reco_branches = ['j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
+                    'j0_JVT', 'j0_fJVT_Tight',
+                    'j0pT', 'j0eta', 'j0phi', 'j0m']
+
 _branch_list = _tpart_branches+_tjet_branches+_reco_branches
 _truthj_branch_index = len(_tpart_branches)
 _reco_branch_index = _truthj_branch_index + len(_tjet_branches)
@@ -65,19 +68,14 @@ def record_events(input_type):
     # storing/sorting/filtering events into the data_dump as it goes
     input_list = _input_type_options[input_type]
     is_bgd = input_type == 'bgd'
-    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, None):
+    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 20, 0):
         truth_particles = event[:_truthj_branch_index]
         truth_jets = event[_truthj_branch_index:_reco_branch_index]
         reco_jets = event[_reco_branch_index:]
         record_reco_jets(is_bgd, truth_particles, truth_jets, reco_jets, event_data_dump)
 
-    #print('\n'+input_type)
-    #for num_jets, event_list in enumerate(event_data_dump): print( '{}: {}'.format(num_jets, len(event_list) ) )
-    # Uncomment below for debug printing
-    #print()
-    #for num_jets, event_list in enumerate(event_data_dump):
-    #    print(num_jets)
-    #    for event in event_list: print(event)
+    for category in event_data_dump: print( category.summary() )
+    for category in event_data_dump: print( category )
 
     # Output the event categories for use by later scripts
     #pickle.dump( event_data_dump, open('data/input_'+input_type+'.p', 'wb') )
@@ -88,4 +86,4 @@ if len(sys.argv) < 2:
     record_events('sig')
     record_events('bgd')
 else:
-    record_events(_input_type_options[sys.argv[1]])
+    record_events(sys.argv[1])
