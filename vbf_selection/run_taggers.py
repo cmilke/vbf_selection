@@ -19,15 +19,14 @@ _input_type_options = {
     'sig': autils.Flavntuple_list_VBFH125_gamgam[:1],
     'bgd': autils.Flavntuple_list_ggH125_gamgam[:1]
 }
-_tpart_branches = [ 'tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi' ]
-_tjet_branches = [ 'truthjpT', 'truthjeta', 'truthjphi', 'truthjm' ]
-_reco_branches = ['j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
-                    'j0_JVT', 'j0_fJVT_Tight',
-                    'j0pT', 'j0eta', 'j0phi', 'j0m']
+_branch_list = {
+    'event' : ['eventWeight']
+  , 'tpart' : ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi']
+  , 'truthj': ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']
+  , 'j0'    : ['j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
+                        'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
+}
 
-_branch_list = _tpart_branches+_tjet_branches+_reco_branches
-_truthj_branch_index = len(_tpart_branches)
-_reco_branch_index = _truthj_branch_index + len(_tjet_branches)
 
 def jet_matches(tparteta, tpartphi, truthjeta, truthjphi):
     delta_eta = abs(tparteta - truthjeta)
@@ -36,11 +35,11 @@ def jet_matches(tparteta, tpartphi, truthjeta, truthjphi):
     return ( delta_R < 0.3 )
 
 
-def record_reco_jets(is_sig, truth_particles, truth_jets, reco_jets, event_data_dump):
+def record_reco_jets(is_sig, event_weight, event, event_data_dump):
     recorded_jets = [] # Records all useable jets
 
     # Loop over reco jets, and append them to the appropriate lists
-    for rj in autils.jet_iterator(_reco_branches, reco_jets):
+    for rj in autils.jet_iterator(_branch_list['j0'], event['j0']):
         # Filter out jets on basic pt/eta/photon cuts
         if not autils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']) or rj['j0_isTightPhoton']: continue
 
@@ -49,30 +48,33 @@ def record_reco_jets(is_sig, truth_particles, truth_jets, reco_jets, event_data_
         recorded_jets.append(new_jet)
 
     # Categorize event, and then either discard the event or perform tagging on it
-    for category in event_data_dump: category.add_event(recorded_jets, is_sig)
+    for category in event_data_dump.values(): category.add_event(recorded_jets, is_sig, event_weight)
 
 
 def record_events(input_type):
     # Define all event categories we want to use
-    event_data_dump = [
-        event_categorization.base_categorizer()
-      , event_categorization.no_pileup()
-      , event_categorization.with_pileup()
-      , event_categorization.filter_with_JVT()
+    categories_to_dump = [
+      #  event_categorization.base_categorizer
+      #, event_categorization.no_pileup
+      #, event_categorization.with_pileup
+       event_categorization.filter_with_JVT
     ]
+
+    event_data_dump = {}
+    for category_class in categories_to_dump:
+        event_data_dump[category_class.key] = category_class()
+        
 
     # Iterate over each event in the ntuple list,
     # storing/sorting/filtering events into the data_dump as it goes
     input_list = _input_type_options[input_type]
     is_sig = input_type == 'sig'
-    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, 0):
-        truth_particles = event[:_truthj_branch_index]
-        truth_jets = event[_truthj_branch_index:_reco_branch_index]
-        reco_jets = event[_reco_branch_index:]
-        record_reco_jets(is_sig, truth_particles, truth_jets, reco_jets, event_data_dump)
+    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, None):
+        event_weight = event['event'][0]
+        record_reco_jets(is_sig, event_weight, event, event_data_dump)
 
     #for category in event_data_dump: print( category )
-    for category in event_data_dump: print( category.summary() )
+    for category in event_data_dump.values(): print( category.summary() )
 
     # Output the event categories for use by later scripts
     pickle.dump( event_data_dump, open('data/output_'+input_type+'.p', 'wb') )

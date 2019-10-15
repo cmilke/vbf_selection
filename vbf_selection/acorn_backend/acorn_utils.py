@@ -56,14 +56,28 @@ def is_outgoing_quark(pdg, status): return (pdg in PDG['quarks'] and status == S
 def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
 
 
-def event_iterator(ntuple_list, tree_name, branch_list, step_size, bucket_limit):
+def event_iterator(ntuple_list, tree_name, divided_branch_list, step_size, bucket_limit):
+    event = {}
+    event_ranges = {}
+    branch_list = []
+    for key,sublist in divided_branch_list.items():
+        start = len(branch_list)
+        branch_list += sublist
+        end = len(branch_list)
+        event_ranges[key] = slice(start, end)
+        event[key] = None
+    
+    
     for ntuple_file in ntuple_list:
         print('\nnutple file: ' + ntuple_file)
         tree = uproot.rootio.open(ntuple_file)[tree_name]
         tree_iterator = tree.iterate(branches=branch_list, entrysteps=step_size) 
         for basket_number, basket in enumerate(tree_iterator):
             print('Basket: ' + str(basket_number) )
-            for event in zip(*basket.values()): yield event
+            for entry in zip(*basket.values()):
+                for key in divided_branch_list:
+                    event[key] = entry[ event_ranges[key] ]
+                yield event
             if bucket_limit != None and basket_number >= 0: break
      
 

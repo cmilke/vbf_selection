@@ -28,8 +28,9 @@ _leading_jet_min_pt = 50 #GeV
 _demanded_number_of_quarks = 2
 
 
+# The base categorizer only filters out the bare minimum of jets
 class base_categorizer():
-    key = ''
+    key = 'all'
 
     def __init__(self):
         self.events = []
@@ -47,7 +48,7 @@ class base_categorizer():
     # Filter jets as per the child class's rules,
     # then check if the remaining jets pass the overall event filter.
     # If so, then create a new event.
-    def add_event(self, jet_list, is_sig):
+    def add_event(self, jet_list, is_sig, event_weight):
         filtered_jets = self.filter_jets(jet_list)
         num_jets = len(filtered_jets)
 
@@ -61,7 +62,7 @@ class base_categorizer():
         # so I'm leaving it b/c it's cleaner code-wise)
         leading_jet_pt = 0.0
         num_quark_jets = 0
-        for jet in jet_list:
+        for jet in filtered_jets:
             if jet.is_truth_quark():
                 num_quark_jets += 1
             if jet.pt > leading_jet_pt:
@@ -71,7 +72,7 @@ class base_categorizer():
         if is_sig and num_quark_jets != _demanded_number_of_quarks: return
 
         #Create new event, which will immediately tag itself
-        new_event = acorn_event(filtered_jets)
+        new_event = acorn_event(filtered_jets, event_weight)
         self.events.append(new_event)
 
     def summary(self):
@@ -114,8 +115,9 @@ class with_pileup(base_categorizer):
 
 
 # Do not allow any jets marked by JVT or fJVT
+# I currently use this as the baseline category
 class filter_with_JVT(base_categorizer):
-    key = 'JVT'
+    key = ''
 
     def filter_jets(self, jet_list):
         filtered_jet_list = []

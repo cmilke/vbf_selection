@@ -1,4 +1,5 @@
 import random
+import math
 from acorn_backend.event_taggers import tagger_class_list
 
 
@@ -9,14 +10,21 @@ class base_selector():
 
     def select(self, event):
         return (0,1)
-        
+
+
     def __init__(self, event):
         self.selections = self.select(event)
-        self.taggers = []
+        self.taggers = {}
+        self.is_correct = True
+        for jet in [ event.jets[i] for i in self.selections ]:
+            if not jet.is_truth_quark():
+                self.is_correct = False
+                break
 
+        # Tag the event with this selection,
+        # with all available taggers
         for tagger_class in tagger_class_list:
-            new_tagger = tagger_class(event, self.selections)
-            self.taggers.append(new_tagger)
+            self.taggers[tagger_class.key] = tagger_class(event, self.selections)
 
     def __repr__(self):
         rep  = '|---|---|---'
@@ -60,7 +68,7 @@ class highest_pt_selector(base_selector):
 
 # Select the two jets with the
 # largest Delta-eta between them
-class maximal_eta_selector(base_selector):
+class maximal_Delta_eta_selector(base_selector):
     key = 'etamax'
 
     def select(self, event):
@@ -78,6 +86,30 @@ class maximal_eta_selector(base_selector):
         return tuple(jet_idents)
 
 
+# Select the two jets with the
+# largest Delta-R between them
+class maximal_Delta_R_selector(base_selector):
+    key = 'Rmax'
+
+    def select(self, event):
+        jet_idents = [-1,-1]
+        max_delta_R = -1
+        num_jets = len(event.jets)
+        for i in range(0, num_jets):
+            eta0 = event.jets[i].eta
+            phi0 = event.jets[i].phi
+            for j in range(i+1, num_jets):
+                eta1 = event.jets[j].eta
+                phi1 = event.jets[j].phi
+                Deta = eta1 - eta0
+                Dphi = phi1 - phi0
+                delta_R = math.hypot(Deta, Dphi)
+                if delta_R > max_delta_R:
+                    max_delta_R = delta_R
+                    jet_idents = [i,j]
+        return tuple(jet_idents)
+
+
 # Selects the correct vbf jets based on truth info
 # Returns the first two if background
 class truth_selector(base_selector):
@@ -91,9 +123,10 @@ class truth_selector(base_selector):
         if len(jet_idents) == 2: return tuple(jet_idents)
         else: return (0,1)
 
+
 selector_options = [
     [], #0
     [], #1
     [base_selector], #2
-    [highest_pt_selector, maximal_eta_selector, truth_selector, random_selector] #3
+    [maximal_Delta_eta_selector, truth_selector, highest_pt_selector, random_selector] #3
 ]

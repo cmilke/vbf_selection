@@ -3,6 +3,7 @@ from uproot_methods import TLorentzVector
 # Don't use the base tagger. Ever.
 class base_tagger():
     key = 'NOOOOOO'
+    value_range = (-1, -1)
 
     def __init__(self, event, selections):
         self.discriminant = 5 # Because I like five
@@ -17,6 +18,7 @@ class base_tagger():
 
 class delta_eta_tagger(base_tagger):
     key = 'Deta'
+    value_range = (0, 10)
 
     def __init__(self, event, selections):
         jet_list = event.jets
@@ -26,6 +28,7 @@ class delta_eta_tagger(base_tagger):
 
 class unified_delta_eta_tagger(base_tagger):
     key = 'united-Deta'
+    value_range = (0, 10)
 
     def __init__(self, event, selections):
         jet_list = event.jets
@@ -45,6 +48,7 @@ class unified_delta_eta_tagger(base_tagger):
 
 class mjj_tagger(base_tagger):
     key = 'mjj'
+    value_range = (0, 3000)
 
     def __init__(self, event, selections):
         jet_list = event.jets
@@ -59,6 +63,7 @@ class mjj_tagger(base_tagger):
 
 class mjjj_tagger(base_tagger):
     key = 'mjjj'
+    value_range = mjj_tagger.value_range
 
     def __init__(self, event, selections):
         jet_list = event.jets
