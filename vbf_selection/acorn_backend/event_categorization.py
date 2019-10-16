@@ -115,13 +115,25 @@ class with_pileup(base_categorizer):
 
 
 # Do not allow any jets marked by JVT or fJVT
-# I currently use this as the baseline category
 class filter_with_JVT(base_categorizer):
-    key = ''
+    key = 'JVT'
 
     def filter_jets(self, jet_list):
         filtered_jet_list = []
         for jet in jet_list:
             if jet.passes_JVT:
+                filtered_jet_list.append(jet)
+        return filtered_jet_list
+
+
+
+# A combination of the filter_with_JVT and no_pileup filters
+class filter_with_JVT_noPU(base_categorizer):
+    key = 'JVTnoPU'
+
+    def filter_jets(self, jet_list):
+        filtered_jet_list = []
+        for jet in jet_list:
+            if jet.passes_JVT and not jet.is_pileup:
                 filtered_jet_list.append(jet)
         return filtered_jet_list

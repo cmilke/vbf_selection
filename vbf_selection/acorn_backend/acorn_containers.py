@@ -33,7 +33,7 @@ class acorn_jet:
 class acorn_event:
     def __init__(self, jet_list, event_weight):
         self.jets = jet_list
-        self.event_weight = event_weight
+        self.event_weight = 1 #event_weight
         self.selectors = {}
 
         # Use all available jet selectors to try and identify

@@ -120,8 +120,13 @@ class truth_selector(base_selector):
         for index, jet in enumerate(event.jets):
             if jet.is_truth_quark(): jet_idents.append(index)
 
-        if len(jet_idents) == 2: return tuple(jet_idents)
-        else: return (0,1)
+        if len(jet_idents) == 2:
+            return tuple(jet_idents)
+        else:
+            jet_indices = list( range(0,len(event.jets)) )
+            random.shuffle(jet_indices)
+            chosen_jets = jet_indices[:2]
+            return chosen_jets
 
 
 selector_options = [

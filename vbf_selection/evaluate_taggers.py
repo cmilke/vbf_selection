@@ -13,10 +13,10 @@ _hist_bins = 200
 
 _plot_specifications = {
     2: {
-        ''   : ['null']
+        'JVT'   : ['null']
     },
     3: {
-        ''   : ['truth', 'etamax', '2maxpt', 'random']
+        'JVT'   : ['truth', 'etamax', '2maxpt', 'random']
       #, 'noPU'  : ['truth']
       #, 'withPU': ['truth']
     }

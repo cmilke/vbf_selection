@@ -58,6 +58,7 @@ def record_events(input_type):
       #, event_categorization.no_pileup
       #, event_categorization.with_pileup
        event_categorization.filter_with_JVT
+     , event_categorization.filter_with_JVT_noPU
     ]
 
     event_data_dump = {}
