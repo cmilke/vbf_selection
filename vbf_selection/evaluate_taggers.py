@@ -14,11 +14,11 @@ _hist_bins = 200
 _plot_specifications = {
     2: {
         'JVT'   : ['null']
+      #, 'PtEtaV1JVT'   : ['null']
     },
     3: {
-        'JVT'   : ['truth', 'etamax', '2maxpt', 'random']
-      #, 'noPU'  : ['truth']
-      #, 'withPU': ['truth']
+        'JVT'          : ['truth', 'etamax', 'mjjmax', 'random']
+      #, 'PtEtaV1JVT'   : ['truth', 'etamax', '2maxpt', 'random']
     }
 }
 
@@ -32,13 +32,15 @@ _filter_titles = {
     'all': '(No Filters)'
   , 'noPU': ' (no PU)'
   , 'withPU': ' (with PU)'
-  , '': ' (filtered with JVT)'
+  , 'JVT': ' (filtered with JVT)'
+  , 'PtEtaV1JVT': r' ($\Delta \eta_{leading jets} > 2$ w/JVT)'
 }
 
 _jet_selection_titles = {
     'null'   : ''
   , '2maxpt' : ',\nVBF Jets Chosen by Highest $p_t$'
   , 'etamax' : ',\nVBF Jets Chosen by Maximized $\Delta\eta$'
+  , 'mjjmax' : ',\nVBF Jets Chosen by Maximized $M_{jj}$'
   , 'Rmax'   : ',\nVBF Jets Chosen by Maximized $\Delta R$'
   , 'truth'  : ',\nVBF Jets Chosen at Truth Level'
   , 'random' : ',\nVBF Jets Chosen Randomly'
@@ -72,7 +74,7 @@ def plot_performance(input_type, tagger_name, data_map):
     fig,ax = plt.subplots()
     counts, bins, hist = plt.hist(binned_data['bins'], 
         weights=binned_data['weights'], label=binned_data['labels'], range=value_range,
-        histtype='step', bins=_hist_bins, cumulative=cumulative, linewidth=2)
+        histtype='step', bins=_hist_bins, cumulative=cumulative, linewidth=1)
 
     discriminator_name = _discriminator_titles[tagger_name]
     ax.legend( *map(reversed, ax.get_legend_handles_labels()) )
@@ -99,7 +101,7 @@ def evaluate_individual_performances(tagger_key, data_map):
         eff = [1] + list(raw_eff)
         rej = [0] + list(raw_rej)
         roc_curves[label] = (eff, rej)
-        plt.plot(eff, rej, label=label)
+        plt.plot(eff, rej, label=label, linewidth=1)
     
     plt.legend()
     plt.xlabel(r'Signal Efficiency')
@@ -114,7 +116,7 @@ def evaluate_individual_performances(tagger_key, data_map):
 def plot_cross_tagger_roc(category_label, roc_collection): 
     roc_ax = plt.subplots()
     for xy, label in roc_collection:
-        plt.plot(*xy, label=label)
+        plt.plot(*xy, label=label, linewidth=1)
     
     plt.legend()
     plt.xlabel(r'Signal Efficiency')

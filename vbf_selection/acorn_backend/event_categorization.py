@@ -126,6 +126,26 @@ class filter_with_JVT(base_categorizer):
         return filtered_jet_list
 
 
+class pt_eta_v1_with_JVT(base_categorizer):
+    key = 'PtEtaV1JVT'
+
+    def passes_event_filter(self, jet_list):
+        min_Deta_requirement = 2
+
+        leading_jets = sorted(jet_list, key=lambda x: x.pt, reverse=True)[:2]
+        Deta = abs( leading_jets[0].eta - leading_jets[1].eta )
+        if Deta > min_Deta_requirement: return True
+        else: return False
+        
+
+    def filter_jets(self, jet_list):
+        filtered_jet_list = []
+        for jet in jet_list:
+            if jet.passes_JVT:
+                filtered_jet_list.append(jet)
+        return filtered_jet_list
+
+
 
 # A combination of the filter_with_JVT and no_pileup filters
 class filter_with_JVT_noPU(base_categorizer):

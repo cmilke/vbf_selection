@@ -1,5 +1,6 @@
 import random
 import math
+from uproot_methods import TLorentzVector
 from acorn_backend.event_taggers import tagger_class_list
 
 
@@ -86,6 +87,28 @@ class maximal_Delta_eta_selector(base_selector):
         return tuple(jet_idents)
 
 
+# Select the two jets with the largest mjj
+class maximal_mjj_selector(base_selector):
+    key = 'mjjmax'
+
+    def select(self, event):
+        jet_idents = [-1,-1]
+        max_mjj = -1
+        num_jets = len(event.jets)
+        for i in range(0, num_jets):
+            for j in range(i+1, num_jets):
+                j0 = event.jets[i]
+                j1 = event.jets[j]
+                v0 = TLorentzVector.from_ptetaphim(j0.pt, j0.eta, j0.phi, j0.m)
+                v1 = TLorentzVector.from_ptetaphim(j1.pt, j1.eta, j1.phi, j1.m)
+                combined = v0 + v1
+                mjj = combined.mass
+                if mjj > max_mjj:
+                    max_mjj = mjj
+                    jet_idents = [i,j]
+        return tuple(jet_idents)
+
+
 # Select the two jets with the
 # largest Delta-R between them
 class maximal_Delta_R_selector(base_selector):
@@ -133,5 +156,5 @@ selector_options = [
     [], #0
     [], #1
     [base_selector], #2
-    [maximal_Delta_eta_selector, truth_selector, highest_pt_selector, random_selector] #3
+    [maximal_Delta_eta_selector, maximal_mjj_selector, truth_selector, highest_pt_selector, random_selector] #3
 ]

@@ -54,11 +54,11 @@ def record_reco_jets(is_sig, event_weight, event, event_data_dump):
 def record_events(input_type):
     # Define all event categories we want to use
     categories_to_dump = [
-      #  event_categorization.base_categorizer
-      #, event_categorization.no_pileup
       #, event_categorization.with_pileup
-       event_categorization.filter_with_JVT
-     , event_categorization.filter_with_JVT_noPU
+        event_categorization.base_categorizer
+      , event_categorization.filter_with_JVT
+      , event_categorization.no_pileup
+      , event_categorization.pt_eta_v1_with_JVT
     ]
 
     event_data_dump = {}

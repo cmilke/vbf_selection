@@ -14,34 +14,20 @@ _hist_bins = 200
 _filename_infix = ''
 
 _plot_specifications = {
-    '2JVT_null_mjjj' : ('2: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-  , '3JVT_2maxpt_mjjj': ('3: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-  , '>=2_mjjj'    : (r'$\geq$2'': $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-  , '3JVT_2maxpt_mjj' : ('3: 2 Max $p_t$ - $M_{jjj}$', event_taggers.mjj_tagger.value_range)
-  , '3JVT_etamax_mjj': ('3: Max 'r'$\Delta\eta$'' - $M_{jjj}$', event_taggers.mjj_tagger.value_range)
+    '2JVT_null_mjj'   : ('2 JVT: $M_{jj}$', event_taggers.mjjj_tagger.value_range)
+  , '3JVT_2maxpt_mjjj' : ('3 JVT: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
+  , '3JVT_2maxpt_mjj'  : ('3 JVT: 2 Max $p_t$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
+  , '3JVT_etamax_mjj'  : ('3 JVT: Maximized $\Delta \eta$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
+  , '3JVT_truth_mjj'  : ('3 JVT: Truth', event_taggers.mjj_tagger.value_range)
 }
 
 _performances_to_combine = {
-    '2JVT_null_mjjj' : '>=2_mjjj'
-  , '3JVT_2maxpt_mjjj': '>=2_mjjj'
+  #  '2JVT_null_mjjj' : '>=2_mjjj'
+  #, '3JVT_2maxpt_mjjj': '>=2_mjjj'
+  #, '2JVT_null_mjj' : '>=2_mjj'
+  #, '3JVT_2maxpt_mjj' : '>=2_mjj'
 }
 
-#_filename_infix = 'noPU_'
-#
-#_plot_specifications = {
-#    '2JVTnoPU_null_mjjj' : ('2 no PU: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-#  , '3JVTnoPU_2maxpt_mjjj': ('3 no PU: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-#  , '>=2noPU_mjjj'    : (r'$\geq$2'' no PU: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-#  , '3JVTnoPU_2maxpt_mjj' : ('3 no PU: 2 Max $p_t$ - $M_{jjj}$', event_taggers.mjj_tagger.value_range)
-#  , '3JVTnoPU_etamax_mjj': ('3 no PU: Max 'r'$\Delta\eta$'' - $M_{jjj}$', event_taggers.mjj_tagger.value_range)
-#  , '2JVT_null_mjjj' : ('2: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-#  , '3JVT_2maxpt_mjjj': ('3: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-#}
-#
-#_performances_to_combine = {
-#    '2JVTnoPU_null_mjjj' : '>=2noPU_mjjj'
-#  , '3JVTnoPU_2maxpt_mjjj': '>=2noPU_mjjj'
-#}
 
 
 # Retrieves the nested data structure from the specified output file,
@@ -101,7 +87,7 @@ def evaluate():
         eff = [1] + list(raw_eff)
         rej = [0] + list(raw_rej)
         roc_curves[label] = (eff, rej)
-        plt.plot(eff, rej, label=label)
+        plt.plot(eff, rej, label=label, linewidth=1)
     
     plt.legend()
     plt.xlabel(r'Signal Efficiency')
