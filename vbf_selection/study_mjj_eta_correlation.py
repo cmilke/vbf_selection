@@ -6,53 +6,61 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-_category_key = ''
-_selector_key = 'null'
-_hist_bins = 100
-_hist_range = (0,5000)
+_category_key = 'JVT'
+_selector_key = 'truth'
+_hist_bins = 50 #(100,100)
+_hist_range = ( (0,2000), (0,10) )
+#_hist_range = ( (0,7), (0,10) )
+_bin_skip = slice( None, None, int(_hist_bins/10) )
 
 
 def retrieve_parameter(input_type):
-    parameter_list = []
+    parameter_list = ([], [])
     weight_list = []
 
     data_dump = pickle.load( open('data/output_'+input_type+'.p', 'rb') )
     event_index = 0
     for event in data_dump[_category_key].events:
-        #if event_index >= 20: break
-        if len(event.jets) != 2: continue
+        #if event_index >= 10: break
+        if len(event.jets) != 3: continue
         event_index += 1
 
         selector = event.selectors[_selector_key]
         mjj = event.selectors[_selector_key].taggers['mjj'].discriminant
+        Deta = event.selectors[_selector_key].taggers['Deta'].discriminant
         event_weight = event.event_weight
-        parameter_list.append(mjj)
+        parameter_list[0].append(mjj)
+        parameter_list[1].append(Deta)
         weight_list.append(event_weight)
+    counts, xedges, yedges = numpy.histogram2d(*parameter_list, weights=weight_list, bins=_hist_bins, range=_hist_range)
+    counts = counts.flatten() / counts.sum()
+    bins = numpy.array([ (x,y) for x in xedges[:-1] for y in yedges[:-1] ]).transpose()
+    return ( counts, bins )
 
-    counts, bins = numpy.histogram(parameter_list, weights=weight_list, bins=_hist_bins, range=_hist_range)
-    norms = counts / counts.sum()
-    return (norms, bins[:-1])
 
-
-def draw_distribution():
-    sig_norms, sig_vals = retrieve_parameter('sig')
-    bgd_norms, bgd_vals = retrieve_parameter('bgd')
+def draw_distribution(input_type):
+    print('plotting ' + input_type)
+    weights, vals = retrieve_parameter(input_type)
 
     fig,ax = plt.subplots()
-    counts, bins, hist = plt.hist( (sig_vals, bgd_vals),
-        weights=(sig_norms, bgd_norms),
-        label=('Signal', 'Background'), histtype='step',
-        bins=_hist_bins, linewidth=2, range=_hist_range)
+    counts, xbins, ybins, hist = plt.hist2d( *vals,
+        weights=weights,
+        bins=_hist_bins,
+        range=_hist_range)
+    cbar = plt.colorbar()
+    plt.clim(0,0.025)
 
-    ax.legend()
-    plt.grid()
-    plt.yscale('log')
-    plt.ylim(10e-6, 1)
+    #plt.grid()
+    #plt.yscale('log')
+    #plt.ylim(10e-6, 1)
     plt.xlabel('$M_{jj}$ (GeV)')
-    plt.title(r'$M_{jj}$ Distribution of 2-Jet Signal (VBF->H->$\gamma\gamma$)''\n'
-            r'and Background (ggF->H->$\gamma\gamma$) Events')
-    fig.savefig('plots/fig_mjj_2-jet_distribution.pdf')
+    plt.ylabel('$\Delta \eta$')
+    plt.xticks(xbins[_bin_skip])
+    plt.yticks(ybins[_bin_skip])
+    plt.title('')
+    fig.savefig('plots/fig_mjj_eta_'+input_type+'_correlation.pdf')
     plt.close()
 
 
-draw_distribution()
+draw_distribution('sig')
+draw_distribution('bgd')

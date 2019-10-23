@@ -17,7 +17,7 @@ _plot_specifications = {
       #, 'PtEtaV1JVT'   : ['null']
     },
     3: {
-        'JVT'          : ['truth', 'etamax', 'mjjmax', 'random']
+        'JVT'          : ['truth', 'mjjXetamax', 'mjjmax', 'random']
       #, 'PtEtaV1JVT'   : ['truth', 'etamax', '2maxpt', 'random']
     }
 }
@@ -40,6 +40,7 @@ _jet_selection_titles = {
     'null'   : ''
   , '2maxpt' : ',\nVBF Jets Chosen by Highest $p_t$'
   , 'etamax' : ',\nVBF Jets Chosen by Maximized $\Delta\eta$'
+  , 'mjjXetamax' : ',\nVBF Jets Chosen by Maximizing $\Delta\eta * M_{jj}$'
   , 'mjjmax' : ',\nVBF Jets Chosen by Maximized $M_{jj}$'
   , 'Rmax'   : ',\nVBF Jets Chosen by Maximized $\Delta R$'
   , 'truth'  : ',\nVBF Jets Chosen at Truth Level'

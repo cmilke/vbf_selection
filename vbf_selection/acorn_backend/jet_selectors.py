@@ -133,6 +133,31 @@ class maximal_Delta_R_selector(base_selector):
         return tuple(jet_idents)
 
 
+# Select the two jets with the largest
+# product of mjj and Deta
+class maximal_mjjXDeta_selector(base_selector):
+    key = 'mjjXetamax'
+
+    def select(self, event):
+        jet_idents = [-1,-1]
+        max_product = -1
+        num_jets = len(event.jets)
+        for i in range(0, num_jets):
+            for j in range(i+1, num_jets):
+                j0 = event.jets[i]
+                j1 = event.jets[j]
+                v0 = TLorentzVector.from_ptetaphim(j0.pt, j0.eta, j0.phi, j0.m)
+                v1 = TLorentzVector.from_ptetaphim(j1.pt, j1.eta, j1.phi, j1.m)
+                combined = v0 + v1
+                mjj = combined.mass
+                delta_eta = abs(j0.eta - j1.eta)
+                DetaXmjj = mjj*delta_eta
+                if DetaXmjj > max_product:
+                    max_product = DetaXmjj
+                    jet_idents = [i,j]
+        return tuple(jet_idents)
+
+
 # Selects the correct vbf jets based on truth info
 # Returns the first two if background
 class truth_selector(base_selector):
@@ -156,5 +181,5 @@ selector_options = [
     [], #0
     [], #1
     [base_selector], #2
-    [maximal_Delta_eta_selector, maximal_mjj_selector, truth_selector, highest_pt_selector, random_selector] #3
+    [maximal_Delta_eta_selector, maximal_mjj_selector, maximal_mjjXDeta_selector, truth_selector, highest_pt_selector, random_selector] #3
 ]
