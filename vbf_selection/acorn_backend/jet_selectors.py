@@ -181,5 +181,5 @@ selector_options = [
     [], #0
     [], #1
     [base_selector], #2
-    [maximal_Delta_eta_selector, maximal_mjj_selector, maximal_mjjXDeta_selector, truth_selector, highest_pt_selector, random_selector] #3
+    [maximal_Delta_eta_selector, maximal_mjj_selector, truth_selector, highest_pt_selector, random_selector] #3
 ]

@@ -17,7 +17,7 @@ _plot_specifications = {
       #, 'PtEtaV1JVT'   : ['null']
     },
     3: {
-        'JVT'          : ['truth', 'mjjXetamax', 'mjjmax', 'random']
+        'JVT'          : ['truth', 'etamax', 'mjjmax', 'random']
       #, 'PtEtaV1JVT'   : ['truth', 'etamax', '2maxpt', 'random']
     }
 }
@@ -83,7 +83,7 @@ def plot_performance(input_type, tagger_name, data_map):
     plt.ylabel(ytitle)
     plt.title(ytitle+' of '+discriminator_name+'-Based Tagging')
     plt.grid(which='both', axis='both')
-    fig.savefig('plots/perf_'+tagger_name+'_'+ytitle+'.pdf')
+    fig.savefig('plots/performance/perf_'+tagger_name+'_'+ytitle+'.pdf')
     plt.close()
     return counts
 
@@ -109,7 +109,7 @@ def evaluate_individual_performances(tagger_key, data_map):
     plt.ylabel(r'Background Rejection')
     plt.title(r'Efficiency/Rejection Performance of '+discriminator_name+'-Based Tagging')
     plt.grid(True)
-    plt.savefig('plots/perf_'+tagger_key+'_roc_efficiency.pdf')
+    plt.savefig('plots/performance/perf_'+tagger_key+'_roc_efficiency.pdf')
     plt.close()
     return roc_curves
 
@@ -125,7 +125,7 @@ def plot_cross_tagger_roc(category_label, roc_collection):
     category_title = _jet_category_titles[category_label]
     plt.title(r'Tagger Performance for Events with '+category_title)
     plt.grid(True)
-    plt.savefig('plots/perf_allTaggers_'+category_label+'_roc_efficiency.pdf')
+    plt.savefig('plots/performance/perf_allTaggers_'+category_label+'_roc_efficiency.pdf')
     plt.close()
 
 
