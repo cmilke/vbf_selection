@@ -39,7 +39,7 @@ def record_reco_jets(is_sig, event_weight, event, event_data_dump):
     recorded_jets = [] # Records all useable jets
 
     # Loop over reco jets, and append them to the appropriate lists
-    for rj in autils.jet_iterator(_branch_list['j0'], event['j0']):
+    for rj in autils.jet_iterator(event['j0']):
         # Filter out jets on basic pt/eta/photon cuts
         if not autils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']) or rj['j0_isTightPhoton']: continue
 
@@ -67,8 +67,8 @@ def record_events(input_type):
     # storing/sorting/filtering events into the data_dump as it goes
     input_list = _input_type_options[input_type]
     is_sig = input_type == 'sig'
-    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, 0):
-        event_weight = event['event'][0]
+    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, None):
+        event_weight = event['event']['eventWeight']
         record_reco_jets(is_sig, event_weight, event, event_data_dump)
 
     #for category in event_data_dump: print( category )

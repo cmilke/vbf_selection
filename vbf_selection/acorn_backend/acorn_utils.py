@@ -58,15 +58,12 @@ def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
 
 def event_iterator(ntuple_list, tree_name, divided_branch_list, step_size, max_bucket):
     event = {}
-    event_ranges = {}
     branch_list = []
-    for key,sublist in divided_branch_list.items():
-        start = len(branch_list)
+    for group_key,sublist in divided_branch_list.items():
         branch_list += sublist
-        end = len(branch_list)
-        event_ranges[key] = slice(start, end)
-        event[key] = None
-    
+        event[group_key] = {}
+        for branch_name in sublist:
+            event[group_key][branch_name] = None
     
     for ntuple_file in ntuple_list:
         print('\nnutple file: ' + ntuple_file)
@@ -75,16 +72,19 @@ def event_iterator(ntuple_list, tree_name, divided_branch_list, step_size, max_b
         for basket_number, basket in enumerate(tree_iterator):
             print('Basket: ' + str(basket_number) )
             for entry in zip(*basket.values()):
-                for key in divided_branch_list:
-                    event[key] = entry[ event_ranges[key] ]
+                index = 0
+                for group_key,sublist in divided_branch_list.items():
+                    for branch_name in sublist:
+                        event[group_key][branch_name] = entry[index]
+                        index += 1
                 yield event
             if max_bucket != None:
                 if basket_number >= max_bucket: break
      
 
-def jet_iterator(branches, jet_list):
+def jet_iterator(jet_list):
     package = {}
-    for branch_collection in zip(*jet_list):
-        for index, key in enumerate(branches):
+    for branch_collection in zip(*jet_list.values()):
+        for index, key in enumerate(jet_list):
             package[key] = branch_collection[index]
         yield package
