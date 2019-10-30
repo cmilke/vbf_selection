@@ -18,6 +18,7 @@ _plot_specifications = {
     },
     3: {
         'JVT'          : ['truth', 'etamax', 'mjjmax', 'random']
+      , 'JVTpt40'          : ['truth', 'etamax', 'mjjmax', 'random']
       #, 'PtEtaV1JVT'   : ['truth', 'etamax', '2maxpt', 'random']
     }
 }
@@ -31,8 +32,9 @@ _discriminator_titles = {
 _filter_titles = {
     'all': '(No Filters)'
   , 'noPU': ' (no PU)'
-  , 'withPU': ' (with PU)'
-  , 'JVT': ' (filtered with JVT)'
+  , 'withPU': ' (w/PU)'
+  , 'JVT': ' (w/JVT)'
+  , 'JVTpt40': ' (w/JVT, $p_t$ > 40 GeV)'
   , 'PtEtaV1JVT': r' ($\Delta \eta_{leading jets} > 2$ w/JVT)'
 }
 

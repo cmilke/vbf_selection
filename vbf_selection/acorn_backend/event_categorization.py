@@ -35,10 +35,22 @@ class base_categorizer():
     def __init__(self):
         self.events = []
 
+    def jet_passes_filter(self, jet):
+        return True
+
     # Removes individual jets from the jet list
+    # And records basic stats for the recorded jets
     # Includes all jets by default
     def filter_jets(self, jet_list):
-        return jet_list
+        filtered_jets = []
+        leading_jet_pt = 0.0
+        num_quark_jets = 0
+        for jet in jet_list:
+            if self.jet_passes_filter(jet):
+                filtered_jets.append(jet)
+                if jet.is_truth_quark(): num_quark_jets += 1
+                if jet.pt > leading_jet_pt: leading_jet_pt = jet.pt
+        return (filtered_jets, leading_jet_pt, num_quark_jets)
 
     # Tells category whether or not to skip this event
     # Allows all events by default
@@ -46,30 +58,19 @@ class base_categorizer():
         return True
 
     # Filter jets as per the child class's rules,
-    # then check if the remaining jets pass the overall event filter.
+    # then check if the remaining jets pass the overall event filters.
     # If so, then create a new event.
     def add_event(self, jet_list, is_sig, event_weight):
-        filtered_jets = self.filter_jets(jet_list)
-        num_jets = len(filtered_jets)
+        filtered_jets, leading_jet_pt, num_quark_jets = self.filter_jets(jet_list)
 
-        if num_jets < _min_jets: return
-        if num_jets > _max_jets: return
-        if not self.passes_event_filter(filtered_jets): return
-
-        # Iterate over jets to ensure general event requirements are still met
-        # (Yes I know running over the jet list twice is inneficient,
-        # But I've run speed tests and it doesn't make a difference to performance,
-        # so I'm leaving it b/c it's cleaner code-wise)
-        leading_jet_pt = 0.0
-        num_quark_jets = 0
-        for jet in filtered_jets:
-            if jet.is_truth_quark():
-                num_quark_jets += 1
-            if jet.pt > leading_jet_pt:
-                leading_jet_pt = jet.pt
-
+        # Test general event requirements
+        if len(filtered_jets) < _min_jets: return
+        if len(filtered_jets) > _max_jets: return
         if leading_jet_pt < _leading_jet_min_pt: return
         if is_sig and num_quark_jets != _demanded_number_of_quarks: return
+
+        # Test category-specific event requirements
+        if not self.passes_event_filter(filtered_jets): return
 
         #Create new event, which will immediately tag itself
         new_event = acorn_event(filtered_jets, event_weight)
@@ -93,19 +94,13 @@ class base_categorizer():
 # Do not allow any truth pileup jets in event
 class no_pileup(base_categorizer):
     key = 'noPU'
-
-    def filter_jets(self, jet_list):
-        filtered_jet_list = []
-        for jet in jet_list:
-            if not jet.is_pileup:
-                filtered_jet_list.append(jet)
-        return filtered_jet_list
+    def jet_passes_filter(self, jet):
+        return not jet.is_pileup
 
 
 # Allow only two truth non-pileup jets. 
 class with_pileup(base_categorizer):
     key = 'withPU'
-
     def passes_event_filter(self, jet_list):
         num_not_pu = 0
         for jet in jet_list:
@@ -117,43 +112,32 @@ class with_pileup(base_categorizer):
 # Do not allow any jets marked by JVT or fJVT
 class filter_with_JVT(base_categorizer):
     key = 'JVT'
-
-    def filter_jets(self, jet_list):
-        filtered_jet_list = []
-        for jet in jet_list:
-            if jet.passes_JVT:
-                filtered_jet_list.append(jet)
-        return filtered_jet_list
+    def jet_passes_filter(self, jet):
+        return jet.passes_JVT
 
 
-class pt_eta_v1_with_JVT(base_categorizer):
+# Do not allow any jets marked by JVT or fJVT,
+# with the added constraint that jet pt be > 40 GeV
+class filter_with_JVT_pt40(base_categorizer):
+    key = 'JVTpt40'
+    def jet_passes_filter(self, jet):
+        return jet.passes_JVT and jet.pt > 40
+
+
+# An attempt at replicating constraints I found
+# in an ATLAS paper on VBF->H->gamgam tagging
+class pt_eta_v1_with_JVT(filter_with_JVT):
     key = 'PtEtaV1JVT'
-
     def passes_event_filter(self, jet_list):
         min_Deta_requirement = 2
-
         leading_jets = sorted(jet_list, key=lambda x: x.pt, reverse=True)[:2]
         Deta = abs( leading_jets[0].eta - leading_jets[1].eta )
         if Deta > min_Deta_requirement: return True
         else: return False
-        
-
-    def filter_jets(self, jet_list):
-        filtered_jet_list = []
-        for jet in jet_list:
-            if jet.passes_JVT:
-                filtered_jet_list.append(jet)
-        return filtered_jet_list
-
 
 
 # A combination of the filter_with_JVT and no_pileup filters
 class filter_with_JVT_noPU(base_categorizer):
     key = 'JVTnoPU'
-
-    def filter_jets(self, jet_list):
-        filtered_jet_list = []
-        for jet in jet_list:
-            if jet.passes_JVT and not jet.is_pileup:
-                filtered_jet_list.append(jet)
-        return filtered_jet_list
+    def jet_passes_filter(self, jet):
+        return jet.passes_JVT and not jet.is_pileup

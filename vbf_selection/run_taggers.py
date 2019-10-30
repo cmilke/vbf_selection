@@ -54,11 +54,8 @@ def record_reco_jets(is_sig, event_weight, event, event_data_dump):
 def record_events(input_type):
     # Define all event categories we want to use
     categories_to_dump = [
-      #, event_categorization.with_pileup
-        event_categorization.base_categorizer
-      , event_categorization.filter_with_JVT
-      , event_categorization.no_pileup
-      , event_categorization.pt_eta_v1_with_JVT
+        event_categorization.filter_with_JVT
+      , event_categorization.filter_with_JVT_pt40
     ]
 
     event_data_dump = {}
@@ -70,7 +67,7 @@ def record_events(input_type):
     # storing/sorting/filtering events into the data_dump as it goes
     input_list = _input_type_options[input_type]
     is_sig = input_type == 'sig'
-    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, None):
+    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, 0):
         event_weight = event['event'][0]
         record_reco_jets(is_sig, event_weight, event, event_data_dump)
 

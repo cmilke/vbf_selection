@@ -56,7 +56,7 @@ def is_outgoing_quark(pdg, status): return (pdg in PDG['quarks'] and status == S
 def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
 
 
-def event_iterator(ntuple_list, tree_name, divided_branch_list, step_size, bucket_limit):
+def event_iterator(ntuple_list, tree_name, divided_branch_list, step_size, max_bucket):
     event = {}
     event_ranges = {}
     branch_list = []
@@ -78,7 +78,8 @@ def event_iterator(ntuple_list, tree_name, divided_branch_list, step_size, bucke
                 for key in divided_branch_list:
                     event[key] = entry[ event_ranges[key] ]
                 yield event
-            if bucket_limit != None and basket_number >= 0: break
+            if max_bucket != None:
+                if basket_number >= max_bucket: break
      
 
 def jet_iterator(branches, jet_list):
