@@ -17,7 +17,7 @@ _plot_specifications = {
       #, 'PtEtaV1JVT'   : ['null']
     },
     3: {
-        'JVT'          : ['truth', 'etamax', 'mjjmax', 'random']
+        'JVT'          : ['truth', 'etamax', 'mjjmax', '2maxpt', 'random']
       , 'JVTpt40'          : ['truth', 'etamax', 'mjjmax', 'random']
       #, 'PtEtaV1JVT'   : ['truth', 'etamax', '2maxpt', 'random']
     }

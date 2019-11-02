@@ -6,13 +6,20 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-_category_key = ''
-_selector_key = 'null'
+_category_key = 'JVT'
 _hist_bins = 100
 _hist_range = (0,5000)
+_tagger_titles = {
+    'mjj': '$M_{jj}$'
+  , 'mjjj': '$M_{jjj}$'
+}
+_selector_titles = {
+    '2maxpt': ' of the Leading 2 Jets'
+  , 'mjjmax': ' of the 2 Jets Which Maximize $M_{jj}$'
+}
 
 
-def retrieve_parameter(input_type):
+def retrieve_parameter(input_type, selector_key, tagger_key):
     parameter_list = []
     weight_list = []
 
@@ -20,11 +27,11 @@ def retrieve_parameter(input_type):
     event_index = 0
     for event in data_dump[_category_key].events:
         #if event_index >= 20: break
-        if len(event.jets) != 2: continue
+        if len(event.jets) != 3: continue
         event_index += 1
 
-        selector = event.selectors[_selector_key]
-        mjj = event.selectors[_selector_key].taggers['mjj'].discriminant
+        selector = event.selectors[selector_key]
+        mjj = event.selectors[selector_key].taggers[tagger_key].discriminant
         event_weight = event.event_weight
         parameter_list.append(mjj)
         weight_list.append(event_weight)
@@ -34,9 +41,9 @@ def retrieve_parameter(input_type):
     return (norms, bins[:-1])
 
 
-def draw_distribution():
-    sig_norms, sig_vals = retrieve_parameter('sig')
-    bgd_norms, bgd_vals = retrieve_parameter('bgd')
+def draw_distribution(selector_key, tagger_key):
+    sig_norms, sig_vals = retrieve_parameter('sig', selector_key, tagger_key)
+    bgd_norms, bgd_vals = retrieve_parameter('bgd', selector_key, tagger_key)
 
     fig,ax = plt.subplots()
     counts, bins, hist = plt.hist( (sig_vals, bgd_vals),
@@ -46,13 +53,17 @@ def draw_distribution():
 
     ax.legend()
     plt.grid()
-    plt.yscale('log')
-    plt.ylim(10e-6, 1)
+    #plt.yscale('log')
+    #plt.ylim(10e-6, 1)
+    plt.ylim(0, 0.35)
     plt.xlabel('$M_{jj}$ (GeV)')
-    plt.title(r'$M_{jj}$ Distribution of 2-Jet Signal (VBF->H->$\gamma\gamma$)''\n'
-            r'and Background (ggF->H->$\gamma\gamma$) Events')
-    fig.savefig('plots/fig_mjj_2-jet_distribution.pdf')
+    tagger_title = _tagger_titles[tagger_key]
+    selector_title = '' if tagger_key == 'mjjj' else _selector_titles[selector_key]
+    plt.title(tagger_title+' Distribution'+selector_title)
+    fig.savefig('plots/figures/fig_mjj_'+selector_key+'_'+tagger_key+'_distribution.pdf')
     plt.close()
 
 
-draw_distribution()
+draw_distribution('2maxpt', 'mjj')
+draw_distribution('mjjmax', 'mjj')
+draw_distribution('2maxpt', 'mjjj')

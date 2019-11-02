@@ -1,5 +1,5 @@
 from acorn_backend import acorn_utils as autils
-from acorn_backend.jet_selectors import selector_options
+from acorn_backend.selector_loader import selector_options
 
 class acorn_jet:
     def __init__(self, pt, eta, phi, m, pdgid, pu, JVT, fJVT):
@@ -31,22 +31,23 @@ class acorn_jet:
         
 
 class acorn_event:
-    def __init__(self, jet_list, event_weight):
+    def __init__(self, jet_list, event_weight, this_event_should_be_tagged):
         self.jets = jet_list
         self.event_weight = 1 #event_weight
-        self.selectors = {}
 
-        # Use all available jet selectors to try and identify
-        # which jets are the VBF signature jets.
-        # The selectors will then pass themselves and the event
-        # to the taggers
-        selector_class_list = selector_options[ len(jet_list) ]
-        for selector_class in selector_class_list:
-            self.selectors[selector_class.key] = selector_class(self)
+        if this_event_should_be_tagged:
+            # Use all available jet selectors to try and identify
+            # which jets are the VBF signature jets.
+            # The selectors will then pass themselves and the event
+            # to the tagger classes for event tagging
+            self.selectors = {}
+            selector_class_list = selector_options[ len(jet_list) ]
+            for selector_class in selector_class_list:
+                self.selectors[selector_class.key] = selector_class(self)
 
     def __repr__(self):
         rep = '|---|---'+str(len(self.jets))+' Jets:\n'
         for jet in self.jets: rep += str(jet)+'\n'
         rep += '|---|\n|---|---Selectors:\n'
-        for selector in self.selectors: rep += str(selector) + '\n'
+        for selector in self.selectors.values(): rep += str(selector) + '\n'
         return rep

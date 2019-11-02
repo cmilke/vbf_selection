@@ -18,17 +18,18 @@ _plot_specifications = {
   , '3JVT_truth_mjj'  : ('3 JVT: Truth - $M_{jj}$', event_taggers.mjj_tagger.value_range)
   , '3JVT_2maxpt_mjjj' : ('3 JVT: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
   , '3JVT_mjjmax_mjj'  : ('3 JVT: Maximized $M_{jj}$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
-  , '3JVTpt40_2maxpt_mjjj' : ('3 JVT $p_t$>40GeV: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-  , '3JVTpt40_mjjmax_mjj'  : ('3 JVT $p_t$>40GeV: Maximized $M_{jj}$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
   , '3JVT_2maxpt_mjj'  : ('3 JVT: 2 Max $p_t$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
   , '3JVT_random_mjj'  : ('3 JVT: Random - $M_{jj}$', event_taggers.mjj_tagger.value_range)
+  , '3JVTpt40_2maxpt_mjjj' : ('3 JVT $p_t$>40GeV: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
+  , '3JVTpt40_mjjmax_mjj'  : ('3 JVT $p_t$>40GeV: Maximized $M_{jj}$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
+  , '>=2_mjj'  : ('$\geq 2$ JVT: Maximized $M_{jj}$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
 }
 
 _performances_to_combine = {
   #  '2JVT_null_mjjj' : '>=2_mjjj'
   #, '3JVT_2maxpt_mjjj': '>=2_mjjj'
-  #, '2JVT_null_mjj' : '>=2_mjj'
-  #, '3JVT_2maxpt_mjj' : '>=2_mjj'
+    '2JVT_null_mjj'   : '>=2_mjj'
+  , '3JVT_mjjmax_mjj' : '>=2_mjj'
 }
 
 

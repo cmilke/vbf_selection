@@ -3,7 +3,7 @@
 import sys
 import math
 import pickle
-from acorn_backend.jet_selectors import selector_options
+from acorn_backend.selector_loader import selector_options
 
 
 def evaluate_selections():

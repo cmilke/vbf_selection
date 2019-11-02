@@ -25,12 +25,15 @@ _philabels=[
   , r''
 ]
 _jet_radius=0.4
+_category_key = 'JVT'
+_mjjj_80percent_rejection_cut = 630 #GeV
+_mjj_2maxpt_80percent_rejection_cut = 333 #GeV
 
 
-def display_events(event_type, type_name):
+def display_events(info_list, type_name, type_title):
     print( 'Displaying ' + type_name )
-    output = PdfPages('plots/fig_event_display_'+type_name+'.pdf')
-    for jets in event_type:
+    output = PdfPages('plots/figures/fig_event_display_'+type_name+'.pdf')
+    for jets in info_list:
         fig,ax = plt.subplots()
         ax.set_facecolor('0.4')
         jet_scatter = plt.scatter(jets[1], jets[2], c=jets[3], cmap='plasma', vmin=0, vmax=100)
@@ -45,33 +48,24 @@ def display_events(event_type, type_name):
         plt.xlabel('Jet $\eta$')
         plt.ylabel('Jet $\phi$')
 
-        plt.title( 'Event Display for Event ' + str(jets[0]) )
+        plt.title( 'Event Display for ' + type_title )
         #plt.show()
         output.savefig()
         plt.close()
     output.close()
 
 
-def display():
-    category_key = 'JVT'
-    selector_key = 'etamax'
-    tagger_key = 'mjjj'
-    tagger_cut = 500 # GeV
-
-    all_events = []
-    correctly_selected_events = []
-    misselected_events = []
-
-    data_dump = pickle.load( open('data/output_sig.p', 'rb') )
+def display(data_dump, passes_event_test, type_name, type_title):
+    info_list = []
     event_index = 0
-    for event in data_dump[category_key].events:
+    for event in data_dump[_category_key].events:
         if event_index >= 100: break
         if len(event.jets) != 3: continue
         event_index += 1
 
-        selector = event.selectors[selector_key]
-        tagger = selector.taggers[tagger_key]
-        info = [ event_index, [], [], [], [] ] #eta, phi, pt
+        if not passes_event_test(event): continue
+
+        info = [ event_index, [], [], [], [] ] #eta, phi, pt, truthquark
         for jet in event.jets:
             info[1].append(jet.eta)
             info[2].append(jet.phi)
@@ -79,15 +73,31 @@ def display():
             color = 'blue'
             if jet.is_truth_quark(): color = 'yellow'
             info[4].append(color)
-        all_events.append(info)
-        #if selector.is_correct: correctly_selected_events.append(info)
-        if tagger.discriminant > tagger_cut: correctly_selected_events.append(info)
-        else: misselected_events.append(info)
+        info_list.append(info)
+
+    display_events( info_list, type_name, type_title )
 
 
+def passes_mjjj(event):
+    mjjj = event.selectors['2maxpt'].taggers['mjjj'].discriminant
+    return mjjj > _mjjj_80percent_rejection_cut 
+    
 
-    display_events( all_events, 'all' )
-    display_events( correctly_selected_events, 'correct' )
-    display_events( misselected_events, 'wrong' )
+def fails_mjjj(event):
+    return not passes_mjjj(event)
 
-display()
+
+def passes_mjjj_and_fails_mjj2maxpt(event):
+    mjjj = event.selectors['2maxpt'].taggers['mjjj'].discriminant
+    mjj = event.selectors['2maxpt'].taggers['mjj'].discriminant
+    passes_mjjj = mjjj > _mjjj_80percent_rejection_cut 
+    fails_mjj = mjj < _mjj_2maxpt_80percent_rejection_cut
+    return passes_mjjj and fails_mjj
+
+
+sig_data_dump = pickle.load( open('data/output_sig.p', 'rb') )
+bgd_data_dump = pickle.load( open('data/output_bgd.p', 'rb') )
+
+display(sig_data_dump, passes_mjjj, 'sig_pass_mjjj', 'Signal Event which\nCorrectly Pass $M_{jjj}$')
+display(bgd_data_dump, fails_mjjj, 'bgd_fail_mjjj', 'Background Event which\nCorrectly Fail $M_{jjj}$')
+display(bgd_data_dump, passes_mjjj_and_fails_mjj2maxpt, 'bgd_pass_mjjj_fail_mjj', 'Background Events\nwhich Correctly Fail $M_{jj}$ but Incorrectly Pass $M_{jjj}$')

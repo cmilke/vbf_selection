@@ -4,3 +4,5 @@
 !.gitignore
 !analysis
 !vbf_selection
+!vbf_selection/*
+!vbf_selection/*/*

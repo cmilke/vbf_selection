@@ -1,4 +1,4 @@
-from acorn_backend.jet_selectors import selector_options
+from acorn_backend.selector_loader import selector_options
 from acorn_backend.acorn_containers import acorn_event
 
 
@@ -32,8 +32,9 @@ _demanded_number_of_quarks = 2
 class base_categorizer():
     key = 'all'
 
-    def __init__(self):
+    def __init__(self, tag_events):
         self.events = []
+        self.tagging_events = tag_events
 
     def jet_passes_filter(self, jet):
         return True
@@ -73,7 +74,7 @@ class base_categorizer():
         if not self.passes_event_filter(filtered_jets): return
 
         #Create new event, which will immediately tag itself
-        new_event = acorn_event(filtered_jets, event_weight)
+        new_event = acorn_event(filtered_jets, event_weight, self.tagging_events)
         self.events.append(new_event)
 
     def summary(self):

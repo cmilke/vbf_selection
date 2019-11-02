@@ -31,7 +31,7 @@ class base_selector():
         rep  = '|---|---|---'
         rep += self.__class__.__name__ + ': '
         rep += str(self.selections) + '\n'
-        for tagger in self.taggers: rep += str(tagger) + '\n'
+        for tagger in self.taggers.values(): rep += str(tagger) + '\n'
         rep += '|---|---|'
         return rep
 
@@ -175,11 +175,3 @@ class truth_selector(base_selector):
             random.shuffle(jet_indices)
             chosen_jets = jet_indices[:2]
             return chosen_jets
-
-
-selector_options = [
-    [], #0
-    [], #1
-    [base_selector], #2
-    [maximal_Delta_eta_selector, maximal_mjj_selector, truth_selector, highest_pt_selector, random_selector] #3
-]
