@@ -1,27 +1,87 @@
 ACORN: Another Contrived acrOnym for a Reconstruction iNfrastructure
 
-ntuple*.root: the current starting point, ntuple generated from a raw AOD
-    |
-    |- extract*.py: iterate through ntuple and strip out only events we care about
-    |
-    |
-    V
-inputs*.p: a list of events, which are each a list of jets, which are a list of jet parameters
-    |
-    |- jet_selector.py: strips all events down to only two jets
-    |
-    |
-    V
-processed_inputs*.p: identical to inputs*.p, each jet has additional information (for now just a true/false on whether we think its a VBF jet)
-    |
-    |- vbf_tagger.py: use jet inputs (and possibly more) to distinguish VBF signal events from background (ggF for now)
-    |
-    |
-    V
-outputs*.p: a list of confidences, one per event, stating how likely the event is to be a VBF event
-    |
-    |- evaluate_performance.py: just make a roc curve with the background and signal outputs
-    |
-    |
-    V
-performance.pdf: probably just a ROC curve of performance
+#########################
+### Primary Data Flow ###
+#########################
+
+ntuple*.root:
+   ||   The current starting point, ntuple generated from a raw AOD
+   ||
+   \/
+vbf_selection/run_taggers.py: 
+   ||       |   The central script of the framework, which takes as input a series of ntuples,
+   ||       |   and iterates through them event-by-event. 
+   ||       |   For every event, it iterates over the reco jets in the event,
+   ||       |   and filters out jets which fail very basic criteria. 
+   ||       |   It then passes the filtered jets to several "category" classes for further processing.
+   ||       |   
+   ||       |   The output it produces is a pickled list of the category classes in created.
+   ||       |   These category classes in turn contain a list of all viable events, with each
+   ||       |   event (optionally*) containing information on which jets were selected as VBF jets,
+   ||       |   as well as signal/background tagging information for the event.
+   ||       |
+   ||       |   *passing the '-N' argument to the script will cause it to only record events,
+   ||       |   but not perform selection or tagging on them.
+   ||       |
+   ||       v
+   ||   vbf_selection/acorn_backend/event_categoriztion.py:
+   ||       |   Each category class takes in a list of jets and other event information,
+   ||       |   and applies its own set of filters and selection criteria to this information,
+   ||       |   excluding jets or entire events. After passing through the class's filters,
+   ||       |   an "Event Object" is created from the filtered data, and this event is appended
+   ||       |   to the category's event list
+   ||       | 
+   ||       v 
+   ||   vbf_selection/acorn_backend/acorn_containers.py:
+   ||       |   This file contains both the acorn_jet class and the acorn_event class.
+   ||       |   acorn_jets are created in run_taggers.py, just as a way to aggregate the disparate
+   ||       |   information from the ntuple jets into one place.
+   ||       |
+   ||       |   The acorn_event object is created by the event_category classes.
+   ||       |   Upon creation, the acorn_event object will iterate over the list of all available
+   ||       |   "jet_selectors" (this list exists in vbf_selection/acorn_backend/selector_loader.py),
+   ||       |   and passes itself to each selector object for selection and tagging.
+   ||       |
+   ||       v
+   ||    vbf_selection/acorn_backend/base_jet_selectors.py and others...:
+   ||       |   This file contains the base jet selector (from which all other selectors are extensions),
+   ||       |   as well as a number of very basic selectors. Other more sophisticated selectors can be
+   ||       |   found in vbf_selection/acorn_backend/machine_learning/. This class takes an event as input,
+   ||       |   and as output produces a tuple of integers. These integers correspond to indices within
+   ||       |   the jets list the acorn_event object contains. Specifically, they are the indices of the
+   ||       |   2 jets that this selector class believes to be the VBF signal jets of the event.  
+   ||       |   The method of selecting the jets varies from one selector class to another.
+   ||       |
+   ||       |   Upon selecting jets, it passes the event and its own selections to a list of available
+   ||       |   event taggers.
+   ||       |
+   ||       v
+   ||    vbf_selection/acorn_backend/event_taggers.py
+   ||           The last step of the run_taggers hierarchy.
+   ||           This class takes as input an acorn_event object, as well as the tuple output of 
+   ||           a selector class. The tagger class then uses these to produces some sort of
+   ||           event-level discriminant; i.e. a singular value which can be cut on in order
+   ||           to determine if an event is a signal event or a background event.
+   ||
+   ||           Ideally, this discriminant should be a monotonically increasing value,
+   ||           such that a higher value indicates that an event is more likely to be
+   ||           a signal event.
+   ||           (It makes it easier to graph things if all discriminants work this way)
+   ||           
+   \/
+vbf_selection/output_*.p:
+   ||   The pickled output of run_taggers.py. Contains a large nested data structure of all events,
+   ||   filtered and sorted, with each event optionally containing various selection and tagging
+   ||   information.
+   ||
+   \/
+vbf_selection/evaluate*.py:
+   ||   A series of evaluation scripts which evaluate the efficiency
+   ||   of various aspects of the framework. These scripts are strictly intended
+   ||   to produce final performance plots/figures. Any scripts which are meant 
+   ||   to investigate the underlying mechanisms and parameters of the framework
+   ||   or ntuple are located in vbf_selection/studies/
+   \/
+vbf_selection/plots/performance/*.pdf:
+        A large variety of performance plots showing how well the framework algorithms
+        actually work.
