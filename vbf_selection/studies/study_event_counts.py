@@ -26,8 +26,8 @@ def draw(input_type):
     vals = {
         'x': [i for i in range(num_bins)],
         'weights': [
-            get_counts(data_dump, 'all', 2)
-          , get_counts(data_dump, 'all', 3)
+            get_counts(data_dump, 'JVT', 2)
+          , get_counts(data_dump, 'JVT', 3)
           , get_counts(data_dump, 'JVTpt40', 3)
         ]
     }
