@@ -1,18 +1,16 @@
 import sys
 
-#TensorFlor and tf.keras
-import tensorflow
-from tensorflow import keras
+# TensorFlow and tf.keras
+# I don't want these to be loaded when unpickeling
+# this object, so I import them indirectly through this buffer file
+import acorn_backend.machine_learning.tensorflow_buffer as tb
 
 #Helper libraries
 import numpy
 import math
 import matplotlib
 import matplotlib.pyplot as plot
-PI = math.pi
-
 import acorn_backend.base_jet_selectors
-
 
 class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
     #############################################
@@ -30,7 +28,7 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
 
     @classmethod
     def load_model(cls):
-        cls.network_model = keras.models.load_model(cls.model_file)
+        cls.network_model = tb.keras.models.load_model(cls.model_file)
     
 
     @classmethod
@@ -40,10 +38,10 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
         for jet in event.jets:
             # Normalize eta by converting it to theta
             theta = 2 * math.atan( math.exp(-jet.eta) )
-            normalized_eta = theta / PI
+            normalized_eta = theta / math.pi
 
             # Phi is naturally bounded, so it's trivial to normalize
-            normalized_phi = ( jet.phi + PI) / (2*PI)
+            normalized_phi = ( jet.phi + math.pi) / (2*math.pi)
 
             # Normalize pt by arbitrarily bounding it with a
             # sigmoid centered at pt = 75
@@ -69,9 +67,9 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
         print('TRAINING NEW MODEL')
 
         # Build and compile neural network model 
-        model = keras.Sequential([
-            keras.layers.Dense(18, activation=tensorflow.nn.relu),
-            keras.layers.Dense(3, activation=tensorflow.nn.softmax)
+        model = tb.keras.Sequential([
+            tb.keras.layers.Dense(18, activation=tb.tensorflow.nn.relu),
+            tb.keras.layers.Dense(3, activation=tb.tensorflow.nn.softmax)
         ])
 
         model.compile( optimizer='adam',
@@ -85,7 +83,7 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
     @classmethod
     def test_model(cls, test_data, test_labels):
         print('TESTING MODEL')
-        model = keras.models.load_model(cls.model_file) # Load Model
+        model = tb.keras.models.load_model(cls.model_file) # Load Model
 
         # Evaluate Trained Model
         test_loss, test_accuracy = model.evaluate(test_data, test_labels)

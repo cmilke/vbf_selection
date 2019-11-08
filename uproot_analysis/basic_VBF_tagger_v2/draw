@@ -1,0 +1,22 @@
+#!/nfs/slac/g/atlas/u02/cmilke/Anaconda3/bin/python
+import pickle
+import numpy
+from matplotlib import pyplot as plt
+
+D_eta_list = pickle.load( open('D_eta_list.p', 'rb') )
+fig,ax = plt.subplots()
+bins = numpy.arange(0,8,0.1)
+labels = list(D_eta_list)
+for i in range(len(labels)): labels[i] = str(labels[i])+' Jets'
+
+counts, bins, hist = plt.hist(list(D_eta_list.values()), 
+    label=labels, histtype='step', bins=bins,
+    cumulative=-1, density=True, linewidth=3)
+
+ax.legend( *map(reversed, ax.get_legend_handles_labels()) )
+plt.xlabel(r'Cut on $\Delta \eta$ of Two Leading-$p_t$ Jets')
+plt.ylabel(r'Efficiency')
+plt.title(r'Efficiency of Basic Tagging')
+plt.grid(True)
+plt.show()
+fig.savefig('fig_Deta.pdf')

@@ -1,0 +1,51 @@
+#!/nfs/slac/g/atlas/u02/cmilke/Anaconda3/bin/python
+import pickle
+import numpy
+from matplotlib import pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.patches import Circle
+from math import pi
+
+output = PdfPages('fig_event_display.pdf')
+
+phiticks=[ -4, -(4/4)*pi,-(3/4)*pi, -(2/4)*pi, -(1/4)*pi, 0, (1/4)*pi, (2/4)*pi, (3/4)*pi, (4/4)*pi , 4]
+philabels=[
+    r''
+  , r'$-\pi$'
+  , r'$-\frac{3}{4}\pi$'
+  , r'$-\frac{1}{2}\pi$'
+  , r'$-\frac{1}{4}\pi$'
+  , r'$0$'
+  , r'$\frac{1}{4}\pi$'
+  , r'$\frac{1}{2}\pi$'
+  , r'$\frac{3}{4}\pi$'
+  , r'$\pi$'
+  , r''
+]
+jet_radius=0.4
+
+event_list_truth_jets = pickle.load( open('event_list_truth_jets.p', 'rb') )
+for event_index, truth_jets in enumerate(event_list_truth_jets):
+    #if event_index > 50: break
+    if event_index % 100 == 0: print(event_index)
+    if len(truth_jets[0]) < 3: continue
+
+    fig,ax = plt.subplots()
+    ax.set_facecolor('0.4')
+    truth_jet_scatter = plt.scatter(truth_jets[0], truth_jets[1], c=truth_jets[2], cmap='PuBu', vmin=0, vmax=100)
+    for x,y,z in zip(*truth_jets):
+        ax.add_artist( Circle( xy=(x, y), radius=jet_radius, facecolor='None', edgecolor='blue') )
+
+    cbar = plt.colorbar(truth_jet_scatter)
+    cbar.set_label('Jet $p_t$ (GeV)')
+    plt.xlim(-5, 5)
+    plt.ylim(-pi, pi)
+    plt.yticks(ticks=phiticks, labels=philabels)
+    plt.xlabel('Jet $\eta$')
+    plt.ylabel('Jet $\phi$')
+
+    plt.title( 'Event Display for Event ' + str(event_index) )
+    #plt.show()
+    output.savefig()
+    plt.close()
+output.close()

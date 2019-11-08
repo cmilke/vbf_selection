@@ -4,8 +4,9 @@ import sys
 import math
 import pickle
 import numpy
+from acorn_backend.machine_learning import tensorflow_buffer
 from acorn_backend.machine_learning.basic_selector import basic_neural_net_selector as training_class
-
+tensorflow_buffer.load_tensorflow()
 
 
 def train():
@@ -23,7 +24,7 @@ def train():
 
         label = training_class.get_label(event)
         data_labels_list.append(label)
-        if len(prepared_data_list) >= 10000: break
+        if len(prepared_data_list) >= 100: break
     prepared_data = numpy.array(prepared_data_list)
     data_labels = numpy.array(data_labels_list)
 

@@ -1,8 +1,7 @@
-# Ignore everything in this directory
-*
-# Except:
-!.gitignore
-!analysis
-!vbf_selection
-!vbf_selection/*
-!vbf_selection/*/*
+*.pdf
+*.pyc
+*.p
+*.swp
+*.h5
+*.nfs*
+uproot_analysis/util/aod_branches.txt

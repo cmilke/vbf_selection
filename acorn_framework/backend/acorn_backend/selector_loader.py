@@ -1,4 +1,6 @@
 import acorn_backend.base_jet_selectors as base_selectors
+
+from acorn_backend.machine_learning import tensorflow_buffer
 from acorn_backend.machine_learning.basic_selector import basic_neural_net_selector
 
 selector_options = [
@@ -16,4 +18,6 @@ selector_options = [
 
 
 def load_selector_models():
+    tensorflow_buffer.load_tensorflow()
+
     basic_neural_net_selector.load_model()
