@@ -14,7 +14,7 @@ import pickle
 from acorn_backend.acorn_containers import acorn_jet
 from acorn_backend import event_categorization
 from acorn_backend import acorn_utils as autils
-from acorn_backend.selector_loader import load_selector_models
+from acorn_backend.tagger_loader import load_network_models
 
 #Define all the high level root stuff: ntuple files, branches to be used
 _input_type_options = {
@@ -130,7 +130,7 @@ def run():
 
     args = parser.parse_args()
 
-    if not args.N: load_selector_models()
+    if not args.N: load_network_models()
 
     if args.s: record_events('sig', args.N, args.debug)
     if args.b: record_events('bgd', args.N, args.debug)

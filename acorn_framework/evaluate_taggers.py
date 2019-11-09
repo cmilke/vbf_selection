@@ -7,7 +7,7 @@ import numpy
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-from acorn_backend.event_taggers import tagger_class_list
+from acorn_backend.simple_event_taggers import tagger_class_list
 
 _hist_bins = 200
 

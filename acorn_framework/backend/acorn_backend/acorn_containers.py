@@ -1,5 +1,5 @@
 from acorn_backend import acorn_utils as autils
-from acorn_backend.selector_loader import selector_options
+from acorn_backend.tagger_loader import selector_options
 
 class acorn_jet:
     def __init__(self, pt, eta, phi, m, pdgid, pu, JVT, fJVT):

@@ -1,4 +1,4 @@
-from acorn_backend.selector_loader import selector_options
+from acorn_backend.tagger_loader import selector_options
 from acorn_backend.acorn_containers import acorn_event
 
 

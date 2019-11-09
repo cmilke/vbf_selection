@@ -7,22 +7,22 @@ import numpy
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-from acorn_backend import event_taggers
+from acorn_backend import simple_event_taggers
 
 _hist_bins = 200
 
 _filename_infix = ''
 
 _plot_specifications = {
-    '2JVT_null_mjj'   : ('2 JVT: $M_{jj}$', event_taggers.mjjj_tagger.value_range)
-  , '3JVT_truth_mjj'  : ('3 JVT: Truth - $M_{jj}$', event_taggers.mjj_tagger.value_range)
-  , '3JVT_2maxpt_mjjj' : ('3 JVT: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-  , '3JVT_mjjmax_mjj'  : ('3 JVT: Maximized $M_{jj}$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
-  , '3JVT_2maxpt_mjj'  : ('3 JVT: 2 Max $p_t$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
-  , '3JVT_random_mjj'  : ('3 JVT: Random - $M_{jj}$', event_taggers.mjj_tagger.value_range)
-  , '3JVTpt40_2maxpt_mjjj' : ('3 JVT $p_t$>40GeV: $M_{jjj}$', event_taggers.mjjj_tagger.value_range)
-  , '3JVTpt40_mjjmax_mjj'  : ('3 JVT $p_t$>40GeV: Maximized $M_{jj}$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
-  , '>=2_mjj'  : ('$\geq 2$ JVT: Maximized $M_{jj}$ - $M_{jj}$', event_taggers.mjj_tagger.value_range)
+    '2JVT_null_mjj'   : ('2 JVT: $M_{jj}$', simple_event_taggers.mjjj_tagger.value_range)
+  , '3JVT_truth_mjj'  : ('3 JVT: Truth - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
+  , '3JVT_2maxpt_mjjj' : ('3 JVT: $M_{jjj}$', simple_event_taggers.mjjj_tagger.value_range)
+  , '3JVT_mjjmax_mjj'  : ('3 JVT: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
+  , '3JVT_2maxpt_mjj'  : ('3 JVT: 2 Max $p_t$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
+  , '3JVT_random_mjj'  : ('3 JVT: Random - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
+  , '3JVTpt40_2maxpt_mjjj' : ('3 JVT $p_t$>40GeV: $M_{jjj}$', simple_event_taggers.mjjj_tagger.value_range)
+  , '3JVTpt40_mjjmax_mjj'  : ('3 JVT $p_t$>40GeV: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
+  , '>=2_mjj'  : ('$\geq 2$ JVT: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
 }
 
 _performances_to_combine = {

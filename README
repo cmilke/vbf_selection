@@ -85,3 +85,36 @@ vbf_selection/evaluate*.py:
 vbf_selection/plots/performance/*.pdf:
         A large variety of performance plots showing how well the framework algorithms
         actually work.
+
+
+
+
+
+
+
+
+
+
+
+
+If you're wondering why the directory acorn_framework/backend only contains a single other directory,
+that's because PYTHONPATH is kinda weird and this was the only way I felt I could do things safely.
+I wanted "acorn_backend" as a module I could call, contained withing my PYTHONPATH.
+If I simply add "acorn_backend" itself to my PYTHONPATH, then when I want to import, say,
+acorn_utils, I would NOT be able to type this:
+
+    from acorn_backend import acorn_utils
+or
+    import acorn_backend.acorn_utils
+
+and instead I have to do:
+
+    import acorn_utils
+
+which I don't like, because it means the stuff in acorn_backend can clash with other global modules.
+
+But if I were to have acorn_backend directly placed in acorn_framework,
+and added acorn_framework to the PYTHONPATH, then I would be able to directly import, say, run_taggers.py
+which could also clash.
+
+Basically, this weird double nesting is just because I'm paranoid of module naming clashes.

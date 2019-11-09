@@ -88,12 +88,12 @@ def count_rjets(event):
     num_rquarks = 0
     for rj in autils.jet_iterator(event['j0']):
         #if rj['j0_isPU']: continue
-        if rj['j0truthid'] == -1: continue
-        if rj['tj0pT'] < 0: continue
-        #if rj['j0truthid'] == autils.PDG['photon']: continue
+        #if rj['j0truthid'] == -1: continue
+        #if rj['tj0pT'] < 0: continue
+        if rj['j0truthid'] == autils.PDG['photon']: continue
 
         #if not (rj['j0_JVT'] and rj['j0_fJVT_Tight']): continue
-        if rj['j0_isTightPhoton']: continue
+        #if rj['j0_isTightPhoton']: continue
 
         if rj['j0pT'] < 30: continue
         #if abs(rj['j0eta']) > 4: continue

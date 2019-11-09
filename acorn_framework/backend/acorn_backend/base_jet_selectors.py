@@ -1,13 +1,19 @@
 import random
 import math
 from uproot_methods import TLorentzVector
-from acorn_backend.event_taggers import tagger_class_list
+from acorn_backend import simple_event_taggers
+from acorn_backend.machine_learning.simple_2_jet_tagger import basic_nn_tagger
 
 
 # Return the first two jets.
 # Should only be used for 2 jet events
 class base_selector():
     key = 'null'
+    tagger_class_list = [
+        simple_event_taggers.delta_eta_tagger,
+        simple_event_taggers.mjj_tagger,
+        simple_event_taggers.mjjj_tagger
+    ]
 
     def select(self, event):
         return (0,1)
@@ -24,7 +30,7 @@ class base_selector():
 
         # Tag the event with this selection,
         # with all available taggers
-        for tagger_class in tagger_class_list:
+        for tagger_class in self.__class__.tagger_class_list:
             self.taggers[tagger_class.key] = tagger_class(event, self.selections)
 
     def __repr__(self):
@@ -34,6 +40,12 @@ class base_selector():
         for tagger in self.taggers.values(): rep += str(tagger) + '\n'
         rep += '|---|---|'
         return rep
+
+
+# Just a copy of the base_selector with a different tagger list
+class dummy_2_jet_selector(base_selector):
+    key = 'dummy2jet'
+    tagger_class_list = [ basic_nn_tagger ]
 
 
 # Select the vbf jets at random...

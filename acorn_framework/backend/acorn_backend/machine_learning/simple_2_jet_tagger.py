@@ -10,13 +10,14 @@ import numpy
 import math
 import matplotlib
 import matplotlib.pyplot as plot
-import acorn_backend.base_jet_selectors
+import acorn_backend.simple_event_taggers.base_tagger
 
-class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
+# TODO: actually make this a tagger not a selector
+class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
     #############################################
     ### Neural Network specific class members ###
     #############################################
-    model_file = 'data/basic_neural_net_selector_model.h5'
+    model_file = 'data/basic_nn_tagger_model.h5'
     jet_count_range = range(3,4) # This neural net is only intented for 3-jet events
     pair_labels = [
         [0,1],
