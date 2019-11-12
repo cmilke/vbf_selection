@@ -68,13 +68,13 @@ class highest_pt_selector(base_selector):
         jet_idents = [-1,-1]
         max_pts = [-1,-1]
         for index, jet in enumerate(event.jets):
-            if jet.pt > max_pts[0]:
+            if jet.vector.pt > max_pts[0]:
                 max_pts[1] = max_pts[0]
                 jet_idents[1] = jet_idents[0]
-                max_pts[0] = jet.pt
+                max_pts[0] = jet.vector.pt
                 jet_idents[0] = index
-            elif jet.pt > max_pts[1]:
-                max_pts[1] = jet.pt
+            elif jet.vector.pt > max_pts[1]:
+                max_pts[1] = jet.vector.pt
                 jet_idents[1] = index
         return tuple(jet_idents)
 
@@ -89,9 +89,9 @@ class maximal_Delta_eta_selector(base_selector):
         max_delta_eta = -1
         num_jets = len(event.jets)
         for i in range(0, num_jets):
-            eta0 = event.jets[i].eta
+            eta0 = event.jets[i].vector.eta
             for j in range(i+1, num_jets):
-                eta1 = event.jets[j].eta
+                eta1 = event.jets[j].vector.eta
                 delta_eta = abs(eta0 - eta1)
                 if delta_eta > max_delta_eta:
                     max_delta_eta = delta_eta
@@ -111,8 +111,8 @@ class maximal_mjj_selector(base_selector):
             for j in range(i+1, num_jets):
                 j0 = event.jets[i]
                 j1 = event.jets[j]
-                v0 = TLorentzVector.from_ptetaphim(j0.pt, j0.eta, j0.phi, j0.m)
-                v1 = TLorentzVector.from_ptetaphim(j1.pt, j1.eta, j1.phi, j1.m)
+                v0 = TLorentzVector.from_ptetaphim(j0.vector.pt, j0.vector.eta, j0.vector.phi, j0.vector.mass)
+                v1 = TLorentzVector.from_ptetaphim(j1.vector.pt, j1.vector.eta, j1.vector.phi, j1.vector.mass)
                 combined = v0 + v1
                 mjj = combined.mass
                 if mjj > max_mjj:
@@ -131,11 +131,11 @@ class maximal_Delta_R_selector(base_selector):
         max_delta_R = -1
         num_jets = len(event.jets)
         for i in range(0, num_jets):
-            eta0 = event.jets[i].eta
-            phi0 = event.jets[i].phi
+            eta0 = event.jets[i].vector.eta
+            phi0 = event.jets[i].vector.phi
             for j in range(i+1, num_jets):
-                eta1 = event.jets[j].eta
-                phi1 = event.jets[j].phi
+                eta1 = event.jets[j].vector.eta
+                phi1 = event.jets[j].vector.phi
                 Deta = eta1 - eta0
                 Dphi = phi1 - phi0
                 delta_R = math.hypot(Deta, Dphi)
@@ -158,11 +158,11 @@ class maximal_mjjXDeta_selector(base_selector):
             for j in range(i+1, num_jets):
                 j0 = event.jets[i]
                 j1 = event.jets[j]
-                v0 = TLorentzVector.from_ptetaphim(j0.pt, j0.eta, j0.phi, j0.m)
-                v1 = TLorentzVector.from_ptetaphim(j1.pt, j1.eta, j1.phi, j1.m)
+                v0 = TLorentzVector.from_ptetaphim(j0.vector.pt, j0.vector.eta, j0.vector.phi, j0.vector.mass)
+                v1 = TLorentzVector.from_ptetaphim(j1.vector.pt, j1.vector.eta, j1.vector.phi, j1.vector.mass)
                 combined = v0 + v1
                 mjj = combined.mass
-                delta_eta = abs(j0.eta - j1.eta)
+                delta_eta = abs(j0.vector.eta - j1.vector.eta)
                 DetaXmjj = mjj*delta_eta
                 if DetaXmjj > max_product:
                     max_product = DetaXmjj

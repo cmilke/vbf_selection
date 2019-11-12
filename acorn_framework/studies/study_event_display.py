@@ -73,9 +73,9 @@ def display():
         tagger = selector.taggers[tagger_key]
         info = [ event_index, [], [], [], [] ] #eta, phi, pt
         for jet in event.jets:
-            info[1].append(jet.eta)
-            info[2].append(jet.phi)
-            info[3].append(jet.pt)
+            info[1].append(jet.vector.eta)
+            info[2].append(jet.vector.phi)
+            info[3].append(jet.vector.pt)
             color = 'blue'
             if jet.is_truth_quark(): color = 'yellow'
             info[4].append(color)

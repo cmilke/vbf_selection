@@ -50,7 +50,7 @@ class base_categorizer():
             if self.jet_passes_filter(jet):
                 filtered_jets.append(jet)
                 if jet.is_truth_quark(): num_quark_jets += 1
-                if jet.pt > leading_jet_pt: leading_jet_pt = jet.pt
+                if jet.vector.pt > leading_jet_pt: leading_jet_pt = jet.vector.pt
         return (filtered_jets, leading_jet_pt, num_quark_jets)
 
     # Tells category whether or not to skip this event
@@ -122,7 +122,7 @@ class filter_with_JVT(base_categorizer):
 class filter_with_JVT_pt40(base_categorizer):
     key = 'JVTpt40'
     def jet_passes_filter(self, jet):
-        return jet.passes_JVT and jet.pt > 40
+        return jet.passes_JVT and jet.vector.pt > 40
 
 
 # An attempt at replicating constraints I found
@@ -131,8 +131,8 @@ class pt_eta_v1_with_JVT(filter_with_JVT):
     key = 'PtEtaV1JVT'
     def passes_event_filter(self, jet_list):
         min_Deta_requirement = 2
-        leading_jets = sorted(jet_list, key=lambda x: x.pt, reverse=True)[:2]
-        Deta = abs( leading_jets[0].eta - leading_jets[1].eta )
+        leading_jets = sorted(jet_list, key=lambda x: x.vector.pt, reverse=True)[:2]
+        Deta = abs( leading_jets[0].vector.eta - leading_jets[1].vector.eta )
         if Deta > min_Deta_requirement: return True
         else: return False
 

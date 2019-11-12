@@ -56,7 +56,7 @@ def record_reco_jets(is_sig, event_weight, event, event_data_dump):
         #if rj['j0_isTightPhoton']: continue
 
         # Create jet object storing the essential aspects of the ntuple reco jet
-        new_jet = acorn_jet.from_reco(rj,pdgid)
+        new_jet = acorn_jet(v, pdgid, rj['j0_isPU'], rj['j0_JVT'], rj['j0_fJVT_Tight'])
         recorded_jets.append(new_jet)
 
     # Categorize event, and then either discard the event or perform tagging on it

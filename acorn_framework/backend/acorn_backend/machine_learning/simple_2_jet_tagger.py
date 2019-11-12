@@ -38,15 +38,15 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
         normalized_list = []
         for jet in event.jets:
             # Normalize eta by converting it to theta
-            theta = 2 * math.atan( math.exp(-jet.eta) )
+            theta = 2 * math.atan( math.exp(-jet.vector.eta) )
             normalized_eta = theta / math.pi
 
             # Phi is naturally bounded, so it's trivial to normalize
-            normalized_phi = ( jet.phi + math.pi) / (2*math.pi)
+            normalized_phi = ( jet.vector.phi + math.pi) / (2*math.pi)
 
             # Normalize pt by arbitrarily bounding it with a
             # sigmoid centered at pt = 75
-            rescaled_pt = (jet.pt - 75) / 15
+            rescaled_pt = (jet.vector.pt - 75) / 15
             normalized_pt = 1 / ( 1 + math.exp(-rescaled_pt) )
 
             normalized_jet = [normalized_eta, normalized_phi, normalized_pt]

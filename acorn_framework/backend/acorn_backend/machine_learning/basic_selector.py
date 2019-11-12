@@ -36,8 +36,7 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
     def prepare_event(cls, event):
         p_list = []
         for jet in event.jets:
-            vec = TLorentzVector.from_ptetaphim(jet.pt, jet.eta, jet.phi, jet.m)
-            p_list.append([ vec.p3.x, vec.p3.y, vec.p3.z ])
+            p_list.append([ jet.vector.p3.x, jet.vector.p3.y, jet.vector.p3.z ])
         prepared_event = numpy.array(p_list)
         return prepared_event
 
