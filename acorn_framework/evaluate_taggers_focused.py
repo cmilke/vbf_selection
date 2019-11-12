@@ -16,12 +16,9 @@ _filename_infix = ''
 _plot_specifications = {
     '2JVT_null_mjj'   : ('2 JVT: $M_{jj}$', simple_event_taggers.mjjj_tagger.value_range)
   , '3JVT_truth_mjj'  : ('3 JVT: Truth - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
-  , '3JVT_2maxpt_mjjj' : ('3 JVT: $M_{jjj}$', simple_event_taggers.mjjj_tagger.value_range)
+  , '3JVT_basicNN_mjj'  : ('3 JVT: Basic NN - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
   , '3JVT_mjjmax_mjj'  : ('3 JVT: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
-  , '3JVT_2maxpt_mjj'  : ('3 JVT: 2 Max $p_t$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
   , '3JVT_random_mjj'  : ('3 JVT: Random - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
-  , '3JVTpt40_2maxpt_mjjj' : ('3 JVT $p_t$>40GeV: $M_{jjj}$', simple_event_taggers.mjjj_tagger.value_range)
-  , '3JVTpt40_mjjmax_mjj'  : ('3 JVT $p_t$>40GeV: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
   , '>=2_mjj'  : ('$\geq 2$ JVT: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
 }
 

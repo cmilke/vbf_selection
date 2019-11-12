@@ -23,7 +23,7 @@ _branch_list = {
                         'j0_JVT', 'j0_fJVT_Loose', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
 }
 
-_pt_cut = 50
+_pt_cut = 30
 
 
 def match_jet(vector_to_match, event):

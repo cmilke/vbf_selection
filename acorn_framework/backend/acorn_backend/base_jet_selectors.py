@@ -2,7 +2,7 @@ import random
 import math
 from uproot_methods import TLorentzVector
 from acorn_backend import simple_event_taggers
-from acorn_backend.machine_learning.simple_2_jet_tagger import basic_nn_tagger
+#from acorn_backend.machine_learning.simple_2_jet_tagger import basic_nn_tagger
 
 
 # Return the first two jets.
@@ -45,7 +45,7 @@ class base_selector():
 # Just a copy of the base_selector with a different tagger list
 class dummy_2_jet_selector(base_selector):
     key = 'dummy2jet'
-    tagger_class_list = [ basic_nn_tagger ]
+    tagger_class_list = [] #[ basic_nn_tagger ]
 
 
 # Select the vbf jets at random...

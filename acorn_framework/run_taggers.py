@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-'''
-Script which runs over a list of ntuples, filtering out events and jets.
-The output is a pickled dictionary containing categorized events,
-where each event is a python list of "cmilke_jet" objects,
-which store basic jet information used throughout the rest of the framework
-'''
-
 import sys
 import argparse
 import math
@@ -15,6 +8,7 @@ from acorn_backend.acorn_containers import acorn_jet
 from acorn_backend import event_categorization
 from acorn_backend import acorn_utils as autils
 from acorn_backend.tagger_loader import load_network_models
+from uproot_methods import TLorentzVector
 
 #Define all the high level root stuff: ntuple files, branches to be used
 _input_type_options = {
@@ -29,18 +23,24 @@ _input_type_options = {
 }
 _branch_list = {
     'event' : ['eventWeight']
-  , 'tpart' : ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi']
+  , 'tpart' : ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']
   , 'truthj': ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']
   , 'j0'    : ['j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
                         'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
 }
 
 
-def jet_matches(tparteta, tpartphi, truthjeta, truthjphi):
-    delta_eta = abs(tparteta - truthjeta)
-    delta_phi = abs(tpartphi - truthjphi)
-    delta_R = math.hypot(delta_eta, delta_phi)
-    return ( delta_R < 0.3 )
+def match_jet(vector_to_match, event):
+    for tp in autils.jet_iterator(event['tpart']):
+        if tp['tpartpdgID'] == autils.PDG['photon']:
+            if tp['tpartstatus'] != autils.Status['photon_out']: continue
+        elif tp['tpartstatus'] != autils.Status['outgoing']: continue
+
+        truth_vec = TLorentzVector.from_ptetaphim(tp['tpartpT'], tp['tparteta'], tp['tpartphi'], tp['tpartm'])
+
+        deltaR = vector_to_match.delta_r(truth_vec)
+        if deltaR < 0.3: return tp['tpartpdgID']
+    return -1
 
 
 def record_reco_jets(is_sig, event_weight, event, event_data_dump):
@@ -49,7 +49,11 @@ def record_reco_jets(is_sig, event_weight, event, event_data_dump):
     # Loop over reco jets, and append them to the appropriate lists
     for rj in autils.jet_iterator(event['j0']):
         # Filter out jets on basic pt/eta/photon cuts
-        if not autils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']) or rj['j0_isTightPhoton']: continue
+        if not autils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']): continue
+        v = TLorentzVector.from_ptetaphim(rj['j0pT'], rj['j0eta'], rj['j0phi'], rj['j0m'])
+        pdg = match_jet(v, event)
+        if pdg == autils.PDG['photon']: continue
+        #if rj['j0_isTightPhoton']: continue
 
         # Create jet object storing the essential aspects of the ntuple reco jet
         new_jet = acorn_jet.from_reco(rj)
@@ -78,7 +82,7 @@ def record_events(input_type, no_tagging_mode, debug_mode):
     input_list = _input_type_options[input_type][no_tagging_mode]
     is_sig = input_type == 'sig'
     events_per_bucket = 10 if debug_mode else 10000
-    max_bucket = 0 if debug_mode else 0
+    max_bucket = 0 if debug_mode else None
     for event in autils.event_iterator(input_list, 'Nominal', _branch_list, events_per_bucket, max_bucket):
         event_weight = event['event']['eventWeight']
         record_reco_jets(is_sig, event_weight, event, event_data_dump)
