@@ -20,15 +20,23 @@ _branch_list = {
   , 'tpart' : ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']
   , 'truthj': ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']
   , 'j0'    : ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
-                        'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
+                        'j0_JVT', 'j0_fJVT_Loose', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
 }
 
+_pt_cut = 50
 
-def jet_matches(tparteta, tpartphi, truthjeta, truthjphi):
-    delta_eta = abs(tparteta - truthjeta)
-    delta_phi = abs(tpartphi - truthjphi)
-    delta_R = math.hypot(delta_eta, delta_phi)
-    return ( delta_R < 0.3 )
+
+def match_jet(vector_to_match, event):
+    for tp in autils.jet_iterator(event['tpart']):
+        if tp['tpartpdgID'] == autils.PDG['photon']:
+            if tp['tpartstatus'] != autils.Status['photon_out']: continue
+        elif tp['tpartstatus'] != autils.Status['outgoing']: continue
+
+        truth_vec = TLorentzVector.from_ptetaphim(tp['tpartpT'], tp['tparteta'], tp['tpartphi'], tp['tpartm'])
+
+        deltaR = vector_to_match.delta_r(truth_vec)
+        if deltaR < 0.3: return tp['tpartpdgID']
+    return -1
 
 
 def event_fails_photon_cut(event):
@@ -36,8 +44,7 @@ def event_fails_photon_cut(event):
     photon_4vector = TLorentzVector.from_ptetaphim(0,0,0,0)
     for tp in autils.jet_iterator(event['tpart']):
         if tp['tpartpdgID'] != autils.PDG['photon']: continue
-        #if tp['tpartstatus'] != autils.Status['outgoing']: continue
-        if tp['tpartstatus'] != 1: continue
+        if tp['tpartstatus'] != autils.Status['photon_out']: continue
         photon_pts.append(tp['tpartpT'])
         v = TLorentzVector.from_ptetaphim(tp['tpartpT'], tp['tparteta'], tp['tpartphi'], tp['tpartm'])
         photon_4vector += v
@@ -49,58 +56,38 @@ def event_fails_photon_cut(event):
     return False
 
 
-def count_tjets_with_tparts(event):
-    num_tquarks = 0
-    num_tjets = 0
-    for tp in autils.jet_iterator(event['tpart']):
-        if tp['tpartstatus'] != autils.Status['outgoing']: continue
-        if tp['tpartpdgID'] == autils.PDG['photon']: continue
-        if tp['tpartpT'] < 30: continue
-        #if abs(tp['tparteta']) > 4: continue
-
-        num_tjets += 1
-        if tp['tpartpdgID'] in autils.PDG['quarks']: num_tquarks += 1
-    return num_tjets, num_tquarks
-
-
 def count_tjets_with_truthj(event):
     num_tjets = 0
     num_tquarks = 0
-    num_not_matched = 0
     for tj in autils.jet_iterator(event['truthj']):
-        matched = False
-        if tj['truthjpT'] < 30: continue
-        for tp in autils.jet_iterator(event['tpart']):
-            if tp['tpartpdgID'] not in autils.PDG['quarks']: continue
-            if tp['tpartstatus'] != autils.Status['outgoing']: continue
-            if jet_matches(tp['tparteta'],tp['tpartphi'],tj['truthjeta'],tj['truthjphi']):
-                num_tquarks += 1
-                matched = True
-                break
-        if not matched: num_not_matched += 1
-        num_tjets += 1
+        v = TLorentzVector.from_ptetaphim(tj['truthjpT'], tj['truthjeta'], tj['truthjphi'], tj['truthjm'])
+        pdg = match_jet(v, event)
+        if pdg == autils.PDG['photon']: continue
+        if pdg < 0: continue
+        if tj['truthjpT'] < _pt_cut: continue
 
+        num_tjets += 1
+        if pdg in autils.PDG['quarks']: num_tquarks += 1
     return num_tjets, num_tquarks
+    #return 0,0
 
 
 def count_rjets(event):
     num_rjets = 0
     num_rquarks = 0
     for rj in autils.jet_iterator(event['j0']):
-        #if rj['j0_isPU']: continue
-        #if rj['j0truthid'] == -1: continue
-        #if rj['tj0pT'] < 0: continue
-        if rj['j0truthid'] == autils.PDG['photon']: continue
+        v = TLorentzVector.from_ptetaphim(rj['j0pT'], rj['j0eta'], rj['j0phi'], rj['j0m'])
+        pdg = match_jet(v, event)
 
-        #if not (rj['j0_JVT'] and rj['j0_fJVT_Tight']): continue
+        if pdg == autils.PDG['photon']: continue
         #if rj['j0_isTightPhoton']: continue
-
-        if rj['j0pT'] < 30: continue
-        #if abs(rj['j0eta']) > 4: continue
+        if rj['j0pT'] < _pt_cut: continue
+        if not (rj['j0_JVT'] and rj['j0_fJVT_Tight']): continue
 
         num_rjets += 1
-        if rj['j0truthid'] in autils.PDG['quarks']: num_rquarks += 1
+        if pdg in autils.PDG['quarks']: num_rquarks += 1
     return num_rjets, num_rquarks
+    #return 3,3
 
 
 def count_all_jets(input_type):
@@ -110,12 +97,10 @@ def count_all_jets(input_type):
     input_list = _input_type_options[input_type]
     for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, 0):
         if event_fails_photon_cut(event): continue
-        num_tjets, num_tquarks = count_tjets_with_tparts(event)
+        num_tjets, num_tquarks = count_tjets_with_truthj(event)
         num_rjets, num_rquarks = count_rjets(event)
 
-        #print(tcounter)
-        #print(rcounter)
-        if num_rjets >= 2 and num_rquarks >= 2:
+        if num_rjets >= 2:
             tcounter.append(num_tjets)
             rcounter.append(num_rjets)
 
@@ -125,18 +110,19 @@ def count_all_jets(input_type):
 def tally_events(input_type):
     print('INPUT: ' + input_type)
     tcounter, rcounter = count_all_jets(input_type)
+    #for t,r in zip(tcounter,rcounter): print(t,r)
 
     hist_bins = range(6) 
     display_bins = 10
     counts, xedges, yedges = numpy.histogram2d(tcounter, rcounter, bins=hist_bins)
     counts = counts / counts.sum()
-    unsorted_data = [ (i,j,counts[i][j]) for i in xedges[:-1] for j in yedges[:-1] ]
-    unsorted_data.sort(key=lambda x: x[2], reverse=True)
-    for count in unsorted_data[:display_bins]: print( '({}, {}): {:.2}'.format(*count) )
+    binned_data = [ (i,j,counts[i][j]) for i in xedges[:-1] for j in yedges[:-1] ]
+    binned_data.sort(key=lambda x: x[2], reverse=True)
+    for count in binned_data[:display_bins]: print( '({}, {}): {:.2}'.format(*count) )
 
     plot_data = { 'x': [] , 'weights': [] }
     xlabels = []
-    for bin_number, (truth_jets, reco_jets, counts) in enumerate(unsorted_data[:display_bins]):
+    for bin_number, (truth_jets, reco_jets, counts) in enumerate(binned_data[:display_bins]):
         plot_data['x'].append(bin_number)
         plot_data['weights'].append(counts)
         xlabels.append( '({},{})'.format(truth_jets, reco_jets) )
@@ -147,8 +133,8 @@ def tally_events(input_type):
     plt.xlabel('(n truth, n reco)')
     plt.ylabel('Fraction')
     plt.ylim(0, 1.0)
-    plt.title('VBF truth-reco cases (pT threshold 30 GeV)')
-    fig.savefig('jet_counts_30GeV.pdf')
+    plt.title('VBF truth-reco cases (pT threshold '+str(_pt_cut)+' GeV)')
+    fig.savefig('jet_counts_'+str(_pt_cut)+'GeV.pdf')
 
 
 tally_events('sig')

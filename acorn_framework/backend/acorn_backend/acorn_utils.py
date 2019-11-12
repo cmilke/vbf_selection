@@ -42,7 +42,8 @@ PDG = {
 }
 
 Status = {
-    'outgoing': 23
+    'outgoing': 23,
+    'photon_out': 1
 }
 
 Pt_min = 30 #GeV
