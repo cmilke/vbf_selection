@@ -11,6 +11,7 @@ import math
 import matplotlib
 import matplotlib.pyplot as plot
 import acorn_backend.base_jet_selectors
+from uproot_methods import TLorentzVector
 
 class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
     #############################################
@@ -33,25 +34,11 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
 
     @classmethod
     def prepare_event(cls, event):
-        # Extract and normalize eta, phi, and pt from each jet
-        normalized_list = []
+        p_list = []
         for jet in event.jets:
-            # Normalize eta by converting it to theta
-            theta = 2 * math.atan( math.exp(-jet.eta) )
-            normalized_eta = theta / math.pi
-
-            # Phi is naturally bounded, so it's trivial to normalize
-            normalized_phi = ( jet.phi + math.pi) / (2*math.pi)
-
-            # Normalize pt by arbitrarily bounding it with a
-            # sigmoid centered at pt = 75
-            rescaled_pt = (jet.pt - 75) / 15
-            normalized_pt = 1 / ( 1 + math.exp(-rescaled_pt) )
-
-            normalized_jet = [normalized_eta, normalized_phi, normalized_pt]
-            normalized_list += normalized_jet
-
-        prepared_event = numpy.array(normalized_list)
+            vec = TLorentzVector.from_ptetaphim(jet.pt, jet.eta, jet.phi, jet.m)
+            p_list.append([ vec.p3.x, vec.p3.y, vec.p3.z ])
+        prepared_event = numpy.array(p_list)
         return prepared_event
 
 
@@ -68,6 +55,7 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
 
         # Build and compile neural network model 
         model = tb.keras.Sequential([
+            tb.keras.layers.Flatten( input_shape=(3,3) ),
             tb.keras.layers.Dense(18, activation=tb.tensorflow.nn.relu),
             tb.keras.layers.Dense(3, activation=tb.tensorflow.nn.softmax)
         ])

@@ -1,8 +1,9 @@
 from acorn_backend import acorn_utils as autils
 from acorn_backend.tagger_loader import selector_options
+from uproot_methods import TLorentzVector
 
 class acorn_jet:
-    def __init__(self, pt, eta, phi, m, pdgid, pu, JVT, fJVT):
+    def __init__(self, pt, eta, phi, m, pdgid, pu, JVT, fJVT, v):
         self.pt = pt
         self.eta = eta
         self.phi = phi
@@ -10,13 +11,15 @@ class acorn_jet:
         self.truth_id = pdgid
         self.is_pileup = pu
         self.passes_JVT = (JVT and fJVT)
+        self.vector = v
 
     @classmethod
-    def from_reco(cls, rj):
+    def from_reco(cls, rj, pdgid):
+        v = TLorentzVector.from_ptetaphim(rj['j0pT'], rj['j0eta'], rj['j0phi'], rj['j0m'])
         return acorn_jet(
             rj['j0pT'], rj['j0eta'], rj['j0phi'],
-            rj['j0m'], rj['j0truthid'], rj['j0_isPU'],
-            rj['j0_JVT'], rj['j0_fJVT_Tight']
+            rj['j0m'], pdgid, rj['j0_isPU'],
+            rj['j0_JVT'], rj['j0_fJVT_Tight'], v
         )
 
     def __repr__(self):

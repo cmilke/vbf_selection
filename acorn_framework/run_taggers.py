@@ -51,12 +51,12 @@ def record_reco_jets(is_sig, event_weight, event, event_data_dump):
         # Filter out jets on basic pt/eta/photon cuts
         if not autils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']): continue
         v = TLorentzVector.from_ptetaphim(rj['j0pT'], rj['j0eta'], rj['j0phi'], rj['j0m'])
-        pdg = match_jet(v, event)
-        if pdg == autils.PDG['photon']: continue
+        pdgid = match_jet(v, event)
+        if pdgid == autils.PDG['photon']: continue
         #if rj['j0_isTightPhoton']: continue
 
         # Create jet object storing the essential aspects of the ntuple reco jet
-        new_jet = acorn_jet.from_reco(rj)
+        new_jet = acorn_jet.from_reco(rj,pdgid)
         recorded_jets.append(new_jet)
 
     # Categorize event, and then either discard the event or perform tagging on it
