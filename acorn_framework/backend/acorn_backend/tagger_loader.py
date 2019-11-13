@@ -14,7 +14,7 @@ selector_options = [
     [ #3
         base_selectors.truth_selector
       , base_selectors.maximal_mjj_selector
-      , base_selectors.highest_pt_selector
+      #, base_selectors.highest_pt_selector
       , base_selectors.random_selector
       , basic_neural_net_selector 
     ]

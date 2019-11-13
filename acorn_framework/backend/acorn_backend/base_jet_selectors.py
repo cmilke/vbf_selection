@@ -10,9 +10,9 @@ from acorn_backend import simple_event_taggers
 class base_selector():
     key = 'null'
     tagger_class_list = [
-        simple_event_taggers.delta_eta_tagger,
-        simple_event_taggers.mjj_tagger,
-        simple_event_taggers.mjjj_tagger
+        simple_event_taggers.mjj_tagger
+      #, simple_event_taggers.delta_eta_tagger
+      #, simple_event_taggers.mjjj_tagger
     ]
 
     def select(self, event):
