@@ -21,10 +21,10 @@ class acorn_jet:
         
 
 class acorn_event:
-    def __init__(self, jet_list, event_weight, this_event_should_be_tagged):
+    def __init__(self, jet_list, event_weight, is_sig, this_event_should_be_tagged):
         self.jets = jet_list
-        self.event_weight = 1 #event_weight
-
+        self.event_weight = 1 #event_weight 
+        self.signal = is_sig
         if this_event_should_be_tagged:
             # Use all available jet selectors to try and identify
             # which jets are the VBF signature jets.

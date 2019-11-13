@@ -64,7 +64,7 @@ def record_reco_jets(is_sig, event_weight, event, event_data_dump):
         category.add_event(recorded_jets, is_sig, event_weight)
 
 
-def record_events(input_type, no_tagging_mode, debug_mode):
+def record_events(input_type, args):
     # Define all event categories we want to use
     categories_to_dump = [
         event_categorization.filter_with_JVT
@@ -72,26 +72,28 @@ def record_events(input_type, no_tagging_mode, debug_mode):
 
     event_data_dump = {}
     for category_class in categories_to_dump:
-        event_data_dump[category_class.key] = category_class(not no_tagging_mode)
+        event_data_dump[category_class.key] = category_class(not args.notag)
         
 
     # Iterate over each event in the ntuple list,
     # storing/sorting/filtering events into the data_dump as it goes
-    input_list = _input_type_options[input_type][no_tagging_mode]
+    input_list = _input_type_options[input_type][(args.notag | args.train)]
     is_sig = input_type == 'sig'
-    events_per_bucket = 10 if debug_mode else 10000
-    max_bucket = 0 if debug_mode else 0
+    events_per_bucket = 10 if args.debug else 10000
+    max_bucket = 0 if args.debug else 0
     for event in autils.event_iterator(input_list, 'Nominal', _branch_list, events_per_bucket, max_bucket):
         event_weight = event['event']['eventWeight']
         record_reco_jets(is_sig, event_weight, event, event_data_dump)
 
-    if debug_mode:
+    if args.debug:
         for category in event_data_dump.values(): print(category)
     else:
         for category in event_data_dump.values(): print( category.summary() )
 
     # Output the event categories for use by later scripts
-    training_infix = 'untagged_' if no_tagging_mode else ''
+    training_infix = ''
+    if args.train: training_infix = 'training_'
+    if args.notag: training_infix = 'untagged_'
     pickle.dump( event_data_dump, open('data/output_'+training_infix+input_type+'.p', 'wb') )
 
 
@@ -115,11 +117,19 @@ def run():
     ) 
 
     parser.add_argument(
-        "-N", 
+        "--notag", 
         required = False,
         default = False,
         action = 'store_true',
-        help     = "Disables tagging and VBF jet selection (only categorize and record events). Used to create inputs for ML training.",
+        help     = "Disables tagging and VBF jet selection (only categorize and record events).",
+    ) 
+
+    parser.add_argument(
+        "--train", 
+        required = False,
+        default = False,
+        action = 'store_true',
+        help     = "Use training sample. Used to create inputs for ML training.",
     ) 
 
     parser.add_argument(
@@ -132,12 +142,12 @@ def run():
 
     args = parser.parse_args()
 
-    if not args.N: load_network_models()
+    if not args.notag: load_network_models()
 
-    if args.s: record_events('sig', args.N, args.debug)
-    if args.b: record_events('bgd', args.N, args.debug)
+    if args.s: record_events('sig', args)
+    if args.b: record_events('bgd', args)
     if not (args.b or args.s):
-        record_events('sig', args.N, args.debug)
-        record_events('bgd', args.N, args.debug)
+        record_events('sig', args)
+        record_events('bgd', args)
 
 run()

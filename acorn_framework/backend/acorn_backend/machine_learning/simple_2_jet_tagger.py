@@ -10,57 +10,43 @@ import numpy
 import math
 import matplotlib
 import matplotlib.pyplot as plot
-import acorn_backend.simple_event_taggers.base_tagger
+import acorn_backend.simple_event_taggers
 
-# TODO: actually make this a tagger not a selector
 class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
     #############################################
     ### Neural Network specific class members ###
     #############################################
     model_file = 'data/basic_nn_tagger_model.h5'
-    jet_count_range = range(3,4) # This neural net is only intented for 3-jet events
-    pair_labels = [
-        [0,1],
-        [0,2],
-        [1,2]
-    ]
     network_model = None
 
 
     @classmethod
     def load_model(cls):
-        cls.network_model = tb.keras.models.load_model(cls.model_file)
+        try: cls.network_model = tb.keras.models.load_model(cls.model_file)
+        except OSError:
+            print('\nWARNING: Model ' + cls.model_file + ' does not exist.'
+                ' If you are not currently tagging this model, then something has gone wrong!\n')
     
 
     @classmethod
     def prepare_event(cls, event):
-        # Extract and normalize eta, phi, and pt from each jet
-        normalized_list = []
-        for jet in event.jets:
-            # Normalize eta by converting it to theta
-            theta = 2 * math.atan( math.exp(-jet.vector.eta) )
-            normalized_eta = theta / math.pi
+        j0 = event.jets[0]
+        j1 = event.jets[1]
+        data = [
+            j0.vector.pt,
+            j0.vector.eta,
+            j1.vector.pt,
+            j1.vector.eta,
+            (j0.vector+j1.vector).mass
+        ]
 
-            # Phi is naturally bounded, so it's trivial to normalize
-            normalized_phi = ( jet.vector.phi + math.pi) / (2*math.pi)
-
-            # Normalize pt by arbitrarily bounding it with a
-            # sigmoid centered at pt = 75
-            rescaled_pt = (jet.vector.pt - 75) / 15
-            normalized_pt = 1 / ( 1 + math.exp(-rescaled_pt) )
-
-            normalized_jet = [normalized_eta, normalized_phi, normalized_pt]
-            normalized_list += normalized_jet
-
-        prepared_event = numpy.array(normalized_list)
+        prepared_event = numpy.array(data)
         return prepared_event
 
 
     @classmethod
     def get_label(cls, event):
-        vbf_jets = [ i for i,jet in enumerate(event.jets) if jet.is_truth_quark() ]
-        label = cls.pair_labels.index(vbf_jets)
-        return label
+        return int(event.signal)
 
 
     @classmethod
@@ -69,8 +55,9 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
 
         # Build and compile neural network model 
         model = tb.keras.Sequential([
+            tb.keras.layers.Flatten( input_shape=(5,1) ),
             tb.keras.layers.Dense(18, activation=tb.tensorflow.nn.relu),
-            tb.keras.layers.Dense(3, activation=tb.tensorflow.nn.softmax)
+            tb.keras.layers.Dense(2, activation=tb.tensorflow.nn.softmax)
         ])
 
         model.compile( optimizer='adam',
@@ -97,16 +84,19 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
             print(result)
 
 
-    #############################
-    ### Jet Selection Members ###
-    #############################
-    key = 'basicNN'
+    ######################
+    ### Tagger Members ###
+    ######################
+    key = '2jetNNtagger'
+    value_range = (-100, 100)
 
-    def select(self, event):
+    def __init__(self, event, selections):
         cls = self.__class__
-        prepared_event = cls.prepare_event(event)
-        singular_datum = numpy.array([prepared_event])
-        predictions = cls.network_model.predict(singular_datum)
-        prediction_index = numpy.argmax(predictions)
-        jet_index_pair = cls.pair_labels[prediction_index]
-        return tuple(jet_index_pair)
+        if cls.network_model == None:
+            self.discriminant = 0
+        else:
+            prepared_event = cls.prepare_event(event)
+            singular_datum = numpy.array([prepared_event])
+            predictions = cls.network_model.predict(singular_datum)
+            llr = math.log(predictions[1] / predictions[0])
+            self.discriminant = llr

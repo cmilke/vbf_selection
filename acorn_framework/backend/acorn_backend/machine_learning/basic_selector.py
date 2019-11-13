@@ -29,8 +29,11 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
 
     @classmethod
     def load_model(cls):
-        cls.network_model = tb.keras.models.load_model(cls.model_file)
-    
+        try: cls.network_model = tb.keras.models.load_model(cls.model_file)
+        except OSError:
+            print('\nWARNING: Model ' + cls.model_file + ' does not exist.'
+                ' If you are not currently tagging this model, then something has gone wrong!\n')
+            
 
     @classmethod
     def prepare_event(cls, event):
@@ -90,9 +93,12 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
 
     def select(self, event):
         cls = self.__class__
-        prepared_event = cls.prepare_event(event)
-        singular_datum = numpy.array([prepared_event])
-        predictions = cls.network_model.predict(singular_datum)
-        prediction_index = numpy.argmax(predictions)
-        jet_index_pair = cls.pair_labels[prediction_index]
-        return tuple(jet_index_pair)
+        if cls.network_model == None:
+            return (0,1)
+        else:
+            prepared_event = cls.prepare_event(event)
+            singular_datum = numpy.array([prepared_event])
+            predictions = cls.network_model.predict(singular_datum)
+            prediction_index = numpy.argmax(predictions)
+            jet_index_pair = cls.pair_labels[prediction_index]
+            return tuple(jet_index_pair)

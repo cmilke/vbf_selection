@@ -74,7 +74,7 @@ class base_categorizer():
         if not self.passes_event_filter(filtered_jets): return
 
         #Create new event, which will immediately tag itself
-        new_event = acorn_event(filtered_jets, event_weight, self.tagging_events)
+        new_event = acorn_event(filtered_jets, event_weight, is_sig, self.tagging_events)
         self.events.append(new_event)
 
     def summary(self):
