@@ -14,12 +14,12 @@ _hist_bins = 200
 _filename_infix = ''
 
 _plot_specifications = {
-    '2JVT_null_mjj'   : ('2 JVT: $M_{jj}$', simple_event_taggers.mjjj_tagger.value_range)
-  , '3JVT_truth_mjj'  : ('3 JVT: Truth - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
-  , '3JVT_basicNN_mjj'  : ('3 JVT: Basic NN - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
-  , '3JVT_mjjmax_mjj'  : ('3 JVT: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
-  , '3JVT_random_mjj'  : ('3 JVT: Random - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
-  , '>=2_mjj'  : ('$\geq 2$ JVT: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
+    '2JVT_null_mjj'   : ('2: $M_{jj}$', simple_event_taggers.mjjj_tagger.value_range)
+  , '3JVT_truth_mjj'  : ('3: Truth - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
+  , '3JVT_basicNN_mjj'  : ('3: Basic NN - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
+  , '3JVT_mjjmax_mjj'  : ('3: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
+  , '3JVT_random_mjj'  : ('3: Random - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
+  , '>=2_mjj'  : ('$\geq 2$: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
 }
 
 _performances_to_combine = {
