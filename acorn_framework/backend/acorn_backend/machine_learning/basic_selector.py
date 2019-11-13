@@ -98,7 +98,7 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector):
         else:
             prepared_event = cls.prepare_event(event)
             singular_datum = numpy.array([prepared_event])
-            predictions = cls.network_model.predict(singular_datum)
+            predictions = cls.network_model.predict(singular_datum)[0]
             prediction_index = numpy.argmax(predictions)
             jet_index_pair = cls.pair_labels[prediction_index]
             return tuple(jet_index_pair)

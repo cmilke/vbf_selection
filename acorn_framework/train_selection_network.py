@@ -13,7 +13,7 @@ def train():
     input_type = 'sig'
     training_category = 'JVT'
 
-    data_dump = pickle.load( open('data/output_untagged_'+input_type+'.p', 'rb') )
+    data_dump = pickle.load( open('data/output_training_'+input_type+'.p', 'rb') )
 
     prepared_data_list = []
     data_labels_list = []
@@ -34,9 +34,9 @@ def train():
     training_labels = data_labels[:training_cutoff]
     testing_labels  = data_labels[training_cutoff:]
 
-    training_class.train_model(training_data, training_labels)
 
-    training_class.test_model(training_data, training_labels)
+    training_class.train_model(training_data, training_labels)
+    training_class.test_model(testing_data, testing_labels)
 
 
 train()

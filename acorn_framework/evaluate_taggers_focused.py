@@ -8,6 +8,7 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from acorn_backend import simple_event_taggers
+from acorn_backend.machine_learning.simple_2_jet_tagger import basic_nn_tagger
 
 _hist_bins = 200
 
@@ -15,6 +16,7 @@ _filename_infix = ''
 
 _plot_specifications = {
     '2JVT_null_mjj'   : ('2: $M_{jj}$', simple_event_taggers.mjjj_tagger.value_range)
+  , '2JVT_dummy2jet_2jetNNtagger'  : ('2: Simple NN Tagger', basic_nn_tagger.value_range)
   , '3JVT_truth_mjj'  : ('3: Truth - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
   , '3JVT_basicNN_mjj'  : ('3: Basic NN - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)
   , '3JVT_mjjmax_mjj'  : ('3: Maximized $M_{jj}$ - $M_{jj}$', simple_event_taggers.mjj_tagger.value_range)

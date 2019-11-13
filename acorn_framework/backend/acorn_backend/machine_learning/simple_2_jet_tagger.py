@@ -29,15 +29,16 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
     
 
     @classmethod
-    def prepare_event(cls, event):
-        j0 = event.jets[0]
-        j1 = event.jets[1]
+    def prepare_event(cls, event, selections):
+        jet_list = event.jets
+        jet0 = jet_list[selections[0]]
+        jet1 = jet_list[selections[1]]
         data = [
-            j0.vector.pt,
-            j0.vector.eta,
-            j1.vector.pt,
-            j1.vector.eta,
-            (j0.vector+j1.vector).mass
+            jet0.vector.pt,
+            jet0.vector.eta,
+            jet1.vector.pt,
+            jet1.vector.eta,
+            (jet0.vector+jet1.vector).mass
         ]
 
         prepared_event = numpy.array(data)
@@ -55,7 +56,7 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
 
         # Build and compile neural network model 
         model = tb.keras.Sequential([
-            tb.keras.layers.Flatten( input_shape=(5,1) ),
+            #tb.keras.layers.Flatten( input_shape=(1,5) ),
             tb.keras.layers.Dense(18, activation=tb.tensorflow.nn.relu),
             tb.keras.layers.Dense(2, activation=tb.tensorflow.nn.softmax)
         ])
@@ -95,8 +96,11 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
         if cls.network_model == None:
             self.discriminant = 0
         else:
-            prepared_event = cls.prepare_event(event)
+            prepared_event = cls.prepare_event(event, selections)
             singular_datum = numpy.array([prepared_event])
-            predictions = cls.network_model.predict(singular_datum)
-            llr = math.log(predictions[1] / predictions[0])
+            predictions = cls.network_model.predict(singular_datum)[0]
+            if predictions[0] == 0:
+                llr = 1000
+            else:
+                llr = math.log(predictions[1] / predictions[0])
             self.discriminant = llr

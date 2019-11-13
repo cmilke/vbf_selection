@@ -50,9 +50,9 @@ class mjj_tagger(base_tagger):
 
     def __init__(self, event, selections):
         jet_list = event.jets
-        j0 = jet_list[selections[0]]
-        j1 = jet_list[selections[1]]
-        mjj = (j0.vector + j1.vector).mass
+        jet0 = jet_list[selections[0]]
+        jet1 = jet_list[selections[1]]
+        mjj = (jet0.vector + jet1.vector).mass
         self.discriminant = mjj
 
 
