@@ -89,7 +89,7 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
     ### Tagger Members ###
     ######################
     key = '2jetNNtagger'
-    value_range = (-100, 100)
+    value_range = (-20, 20)
 
     def __init__(self, event, selections):
         cls = self.__class__
@@ -100,7 +100,7 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
             singular_datum = numpy.array([prepared_event])
             predictions = cls.network_model.predict(singular_datum)[0]
             if predictions[0] == 0:
-                llr = 1000
+                llr = 100
             else:
                 llr = math.log(predictions[1] / predictions[0])
             self.discriminant = llr

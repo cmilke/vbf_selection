@@ -106,15 +106,10 @@ class maximal_mjj_selector(base_selector):
     def select(self, event):
         jet_idents = [-1,-1]
         max_mjj = -1
-        num_jets = len(event.jets)
-        for i in range(0, num_jets):
-            for j in range(i+1, num_jets):
-                j0 = event.jets[i]
-                j1 = event.jets[j]
-                v0 = TLorentzVector.from_ptetaphim(j0.vector.pt, j0.vector.eta, j0.vector.phi, j0.vector.mass)
-                v1 = TLorentzVector.from_ptetaphim(j1.vector.pt, j1.vector.eta, j1.vector.phi, j1.vector.mass)
-                combined = v0 + v1
-                mjj = combined.mass
+
+        for i,jet1 in enumerate(event.jets[:-1]): 
+            for j,jet2 in enumerate(event.jets[i+1:]):
+                mjj = (jet1.vector+jet2.vector).mass
                 if mjj > max_mjj:
                     max_mjj = mjj
                     jet_idents = [i,j]
