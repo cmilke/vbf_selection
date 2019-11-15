@@ -1,32 +1,16 @@
-import sys
-
-# TensorFlow and tf.keras
-# I don't want these to be loaded when unpickeling
-# this object, so I import them indirectly through this buffer file
-import acorn_backend.machine_learning.tensorflow_buffer as tb
-
-#Helper libraries
 import numpy
 import math
-import matplotlib
-import matplotlib.pyplot as plot
+import acorn_backend.machine_learning.tensorflow_buffer as tb
 import acorn_backend.simple_event_taggers
+from acorn_backend.machine_learning.neural_network_template import template_NN
 
-class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
+class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger, template_NN):
     #############################################
     ### Neural Network specific class members ###
     #############################################
     model_file = 'data/basic_nn_tagger_model.h5'
     network_model = None
 
-
-    @classmethod
-    def load_model(cls):
-        try: cls.network_model = tb.keras.models.load_model(cls.model_file)
-        except OSError:
-            print('\nWARNING: Model ' + cls.model_file + ' does not exist.'
-                ' If you are not currently tagging this model, then something has gone wrong!\n')
-    
 
     @classmethod
     def prepare_event(cls, event, selections):
@@ -67,22 +51,6 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger):
 
         model.fit(training_data, training_labels, epochs=5) # Train Model
         model.save(cls.model_file) # Save Model
-
-
-    @classmethod
-    def test_model(cls, test_data, test_labels):
-        print('TESTING MODEL')
-        model = tb.keras.models.load_model(cls.model_file) # Load Model
-
-        # Evaluate Trained Model
-        test_loss, test_accuracy = model.evaluate(test_data, test_labels)
-        print('Test accuracy: ', test_accuracy)
-
-        predictions = model.predict(test_data)
-        for label, prediction in zip(test_labels[:10], predictions[:10]):
-            result = str(label) + ': '
-            result += str(prediction)
-            print(result)
 
 
     ######################

@@ -8,7 +8,7 @@ ntuple*.root:
    ||   The current starting point, ntuple generated from a raw AOD
    ||
    \/
-vbf_selection/run_taggers.py: 
+acorn_framework/run_taggers.py: 
    ||       |   The central script of the framework, which takes as input a series of ntuples,
    ||       |   and iterates through them event-by-event. 
    ||       |   For every event, it iterates over the reco jets in the event,
@@ -24,7 +24,7 @@ vbf_selection/run_taggers.py:
    ||       |   but not perform selection or tagging on them.
    ||       |
    ||       v
-   ||   vbf_selection/acorn_backend/event_categoriztion.py:
+   ||   acorn_framework/acorn_backend/event_categoriztion.py:
    ||       |   Each category class takes in a list of jets and other event information,
    ||       |   and applies its own set of filters and selection criteria to this information,
    ||       |   excluding jets or entire events. After passing through the class's filters,
@@ -32,21 +32,21 @@ vbf_selection/run_taggers.py:
    ||       |   to the category's event list
    ||       | 
    ||       v 
-   ||   vbf_selection/acorn_backend/acorn_containers.py:
+   ||   acorn_framework/acorn_backend/acorn_containers.py:
    ||       |   This file contains both the acorn_jet class and the acorn_event class.
    ||       |   acorn_jets are created in run_taggers.py, just as a way to aggregate the disparate
    ||       |   information from the ntuple jets into one place.
    ||       |
    ||       |   The acorn_event object is created by the event_category classes.
    ||       |   Upon creation, the acorn_event object will iterate over the list of all available
-   ||       |   "jet_selectors" (this list exists in vbf_selection/acorn_backend/selector_loader.py),
+   ||       |   "jet_selectors" (this list exists in acorn_framework/acorn_backend/selector_loader.py),
    ||       |   and passes itself to each selector object for selection and tagging.
    ||       |
    ||       v
-   ||    vbf_selection/acorn_backend/base_jet_selectors.py and others...:
+   ||    acorn_framework/acorn_backend/base_jet_selectors.py and others...:
    ||       |   This file contains the base jet selector (from which all other selectors are extensions),
    ||       |   as well as a number of very basic selectors. Other more sophisticated selectors can be
-   ||       |   found in vbf_selection/acorn_backend/machine_learning/. This class takes an event as input,
+   ||       |   found in acorn_framework/acorn_backend/machine_learning/. This class takes an event as input,
    ||       |   and as output produces a tuple of integers. These integers correspond to indices within
    ||       |   the jets list the acorn_event object contains. Specifically, they are the indices of the
    ||       |   2 jets that this selector class believes to be the VBF signal jets of the event.  
@@ -56,7 +56,7 @@ vbf_selection/run_taggers.py:
    ||       |   event taggers.
    ||       |
    ||       v
-   ||    vbf_selection/acorn_backend/event_taggers.py
+   ||    acorn_framework/acorn_backend/event_taggers.py
    ||           The last step of the run_taggers hierarchy.
    ||           This class takes as input an acorn_event object, as well as the tuple output of 
    ||           a selector class. The tagger class then uses these to produces some sort of
@@ -69,28 +69,22 @@ vbf_selection/run_taggers.py:
    ||           (It makes it easier to graph things if all discriminants work this way)
    ||           
    \/
-vbf_selection/output_*.p:
+acorn_framework/output_*.p:
    ||   The pickled output of run_taggers.py. Contains a large nested data structure of all events,
    ||   filtered and sorted, with each event optionally containing various selection and tagging
    ||   information.
    ||
    \/
-vbf_selection/evaluate*.py:
+acorn_framework/evaluate*.py:
    ||   A series of evaluation scripts which evaluate the efficiency
    ||   of various aspects of the framework. These scripts are strictly intended
    ||   to produce final performance plots/figures. Any scripts which are meant 
    ||   to investigate the underlying mechanisms and parameters of the framework
-   ||   or ntuple are located in vbf_selection/studies/
+   ||   or ntuple are located in acorn_framework/studies/
    \/
-vbf_selection/plots/performance/*.pdf:
+acorn_framework/plots/performance/*.pdf:
         A large variety of performance plots showing how well the framework algorithms
         actually work.
-
-
-
-
-
-
 
 
 

@@ -1,29 +1,42 @@
+import sys
+
+# TensorFlow and tf.keras
+# I don't want these to be loaded when unpickeling
+# this object, so I import them indirectly through this buffer file
+import acorn_backend.machine_learning.tensorflow_buffer as tb
+from acorn_backend.machine_learning.basic_selector import basic_neural_net_selector
+
+#Helper libraries
 import numpy
 import math
+import matplotlib
+import matplotlib.pyplot as plot
 import acorn_backend.base_jet_selectors
-import acorn_backend.machine_learning.tensorflow_buffer as tb
 from uproot_methods import TLorentzVector
-from acorn_backend.machine_learning.neural_network_template import template_NN
 
-class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector, template_NN):
+class dual_layer_selector(basic_neural_net_selector):
     #############################################
     ### Neural Network specific class members ###
     #############################################
-    model_file = 'data/basic_neural_net_selector_model.h5'
-    jet_count_range = range(3,4) # This neural net is only intented for 3-jet events
+    model_file = 'data/dual_layer_selector_model.h5'
     pair_labels = [
         [0,1],
         [0,2],
-        [1,2]
+        [1,2],
+        [0,1,2]
     ]
     network_model = None
-            
+
 
     @classmethod
     def prepare_event(cls, event):
         p_list = []
         for jet in event.jets:
             p_list.append([ jet.vector.p3.x, jet.vector.p3.y, jet.vector.p3.z ])
+        m01 = (event.jets[0].vector + event.jets[1].vector).mass
+        m02 = (event.jets[0].vector + event.jets[2].vector).mass
+        m12 = (event.jets[1].vector + event.jets[2].vector).mass
+        p_list.append([m01, m02, m12])
         prepared_event = numpy.array(p_list)
         return prepared_event
 
@@ -41,9 +54,10 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector, 
 
         # Build and compile neural network model 
         model = tb.keras.Sequential([
-            tb.keras.layers.Flatten( input_shape=(3,3) ),
+            tb.keras.layers.Flatten( input_shape=(3,4) ),
             tb.keras.layers.Dense(18, activation=tb.tensorflow.nn.relu),
-            tb.keras.layers.Dense(3, activation=tb.tensorflow.nn.softmax)
+            tb.keras.layers.Dense(24, activation=tb.tensorflow.nn.relu),
+            tb.keras.layers.Dense(len(cls.pair_labels), activation=tb.tensorflow.nn.softmax)
         ])
 
         model.compile( optimizer='adam',
@@ -57,16 +71,4 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector, 
     #############################
     ### Jet Selection Members ###
     #############################
-    key = 'basicNN'
-
-    def select(self, event):
-        cls = self.__class__
-        if cls.network_model == None:
-            return (0,1)
-        else:
-            prepared_event = cls.prepare_event(event)
-            singular_datum = numpy.array([prepared_event])
-            predictions = cls.network_model.predict(singular_datum)[0]
-            prediction_index = numpy.argmax(predictions)
-            jet_index_pair = cls.pair_labels[prediction_index]
-            return tuple(jet_index_pair)
+    key = 'dualLayerNN'
