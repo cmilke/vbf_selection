@@ -13,10 +13,13 @@ _filename_infix = ''
 
 _plot_specifications = {
     (2,'JVT','null','mjj') : '2: $M_{jj}$'
-  , (2,'JVT','dummy2jet','2jetNNtagger') : '2: Simple NN Tagger'
+  , (2,'JVT','null','2jetNNtagger') : '2: Simple NN Tagger'
+  #, (2,'JVT','dummy2jet','2jetNNtagger') : '2: Simple NN Tagger'
   , (3,'JVT','truth','mjj') : '3: Truth - $M_{jj}$'
-  , (3,'JVT','basicNN','mjj') : '3: Basic NN - $M_{jj}$'
-  , (3,'JVT','mjjmax','mjj') : '3: Maximized $M_{jj}$ - $M_{jj}$'
+  #, (3,'JVT','basicNN','mjj') : '3: Basic NN - $M_{jj}$'
+  , (3,'JVT','dualLayerNN','mjj') : '3: Dual Layer NN - $M_{jj}$'
+  , (3,'JVT','mjjmax','mjj') : '3: Max $M_{jj}$ - $M_{jj}$'
+  , (3,'JVT','mjjmax','2jetNNtagger') : '3: Max $M_{jj}$ - Simple NN Tagger'
   , (3,'JVT','random','mjj') : '3: Random - $M_{jj}$'
   , '>=2_mjj' : '$\geq 2$: Maximized $M_{jj}$ - $M_{jj}$'
 }

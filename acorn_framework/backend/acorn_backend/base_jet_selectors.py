@@ -11,6 +11,7 @@ class base_selector():
     key = 'null'
     tagger_class_list = [
         simple_event_taggers.mjj_tagger
+      , basic_nn_tagger
       #, simple_event_taggers.delta_eta_tagger
       #, simple_event_taggers.mjjj_tagger
     ]
@@ -107,12 +108,16 @@ class maximal_mjj_selector(base_selector):
         jet_idents = [-1,-1]
         max_mjj = -1
 
-        for i,jet1 in enumerate(event.jets[:-1]): 
-            for j,jet2 in enumerate(event.jets[i+1:]):
-                mjj = (jet1.vector+jet2.vector).mass
+        num_jets = len(event.jets)
+        for i in range(0, num_jets):
+            for j in range(i+1, num_jets):
+                jet0 = event.jets[i]
+                jet1 = event.jets[j]
+                mjj = (jet0.vector+jet1.vector).mass
                 if mjj > max_mjj:
                     max_mjj = mjj
                     jet_idents = [i,j]
+
         return tuple(jet_idents)
 
 

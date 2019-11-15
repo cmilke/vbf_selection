@@ -22,8 +22,7 @@ class dual_layer_selector(basic_neural_net_selector):
     pair_labels = [
         [0,1],
         [0,2],
-        [1,2],
-        [0,1,2]
+        [1,2]
     ]
     network_model = None
 
@@ -54,9 +53,9 @@ class dual_layer_selector(basic_neural_net_selector):
 
         # Build and compile neural network model 
         model = tb.keras.Sequential([
-            tb.keras.layers.Flatten( input_shape=(3,4) ),
+            tb.keras.layers.Flatten( input_shape=(4,3) ),
             tb.keras.layers.Dense(18, activation=tb.tensorflow.nn.relu),
-            tb.keras.layers.Dense(24, activation=tb.tensorflow.nn.relu),
+            tb.keras.layers.Dense(30, activation=tb.tensorflow.nn.relu),
             tb.keras.layers.Dense(len(cls.pair_labels), activation=tb.tensorflow.nn.softmax)
         ])
 
@@ -64,7 +63,7 @@ class dual_layer_selector(basic_neural_net_selector):
                        loss='sparse_categorical_crossentropy',
                        metrics=['accuracy'])
 
-        model.fit(training_data, training_labels, epochs=5) # Train Model
+        model.fit(training_data, training_labels, epochs=7) # Train Model
         model.save(cls.model_file) # Save Model
 
 

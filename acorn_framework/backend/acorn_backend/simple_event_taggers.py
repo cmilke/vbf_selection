@@ -52,7 +52,7 @@ class mjj_tagger(base_tagger):
         jet_list = event.jets
         jet0 = jet_list[selections[0]]
         jet1 = jet_list[selections[1]]
-        mjj = (jet0.vector + jet1.vector).mass
+        mjj = (jet0.vector+jet1.vector).mass
         self.discriminant = mjj
 
 

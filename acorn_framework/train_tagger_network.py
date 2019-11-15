@@ -13,7 +13,7 @@ tensorflow_buffer.load_tensorflow()
 def train():
     input_type = 'sig'
     training_category = 'JVT'
-    training_selector = 'dummy2jet'
+    training_selector = 'null'
 
     # Randomly mix together signal and background events
     data_dump_sig = pickle.load( open('data/output_training_sig.p', 'rb') )
@@ -32,9 +32,11 @@ def train():
 
         label = training_class.get_label(event)
         data_labels_list.append(label)
-        #if len(prepared_data_list) >= 1000: break
+        #if len(prepared_data_list) >= 100: break
+    if len(prepared_data_list) == 0: raise RuntimeError('Data List is Empty. Aborting!')
     prepared_data = numpy.array(prepared_data_list)
     data_labels = numpy.array(data_labels_list)
+    #print(prepared_data)
 
     training_cutoff = int( len(prepared_data)* (3/4) )
     training_data   = prepared_data[:training_cutoff]

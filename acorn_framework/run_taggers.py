@@ -14,11 +14,11 @@ from uproot_methods import TLorentzVector
 _input_type_options = {
     'sig': (
         autils.Flavntuple_list_VBFH125_gamgam[:1]
-      , autils.Flavntuple_list_VBFH125_gamgam[4:5]
+      , autils.Flavntuple_list_VBFH125_gamgam[4:6]
     ),
     'bgd': (
         autils.Flavntuple_list_ggH125_gamgam[:1]
-      , autils.Flavntuple_list_ggH125_gamgam[7:8]
+      , autils.Flavntuple_list_ggH125_gamgam[7:9]
     )
 }
 _branch_list = {
