@@ -37,6 +37,25 @@ class pair_MLP_selector(basic_neural_net_selector):
 
 
     @classmethod
+    def prepare_event_batch(cls, event_list):
+        batch_data = { 'pair0':[],'pair1':[],'pair2':[],'pt_list':[],'eta_list':[] }
+        data_labels = []
+        for event in event_list:
+            vecs = [ jet.vector for jet in event.jets ]
+            batch_data['pair0'   ].append( cls.getpair(vecs[0], vecs[1]) )
+            batch_data['pair1'   ].append( cls.getpair(vecs[0], vecs[2]) )
+            batch_data['pair2'   ].append( cls.getpair(vecs[1], vecs[2]) )
+            batch_data['pt_list' ].append( [ v.pt for v in vecs ] )
+            batch_data['eta_list'].append( [ v.eta for v in vecs ] )
+
+            label = cls.get_label(event)
+            data_labels.append(label)
+        prepared_data = {}
+        for key,val in batch_data.items(): prepared_data[key] = numpy.array(val)
+        return prepared_data, data_labels
+
+
+    @classmethod
     def get_label(cls, event):
         vbf_jets = [ i for i,jet in enumerate(event.jets) if jet.is_truth_quark() ]
         label = cls.pair_labels.index(vbf_jets)
@@ -44,17 +63,8 @@ class pair_MLP_selector(basic_neural_net_selector):
 
 
     @classmethod
-    def train_model(cls, unmerged_training_data, training_labels):
+    def train_model(cls, training_data, training_labels):
         print('TRAINING NEW MODEL')
-
-        training_data = unmerged_training_data
-        #training_data = { 'pair0':[],'pair1':[],'pair2':[],'pt_list':[],'eta_list':[] }
-        #for data_dict in unmerged_training_data:
-        #    for key, val in data_dict.items():
-        #        training_data[key].append(val)
-        #    
-        #for key, val in training_data.items():
-        #    training_data[key] = numpy.array( training_data[key] )
 
         pair_input_list = [ tb.Input(shape=(2,), name='pair'+str(i)) for i in range(3) ]
         pt_input  = tb.Input(shape=(3,), name='pt_list')

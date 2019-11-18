@@ -14,29 +14,18 @@ tensorflow_buffer.load_tensorflow()
 def train():
     input_type = 'sig'
     training_category = 'JVT'
-
     data_dump = pickle.load( open('data/output_training_'+input_type+'.p', 'rb') )
 
-    prepared_data = []
-    data_labels = []
+    event_list = []
     for event in data_dump[training_category].events:
         if len(event.jets) not in training_class.jet_count_range: continue
-        prepared_event = training_class.prepare_event(event)
-        prepared_data.append(prepared_event)
+        event_list.append(event)
+        #if len(event_list) >= 10: break
 
-        label = training_class.get_label(event)
-        data_labels.append(label)
-        if len(prepared_data) >= 10: break
-    if len(prepared_data) == 0: raise RuntimeError('Data List is Empty. Aborting!')
-
-    training_cutoff = int( len(prepared_data)* (3/4) )
-    #training_data   = prepared_data[:training_cutoff]
-    #training_data   = numpy.array([prepared_data[0]])
-    training_data   = prepared_data[:1]
-    testing_data    = prepared_data[training_cutoff:]
-    #training_labels = data_labels[:training_cutoff]
-    training_labels = [ data_labels[:1] ]
-    testing_labels  = data_labels[training_cutoff:]
+    training_cutoff = int( len(event_list)*(3/4) )
+    training_data, training_labels = training_class.prepare_event_batch(event_list[training_cutoff:])
+    testing_data, testing_labels = training_class.prepare_event_batch(event_list[:training_cutoff])
+    if len(training_data) == 0: raise RuntimeError('Data List is Empty. Aborting!')
 
     training_class.train_model(training_data, training_labels)
     training_class.test_model(testing_data, testing_labels)
