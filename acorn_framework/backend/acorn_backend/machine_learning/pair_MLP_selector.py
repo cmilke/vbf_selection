@@ -47,13 +47,14 @@ class pair_MLP_selector(basic_neural_net_selector):
     def train_model(cls, unmerged_training_data, training_labels):
         print('TRAINING NEW MODEL')
 
-        training_data = { 'pair0':[],'pair1':[],'pair2':[],'pt_list':[],'eta_list':[] }
-        for data_dict in unmerged_training_data:
-            for key, val in data_dict.items():
-                training_data[key].append(val)
-            
-        for key, val in training_data.items():
-            training_data[key] = numpy.array( training_data[key] )
+        training_data = unmerged_training_data
+        #training_data = { 'pair0':[],'pair1':[],'pair2':[],'pt_list':[],'eta_list':[] }
+        #for data_dict in unmerged_training_data:
+        #    for key, val in data_dict.items():
+        #        training_data[key].append(val)
+        #    
+        #for key, val in training_data.items():
+        #    training_data[key] = numpy.array( training_data[key] )
 
         pair_input_list = [ tb.Input(shape=(2,), name='pair'+str(i)) for i in range(3) ]
         pt_input  = tb.Input(shape=(3,), name='pt_list')

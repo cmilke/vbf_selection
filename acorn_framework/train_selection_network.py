@@ -32,10 +32,10 @@ def train():
     training_cutoff = int( len(prepared_data)* (3/4) )
     #training_data   = prepared_data[:training_cutoff]
     #training_data   = numpy.array([prepared_data[0]])
-    training_data   = prepared_data[:2]
+    training_data   = prepared_data[:1]
     testing_data    = prepared_data[training_cutoff:]
     #training_labels = data_labels[:training_cutoff]
-    training_labels = [ data_labels[:2] ]
+    training_labels = [ data_labels[:1] ]
     testing_labels  = data_labels[training_cutoff:]
 
     training_class.train_model(training_data, training_labels)
