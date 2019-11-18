@@ -25,7 +25,7 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger, template_N
             (jet0.vector+jet1.vector).mass
         ]
 
-        prepared_event = numpy.array([data])
+        prepared_event = numpy.array(data)
         return prepared_event
 
 
@@ -40,7 +40,7 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger, template_N
 
         # Build and compile neural network model 
         model = tb.keras.Sequential([
-            tb.keras.layers.Flatten( input_shape=(1,5) ),
+            tb.keras.layers.Flatten( input_shape=(5,) ),
             tb.keras.layers.Dense(18, activation=tb.tensorflow.nn.relu),
             tb.keras.layers.Dense(2, activation=tb.tensorflow.nn.softmax)
         ])

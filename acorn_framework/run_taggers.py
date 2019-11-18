@@ -100,46 +100,31 @@ def record_events(input_type, args):
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-s", 
-        required = False,
-        default = False,
-        action = 'store_true',
+        "-s", required = False,
+        default = False, action = 'store_true',
         help     = "Run over Signal events",
     ) 
-
     parser.add_argument(
-        "-b", 
-        required = False,
-        default = False,
-        action = 'store_true',
+        "-b", required = False,
+        default = False, action = 'store_true',
         help     = "Run over Background events"
             "(Note: if neither -s or -b are given, default behaviour is to run over both)",
     ) 
-
     parser.add_argument(
-        "--notag", 
-        required = False,
-        default = False,
-        action = 'store_true',
+        "--notag", required = False,
+        default = False, action = 'store_true',
         help     = "Disables tagging and VBF jet selection (only categorize and record events).",
     ) 
-
     parser.add_argument(
-        "--train", 
-        required = False,
-        default = False,
-        action = 'store_true',
+        "--train", required = False,
+        default = False, action = 'store_true',
         help     = "Use training sample. Used to create inputs for ML training.",
     ) 
-
     parser.add_argument(
-        "--debug", 
-        required = False,
-        default = False,
-        action = 'store_true',
+        "--debug", required = False,
+        default = False, action = 'store_true',
         help     = "Prints debug information",
     ) 
-
     args = parser.parse_args()
 
     if not args.notag: load_network_models()

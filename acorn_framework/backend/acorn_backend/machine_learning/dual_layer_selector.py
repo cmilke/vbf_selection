@@ -1,8 +1,3 @@
-import sys
-
-# TensorFlow and tf.keras
-# I don't want these to be loaded when unpickeling
-# this object, so I import them indirectly through this buffer file
 import acorn_backend.machine_learning.tensorflow_buffer as tb
 from acorn_backend.machine_learning.basic_selector import basic_neural_net_selector
 
