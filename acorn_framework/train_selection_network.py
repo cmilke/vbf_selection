@@ -23,8 +23,8 @@ def train():
         #if len(event_list) >= 10: break
 
     training_cutoff = int( len(event_list)*(3/4) )
-    training_data, training_labels = training_class.prepare_event_batch(event_list[training_cutoff:])
-    testing_data, testing_labels = training_class.prepare_event_batch(event_list[:training_cutoff])
+    training_data, training_labels = training_class.prepare_event_batch(event_list[:training_cutoff])
+    testing_data, testing_labels = training_class.prepare_event_batch(event_list[training_cutoff:])
     if len(training_data) == 0: raise RuntimeError('Data List is Empty. Aborting!')
 
     training_class.train_model(training_data, training_labels)

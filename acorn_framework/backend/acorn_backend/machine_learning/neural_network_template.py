@@ -49,3 +49,6 @@ class template_NN():
             result = str(label) + ': '
             result += str(prediction)
             print(result)
+
+        plot_model = tb.keras.utils.vis_utils.plot_model
+        plot_model(model, to_file=cls.model_file[:-2]+'.pdf', show_shapes=True, show_layer_names=True)
