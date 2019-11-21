@@ -10,22 +10,9 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector, 
     ### Neural Network specific class members ###
     #############################################
     model_file = 'data/basic_neural_net_selector_model.h5'
-    jet_count_range = range(3,4) # This neural net is only intented for 3-jet events
-    pair_labels = [
-        [0,1],
-        [0,2],
-        [1,2]
-    ]
     network_model = None
-            
-
-    @classmethod
-    def prepare_event(cls, event):
-        p_list = []
-        for jet in event.jets:
-            p_list.append([ jet.vector.p3.x, jet.vector.p3.y, jet.vector.p3.z ])
-        prepared_event = numpy.array(p_list)
-        return prepared_event
+    jet_count_range = range(3,4) # This neural net is only intented for 3-jet events
+    pair_labels = [ [0,1], [0,2], [1,2] ]
 
 
     @classmethod
@@ -33,6 +20,19 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector, 
         vbf_jets = [ i for i,jet in enumerate(event.jets) if jet.is_truth_quark() ]
         label = cls.pair_labels.index(vbf_jets)
         return label
+
+
+    @classmethod
+    def prepare_events(cls, event_list, label_list):
+        organized_data = []
+        for event in event_list:
+            momentum_list = [ [jet.vector.p3.x, jet.vector.p3.y, jet.vector.p3.z] for jet in event.jets]
+            organized_data.append(momentum_list)
+
+            if label_list != None: label_list.append( cls.get_label(event) )
+
+        prepared_data = numpy.array(organized_data)
+        return prepared_data
 
 
     @classmethod
@@ -64,9 +64,8 @@ class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector, 
         if cls.network_model == None:
             return (0,1)
         else:
-            prepared_event = cls.prepare_event(event)
-            singular_datum = numpy.array([prepared_event])
-            predictions = cls.network_model.predict(singular_datum)[0]
+            prepared_datum = cls.prepare_events([event], None)
+            predictions = cls.network_model.predict(prepared_datum)[0]
             prediction_index = numpy.argmax(predictions)
             jet_index_pair = cls.pair_labels[prediction_index]
             return tuple(jet_index_pair)

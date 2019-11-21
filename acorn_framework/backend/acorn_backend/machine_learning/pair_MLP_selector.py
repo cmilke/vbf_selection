@@ -14,8 +14,8 @@ class pair_MLP_selector(basic_neural_net_selector):
     ### Neural Network specific class members ###
     #############################################
     model_file = 'data/pair_MLP_selector.h5'
-    pair_labels = [ [0,1], [0,2], [1,2] ]
     network_model = None
+
 
     @classmethod
     def getpair(cls, vector1, vector2):
@@ -34,47 +34,24 @@ class pair_MLP_selector(basic_neural_net_selector):
 
 
     @classmethod
-    def prepare_event(cls, event):
-        vecs = [ jet.vector for jet in event.jets ]
-
-        prepared_event = {
-            'pair0'   : numpy.array( cls.getpair(vecs[0], vecs[1]) )
-          , 'pair1'   : numpy.array( cls.getpair(vecs[0], vecs[2]) )
-          , 'pair2'   : numpy.array( cls.getpair(vecs[1], vecs[2]) )
-          , 'pt_list' : numpy.array( [ v.pt for v in vecs ] )
-          , 'eta_list': numpy.array( [ v.eta for v in vecs ] )
-        }
-        return prepared_event
-
-
-    @classmethod
-    def prepare_event_batch(cls, event_list):
-        batch_data = { 'pair0':[],'pair1':[],'pair2':[] }
-        data_labels = []
+    def prepare_events(cls, event_list, label_list):
+        organized_data = { 'pair0':[],'pair1':[],'pair2':[] }
         for event in event_list:
             vecs = [ jet.vector for jet in event.jets ]
-            batch_data['pair0'].append( cls.getpair(vecs[0], vecs[1]) )
-            batch_data['pair1'].append( cls.getpair(vecs[0], vecs[2]) )
-            batch_data['pair2'].append( cls.getpair(vecs[1], vecs[2]) )
+            organized_data['pair0'].append( cls.getpair(vecs[0], vecs[1]) )
+            organized_data['pair1'].append( cls.getpair(vecs[0], vecs[2]) )
+            organized_data['pair2'].append( cls.getpair(vecs[1], vecs[2]) )
 
-            label = cls.get_label(event)
-            data_labels.append(label)
+            if label_list != None: label_list.append( cls.get_label(event) )
+
         prepared_data = {}
-        for key,val in batch_data.items(): prepared_data[key] = numpy.array(val)
-        return prepared_data, data_labels
-
-
-    @classmethod
-    def get_label(cls, event):
-        vbf_jets = [ i for i,jet in enumerate(event.jets) if jet.is_truth_quark() ]
-        label = cls.pair_labels.index(vbf_jets)
-        return label
+        for key,val in organized_data.items(): prepared_data[key] = numpy.array(val)
+        return prepared_data
 
 
     @classmethod
     def train_model(cls, training_data, training_labels):
         print('TRAINING NEW MODEL')
-
         pair_input_list = [ tb.Input(shape=(9,), name='pair'+str(i)) for i in range(3) ]
 
         pair_tensor_list = []

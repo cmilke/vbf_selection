@@ -14,32 +14,24 @@ class dual_layer_selector(basic_neural_net_selector):
     ### Neural Network specific class members ###
     #############################################
     model_file = 'data/dual_layer_selector_model.h5'
-    pair_labels = [
-        [0,1],
-        [0,2],
-        [1,2]
-    ]
     network_model = None
 
 
     @classmethod
-    def prepare_event(cls, event):
-        p_list = []
-        for jet in event.jets:
-            p_list.append([ jet.vector.p3.x, jet.vector.p3.y, jet.vector.p3.z ])
-        m01 = (event.jets[0].vector + event.jets[1].vector).mass
-        m02 = (event.jets[0].vector + event.jets[2].vector).mass
-        m12 = (event.jets[1].vector + event.jets[2].vector).mass
-        p_list.append([m01, m02, m12])
-        prepared_event = numpy.array(p_list)
-        return prepared_event
+    def prepare_events(cls, event_list, label_list):
+        organized_data = []
+        for event in event_list:
+            momentum_list = [ [jet.vector.p3.x, jet.vector.p3.y, jet.vector.p3.z] for jet in event.jets]
+            m01 = (event.jets[0].vector + event.jets[1].vector).mass
+            m02 = (event.jets[0].vector + event.jets[2].vector).mass
+            m12 = (event.jets[1].vector + event.jets[2].vector).mass
+            momentum_list.append([m01, m02, m12])
+            organized_data.append(momentum_list)
 
+            if label_list != None: label_list.append( cls.get_label(event) )
 
-    @classmethod
-    def get_label(cls, event):
-        vbf_jets = [ i for i,jet in enumerate(event.jets) if jet.is_truth_quark() ]
-        label = cls.pair_labels.index(vbf_jets)
-        return label
+        prepared_data = numpy.array(organized_data)
+        return prepared_data
 
 
     @classmethod

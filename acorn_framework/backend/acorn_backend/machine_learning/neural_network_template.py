@@ -8,7 +8,7 @@ class template_NN():
     ### Neural Network specific class members ###
     #############################################
     model_file = None
-    jet_count_range = range(4,4) # This neural net should never be used...
+    jet_count_range = range(0,0) # This class should NEVER be used for anything but inheritance!
     network_model = None
 
 
@@ -21,7 +21,7 @@ class template_NN():
             
 
     @classmethod
-    def prepare_event(cls, event):
+    def prepare_events(cls, event_list, label_list):
         return None
 
 

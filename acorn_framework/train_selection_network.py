@@ -15,16 +15,12 @@ def train():
     input_type = 'sig'
     training_category = 'JVT'
     data_dump = pickle.load( open('data/output_training_'+input_type+'.p', 'rb') )
-
-    event_list = []
-    for event in data_dump[training_category].events:
-        if len(event.jets) not in training_class.jet_count_range: continue
-        event_list.append(event)
-        #if len(event_list) >= 10: break
+    event_list = [ event in data_dump[training_category].events if len(event.jets) in training_class.jet_count_range ]
 
     training_cutoff = int( len(event_list)*(3/4) )
-    training_data, training_labels = training_class.prepare_event_batch(event_list[:training_cutoff])
-    testing_data, testing_labels = training_class.prepare_event_batch(event_list[training_cutoff:])
+    training_labels, testing_labels = [], []
+    training_data = training_class.prepare_events(event_list[:training_cutoff], training_labels)
+    testing_data = training_class.prepare_events(event_list[training_cutoff:], testing_labels)
     if len(training_data) == 0: raise RuntimeError('Data List is Empty. Aborting!')
 
     training_class.train_model(training_data, training_labels)
