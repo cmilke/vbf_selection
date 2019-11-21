@@ -21,12 +21,12 @@ class template_NN():
             
 
     @classmethod
-    def prepare_events(cls, event_list, label_list):
+    def get_label(cls, event):
         return None
 
 
     @classmethod
-    def get_label(cls, event):
+    def prepare_events(cls, event_list, label_list):
         return None
 
 
@@ -51,4 +51,4 @@ class template_NN():
             print(result)
 
         plot_model = tb.keras.utils.vis_utils.plot_model
-        plot_model(model, to_file=cls.model_file[:-2]+'.pdf', show_shapes=True, show_layer_names=True)
+        plot_model(model, to_file=cls.model_file[:-2]+'pdf', show_shapes=True, show_layer_names=True)

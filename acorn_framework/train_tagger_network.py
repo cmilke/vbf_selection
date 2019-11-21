@@ -22,28 +22,17 @@ def train():
     event_list += data_dump_bgd[training_category].events
     random.shuffle(event_list)
 
-    prepared_data_list = []
-    data_labels_list = []
-    for event in event_list:
-        if training_selector not in event.selectors: continue
-        selections = event.selectors[training_selector].selections
-        prepared_event = training_class.prepare_event(event,selections)
-        prepared_data_list.append(prepared_event)
+    # Collect events and associated selections
+    make_input = lambda event: (event, event.selectors[training_selector].selections)
+    input_list = [ make_input(event) for event in event_list if training_selector in event.selectors ]
+    training_cutoff = int( len(input_list)* (3/4) )
 
-        label = training_class.get_label(event)
-        data_labels_list.append(label)
-        #if len(prepared_data_list) >= 100: break
-    if len(prepared_data_list) == 0: raise RuntimeError('Data List is Empty. Aborting!')
-    prepared_data = numpy.array(prepared_data_list)
-    data_labels = numpy.array(data_labels_list)
-    #print(prepared_data)
+    training_labels, testing_labels = [], []
+    training_data = training_class.prepare_events(input_list[:training_cutoff], training_labels)
+    testing_data = training_class.prepare_events(input_list[training_cutoff:], testing_labels)
 
-    training_cutoff = int( len(prepared_data)* (3/4) )
-    training_data   = prepared_data[:training_cutoff]
-    testing_data    = prepared_data[training_cutoff:]
-    training_labels = data_labels[:training_cutoff]
-    testing_labels  = data_labels[training_cutoff:]
-
+    if len(training_labels) == 0: raise RuntimeError('Data List is Empty. Aborting!')
+    print(training_data)
     training_class.train_model(training_data, training_labels)
     training_class.test_model(testing_data, testing_labels)
 

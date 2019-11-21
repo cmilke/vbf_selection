@@ -13,25 +13,30 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger, template_N
 
 
     @classmethod
-    def prepare_event(cls, event, selections):
-        jet_list = event.jets
-        jet0 = jet_list[selections[0]]
-        jet1 = jet_list[selections[1]]
-        data = [
-            jet0.vector.pt,
-            jet0.vector.eta,
-            jet1.vector.pt,
-            jet1.vector.eta,
-            (jet0.vector+jet1.vector).mass
-        ]
-
-        prepared_event = numpy.array(data)
-        return prepared_event
+    def get_label(cls, event):
+        return int(event.signal)
 
 
     @classmethod
-    def get_label(cls, event):
-        return int(event.signal)
+    def prepare_events(cls, event_selections_tuple_list, label_list):
+        organized_data = []
+        for event, selections in event_selections_tuple_list:
+            jet_list = event.jets
+            jet0 = jet_list[selections[0]]
+            jet1 = jet_list[selections[1]]
+            event_properties = [
+                jet0.vector.pt,
+                jet0.vector.eta,
+                jet1.vector.pt,
+                jet1.vector.eta,
+                (jet0.vector+jet1.vector).mass
+            ]
+            organized_data.append(event_properties)
+
+            if label_list != None: label_list.append( cls.get_label(event) )
+
+        prepared_data = numpy.array(organized_data)
+        return prepared_data
 
 
     @classmethod
@@ -40,8 +45,8 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger, template_N
 
         # Build and compile neural network model 
         model = tb.keras.Sequential([
-            tb.keras.layers.Flatten( input_shape=(5,) ),
-            tb.keras.layers.Dense(18, activation=tb.tensorflow.nn.relu),
+            #tb.keras.layers.InputLayer( input_shape=(5,) ),
+            tb.keras.layers.Dense(18, activation=tb.tensorflow.nn.relu, input_shape=(5,)),
             tb.keras.layers.Dense(2, activation=tb.tensorflow.nn.softmax)
         ])
 
@@ -64,9 +69,8 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger, template_N
         if cls.network_model == None:
             self.discriminant = 0
         else:
-            prepared_event = cls.prepare_event(event, selections)
-            singular_datum = numpy.array([prepared_event])
-            predictions = cls.network_model.predict(singular_datum)[0]
+            prepared_datum = cls.prepare_events( [(event,selections)] )
+            predictions = cls.network_model.predict(prepared_datum)[0]
             if predictions[0] == 0:
                 llr = 100
             elif predictions[1] == 0:
