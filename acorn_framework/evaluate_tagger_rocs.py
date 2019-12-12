@@ -10,29 +10,43 @@ from acorn_backend.plotting_utils import retrieve_data, Hist_bins
 
 
 _filename_infix = ''
+#_filename_infix = '2-3-summary' +'_'
 
 _plot_specifications = {
     (2,'JVT','null','mjj') : '2: $M_{jj}$'
-  , (2,'JVT','null','2jetNNtagger') : '2: Simple NN Tagger'
-  #, (2,'JVT','dummy2jet','2jetNNtagger') : '2: Simple NN Tagger'
-  , (3,'JVT','truth','mjj') : '3: Truth - $M_{jj}$'
-  #, (3,'JVT','basicNN','mjj') : '3: Basic NN - $M_{jj}$'
-  , (3,'JVT','dualLayerNN','mjj') : '3: Dual Layer NN - $M_{jj}$'
+  #, (2,'JVT','null','2jetNNtagger') : '2: NN Tagger'
+  , (3,'JVT','2maxpt','mjj') : '3: 2 Leading $p_t$ - $M_{jj}$'
+  #, (3,'JVT','random','mjj') : '3: Random - $M_{jj}$'
+  #, (3,'JVT','truth','mjj') : '3: Truth - $M_{jj}$'
   , (3,'JVT','mjjmax','mjj') : '3: Max $M_{jj}$ - $M_{jj}$'
-  , (3,'JVT','mjjmax','2jetNNtagger') : '3: Max $M_{jj}$ - Simple NN Tagger'
-  , (3,'JVT','random','mjj') : '3: Random - $M_{jj}$'
+  #, (3,'JVT','coLinear-mjj','united-Deta') : '3: Merged $M_{jj}$ - $\Delta \eta$'
+  #, (3,'JVT','dummy3jet','coLinearity') : '3: Co-linearity'
+  #, (3,'JVT','pairMLP','mjj') : '3: MLP - $M_{jj}$'
+  #, (3,'JVT','mjjmax','2jetNNtagger') : '3: Max $M_{jj}$ - NN Tagger'
+  #, (3,'JVT','pairMLP','2jetNNtagger') : '3: MLP - NN Tagger'
+  , '>=2_pt' : '$\geq 2$: Leading $p_t$ - $M_{jj}$'
   , '>=2_mjj' : '$\geq 2$: Maximized $M_{jj}$ - $M_{jj}$'
+  #, '>=2_MLP_NNtagger' : '$\geq 2$: MLP - NN'
 }
 
 _performances_to_combine = {
-    '>=2_mjj': [
+    '>=2_pt': [
+        (2,'JVT','null','mjj')
+      , (3,'JVT','2maxpt','mjj')
+    ]
+
+  , '>=2_mjj': [
         (2,'JVT','null','mjj')
       , (3,'JVT','mjjmax','mjj')
     ]
+
+  , '>=2_MLP_NNtagger': [
+        (2,'JVT','null','2jetNNtagger')
+      , (3,'JVT','pairMLP','2jetNNtagger')
+    ]
 }
 
-_key_order = {}
-for index, event_key in enumerate(_plot_specifications): _key_order[event_key] = index
+_key_order = { key:index for index,key in enumerate(_plot_specifications) }
 
 
 def extract_tagger_information(input_type):
@@ -78,9 +92,11 @@ def evaluate():
     plt.legend()
     plt.xlabel(r'Signal Efficiency')
     plt.ylabel(r'Background Rejection')
+    plt.xlim(0.2, 0.6)
+    plt.ylim(0.6, 1)
     plt.title(r'Efficiency/Rejection Performance of Various Taggers')
     plt.grid(True)
-    plt.savefig('plots/focused_perf_'+_filename_infix+'roc_efficiency.pdf')
+    plt.savefig('plots/performance/focused_perf_'+_filename_infix+'roc_efficiency.pdf')
     plt.close()
 
 

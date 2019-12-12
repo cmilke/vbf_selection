@@ -14,7 +14,8 @@ _tagger_titles = {
   , 'mjjj': '$M_{jjj}$'
 }
 _selector_titles = {
-    '2maxpt': ' of the Leading 2 Jets'
+    'null': ''
+  , '2maxpt': ' of the Leading 2 Jets'
   , 'mjjmax': ' of the 2 Jets Which Maximize $M_{jj}$'
 }
 
@@ -27,7 +28,8 @@ def retrieve_parameter(input_type, selector_key, tagger_key):
     event_index = 0
     for event in data_dump[_category_key].events:
         #if event_index >= 20: break
-        if len(event.jets) != 3: continue
+        #if len(event.jets) != 3: continue
+        if len(event.jets) != 2: continue
         event_index += 1
 
         selector = event.selectors[selector_key]
@@ -53,9 +55,9 @@ def draw_distribution(selector_key, tagger_key):
 
     ax.legend()
     plt.grid()
-    #plt.yscale('log')
-    #plt.ylim(10e-6, 1)
-    plt.ylim(0, 0.35)
+    plt.yscale('log')
+    plt.ylim(10e-6, 1)
+    #plt.ylim(0, 0.35)
     plt.xlabel('$M_{jj}$ (GeV)')
     tagger_title = _tagger_titles[tagger_key]
     selector_title = '' if tagger_key == 'mjjj' else _selector_titles[selector_key]
@@ -64,6 +66,7 @@ def draw_distribution(selector_key, tagger_key):
     plt.close()
 
 
-draw_distribution('2maxpt', 'mjj')
-draw_distribution('mjjmax', 'mjj')
-draw_distribution('2maxpt', 'mjjj')
+#draw_distribution('2maxpt', 'mjj')
+#draw_distribution('mjjmax', 'mjj')
+#draw_distribution('2maxpt', 'mjjj')
+draw_distribution('null', 'mjj')

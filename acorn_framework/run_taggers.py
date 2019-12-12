@@ -13,11 +13,11 @@ from uproot_methods import TLorentzVector
 #Define all the high level root stuff: ntuple files, branches to be used
 _input_type_options = {
     'sig': (
-        autils.Flavntuple_list_VBFH125_gamgam[:1]
+        autils.Flavntuple_list_VBFH125_gamgam[:2]
       , autils.Flavntuple_list_VBFH125_gamgam[4:6]
     ),
     'bgd': (
-        autils.Flavntuple_list_ggH125_gamgam[:1]
+        autils.Flavntuple_list_ggH125_gamgam[:2]
       , autils.Flavntuple_list_ggH125_gamgam[7:9]
     )
 }
@@ -25,7 +25,7 @@ _branch_list = {
     'event' : ['eventWeight']
   , 'tpart' : ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']
   , 'truthj': ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']
-  , 'j0'    : ['j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
+  , 'j0'    : ['j0truthid', 'j0_isTightPhoton', 'j0_isPU', 'j0_QGTagger',
                         'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
 }
 
@@ -56,7 +56,7 @@ def record_reco_jets(is_sig, event_weight, event, event_data_dump):
         #if rj['j0_isTightPhoton']: continue
 
         # Create jet object storing the essential aspects of the ntuple reco jet
-        new_jet = acorn_jet(v, pdgid, rj['j0_isPU'], rj['j0_JVT'], rj['j0_fJVT_Tight'])
+        new_jet = acorn_jet(v, pdgid, rj['j0_isPU'], rj['j0_JVT'], rj['j0_fJVT_Tight'], rj['j0_QGTagger'])
         recorded_jets.append(new_jet)
 
     # Categorize event, and then either discard the event or perform tagging on it
@@ -80,7 +80,7 @@ def record_events(input_type, args):
     input_list = _input_type_options[input_type][(args.notag | args.train)]
     is_sig = input_type == 'sig'
     events_per_bucket = 10 if args.debug else 10000
-    max_bucket = 0 if args.debug else None
+    max_bucket = 0 if args.debug else 1
     for event in autils.event_iterator(input_list, 'Nominal', _branch_list, events_per_bucket, max_bucket):
         event_weight = event['event']['eventWeight']
         record_reco_jets(is_sig, event_weight, event, event_data_dump)

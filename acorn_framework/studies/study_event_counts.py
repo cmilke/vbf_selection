@@ -19,7 +19,6 @@ def draw(input_type):
     xlabels = [
         '2 Jets, $p_t > 30$ GeV'
       , '3 Jets, $p_t > 30$ GeV'
-      , '3 Jets, $p_t > 40$ GeV'
     ]
     num_bins = len(xlabels)
 
@@ -28,7 +27,6 @@ def draw(input_type):
         'weights': [
             get_counts(data_dump, 'JVT', 2)
           , get_counts(data_dump, 'JVT', 3)
-          , get_counts(data_dump, 'JVTpt40', 3)
         ]
     }
     print(vals)

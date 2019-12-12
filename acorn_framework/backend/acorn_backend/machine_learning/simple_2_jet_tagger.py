@@ -69,7 +69,7 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger, template_N
         if cls.network_model == None:
             self.discriminant = 0
         else:
-            prepared_datum = cls.prepare_events( [(event,selections)] )
+            prepared_datum = cls.prepare_events( [(event,selections)], None )
             predictions = cls.network_model.predict(prepared_datum)[0]
             if predictions[0] == 0:
                 llr = 100

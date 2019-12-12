@@ -13,6 +13,7 @@ _discriminator_titles = {
     'Deta' : '$\Delta \eta$'
   , 'mjj'  : '$m_{jj}$'
   , 'mjjj' : '$m_{jjj}$'
+  , 'coLinearity' : 'Co-linearity'
   , '2jetNNtagger' : 'LLR Value'
 }
 
@@ -28,6 +29,7 @@ _filter_titles = {
 _jet_selection_titles = {
     'null'       : ''
   , 'dummy2jet'  : ''
+  , 'dummy3jet'  : ''
   , '2maxpt'     : ',\nVBF Jets Chosen by Highest $p_t$'
   , 'etamax'     : ',\nVBF Jets Chosen by Maximized $\Delta\eta$'
   , 'mjjXetamax' : ',\nVBF Jets Chosen by Maximizing $\Delta\eta * M_{jj}$'

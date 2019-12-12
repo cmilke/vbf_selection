@@ -24,7 +24,7 @@ class base_selector():
         self.selections = self.select(event)
         self.taggers = {}
         self.is_correct = True
-        for jet in [ event.jets[i] for i in self.selections ]:
+        for jet in [ event.jets[i] for i in self.selections[:2] ]:
             if not jet.is_truth_quark():
                 self.is_correct = False
                 break
@@ -43,10 +43,17 @@ class base_selector():
         return rep
 
 
-# Just a copy of the base_selector with a different tagger list
+# Does not actually select jets.
+# Meant for 2-jet taggers that do not depend on selections
 class dummy_2_jet_selector(base_selector):
     key = 'dummy2jet'
-    tagger_class_list = [ basic_nn_tagger ]
+    tagger_class_list = [ simple_event_taggers.mjjj_tagger ]
+
+
+# As above, but for 3-jet taggers
+class dummy_3_jet_selector(base_selector):
+    key = 'dummy3jet'
+    tagger_class_list = [ simple_event_taggers.coLinearity_tagger ]
 
 
 # Select the vbf jets at random...
@@ -180,10 +187,73 @@ class truth_selector(base_selector):
         for index, jet in enumerate(event.jets):
             if jet.is_truth_quark(): jet_idents.append(index)
 
-        if len(jet_idents) == 2:
+        if len(jet_idents) >= 2:
             return tuple(jet_idents)
         else:
             jet_indices = list( range(0,len(event.jets)) )
             random.shuffle(jet_indices)
             chosen_jets = jet_indices[:2]
-            return chosen_jets
+            return tuple(chosen_jets)
+
+
+# Picks out the quark jets based on the jets with
+# the two highest quark-gluon tagger scores
+class quark_gluon_tag_selector(base_selector):
+    key = 'qgtag'
+
+    def select(self, event):
+        quark_gluon_scores = [ (jet.quark_gluon_tagger_value, i) for i,jet in enumerate(event.jets) ]
+        quark_gluon_scores.sort()
+        jet_idents = [ index for (qgScore, index) in quark_gluon_scores ]
+        return tuple(jet_idents[:2])
+
+
+
+
+# Select the two jets with the largest mjj
+# then possibly merge the third jet based on co-linearity.
+# The tuple is arranged such that the 0 and 2 index jets
+# are the colinear jets, with jets 0 and 1 still being the VBF jets.
+class coLinearity_merger(base_selector):
+    key = 'coLinear-mjj'
+    tagger_class_list = [ simple_event_taggers.unified_delta_eta_tagger ]
+
+    def select(self, event):
+        jet_idents = [-1,-1]
+        max_mjj = -1
+
+        num_jets = len(event.jets)
+        for i in range(0, num_jets):
+            for j in range(i+1, num_jets):
+                jet0 = event.jets[i]
+                jet1 = event.jets[j]
+                mjj = (jet0.vector+jet1.vector).mass
+                if mjj > max_mjj:
+                    max_mjj = mjj
+                    jet_idents = [i,j]
+
+        eta_list = [ (jet.vector.eta,i) for i,jet in enumerate(event.jets) ]
+        eta_list.sort() # sort by eta
+
+        eta_normalization = eta_list[2][0] - eta_list[0][0]
+        extra_jet_distance_to_leftMost_jet = eta_list[1][0] - eta_list[0][0]
+        colinearity_measure = (extra_jet_distance_to_leftMost_jet / eta_normalization) - 0.5
+
+        if abs(colinearity_measure) < 0.3:
+            return tuple(jet_idents)
+        else:
+            colinear_eta_index = 0 if colinearity_measure < 0 else 2
+            colinear_jet_index = eta_list[colinear_eta_index][1]
+            colinear_pair = [ eta_list[1][1], colinear_jet_index ]
+            colinear_pair.sort()
+            if colinear_pair == jet_idents:
+                return tuple(jet_idents)
+            else:
+                radiated_index = eta_list[1][1] if colinear_jet_index in jet_idents else colinear_jet_index
+
+                merged_jet_idents = [-1,-1,-1]
+                if colinear_jet_index == 0:
+                    merged_jet_idents = jet_idents + [ radiated_index ]
+                else:
+                    merged_jet_idents = jet_idents[::-1] + [ radiated_index ]
+                return merged_jet_idents

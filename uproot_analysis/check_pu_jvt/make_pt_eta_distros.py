@@ -5,7 +5,6 @@ sys.path.append('/nfs/slac/g/atlas/u02/cmilke/analysis/util')
 import cmilke_analysis_utils as autils
 import math
 import numpy
-import pickle
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
@@ -46,7 +45,7 @@ def record_events(input_type):
     eta_list = []
     pt_list = []
     for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, None):
-        for rj in autils.jet_iterator(_branch_list['j0'], event['j0']):
+        for rj in autils.jet_iterator(event['j0']):
             if rj['j0_isTightPhoton']: continue
             if rj['tj0pT'] > 0: continue # We are only looking at pileup jets
             eta_list.append(rj['j0eta'])

@@ -32,15 +32,16 @@ class unified_delta_eta_tagger(base_tagger):
 
     def __init__(self, event, selections):
         jet_list = event.jets
-        if len(selections) == 2: self.discriminant =  delta_eta_tagger(jet_list, selections)
-
-        simple_eta = jet_list[selections[0]].vector.eta
-        j1 = jet_list[selections[1]]
-        j2 = jet_list[selections[2]]
-        unified_vector = j1.vector+j2.vector
-        unified_eta = unified_vector.vector.eta
-
-        delta_eta = abs( simple_eta - unified_eta )
+        delta_eta = 0.0
+        if len(selections) == 2:
+            delta_eta = abs( jet_list[selections[0]].vector.eta - jet_list[selections[1]].vector.eta )
+        else:
+            simple_eta = jet_list[ selections[0] ].vector.eta
+            j1 = jet_list[selections[1]]
+            j2 = jet_list[selections[2]]
+            unified_vector = j1.vector+j2.vector
+            unified_eta = unified_vector.eta
+            delta_eta = abs( simple_eta - unified_eta )
         self.discriminant = delta_eta
 
 
@@ -66,3 +67,18 @@ class mjjj_tagger(base_tagger):
         for jet in jet_list: total_4vector += jet.vector
         mjjj = total_4vector.mass
         self.discriminant = mjjj
+
+
+class coLinearity_tagger(base_tagger):
+    key = 'coLinearity'
+    value_range = (0, 0.5)
+
+    def __init__(self, event, selections):
+        eta_list = [ jet.vector.eta for jet in event.jets ]
+        eta_list.sort()
+
+        eta_normalization = eta_list[2] - eta_list[0]
+        extra_jet_distance_to_leftMost_jet = eta_list[1] - eta_list[0]
+        colinearity_measure = extra_jet_distance_to_leftMost_jet / eta_normalization
+        colinearity_discriminant = abs( colinearity_measure - 0.5 )
+        self.discriminant = colinearity_discriminant

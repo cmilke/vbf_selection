@@ -23,7 +23,7 @@ _branch_list = {
                         'j0_JVT', 'j0_fJVT_Loose', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
 }
 
-_pt_cut = 50
+_pt_cut = 0
 
 
 def match_jet(vector_to_match, event):
@@ -101,6 +101,7 @@ def count_all_jets(input_type):
         num_rjets, num_rquarks = count_rjets(event)
 
         if num_rjets >= 2:
+        #if num_rjets >= 2 and num_rquarks >= 2:
             tcounter.append(num_tjets)
             rcounter.append(num_rjets)
 
