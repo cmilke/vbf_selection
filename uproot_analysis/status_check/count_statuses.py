@@ -18,7 +18,7 @@ _branch_list = {
 def tally_events(input_type):
     print('INPUT: ' + input_type)
     input_list = _input_type_options[input_type]
-    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, None):
+    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 100):
         for tp in autils.jet_iterator(event['tpart']):
             pdgid = tp['tpartpdgID']
             status = tp['tpartstatus']
