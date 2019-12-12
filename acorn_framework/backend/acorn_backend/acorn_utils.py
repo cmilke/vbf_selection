@@ -56,7 +56,9 @@ def is_outgoing_quark(pdg, status): return (pdg in PDG['quarks'] and status == S
 def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
 
 
-def event_iterator(ntuple_list, tree_name, divided_branch_list, step_size, max_bucket):
+def event_iterator(ntuple_list, tree_name, divided_branch_list, events_to_read):
+    bucket_size = 10000
+
     event = {}
     branch_list = []
     for group_key,sublist in divided_branch_list.items():
@@ -65,10 +67,11 @@ def event_iterator(ntuple_list, tree_name, divided_branch_list, step_size, max_b
         for branch_name in sublist:
             event[group_key][branch_name] = None
     
+    events_read = 0
     for ntuple_file in ntuple_list:
         print('\nnutple file: ' + ntuple_file)
         tree = uproot.rootio.open(ntuple_file)[tree_name]
-        tree_iterator = tree.iterate(branches=branch_list, entrysteps=step_size) 
+        tree_iterator = tree.iterate(branches=branch_list, entrysteps=bucket_size) 
         for basket_number, basket in enumerate(tree_iterator):
             print('Basket: ' + str(basket_number) )
             for entry in zip(*basket.values()):
@@ -78,9 +81,10 @@ def event_iterator(ntuple_list, tree_name, divided_branch_list, step_size, max_b
                         event[group_key][branch_name] = entry[index]
                         index += 1
                 yield event
-            if max_bucket != None:
-                if basket_number >= max_bucket: break
-     
+                events_read += 1
+                if events_to_read != None:
+                    if events_read >= events_to_read: return
+
 
 def jet_iterator(jet_list):
     package = {}

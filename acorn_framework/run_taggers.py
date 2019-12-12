@@ -79,9 +79,8 @@ def record_events(input_type, args):
     # storing/sorting/filtering events into the data_dump as it goes
     input_list = _input_type_options[input_type][(args.notag | args.train)]
     is_sig = input_type == 'sig'
-    events_per_bucket = 10 if args.debug else 10000
-    max_bucket = 0 if args.debug else 1
-    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, events_per_bucket, max_bucket):
+    events_to_read = 10 if args.debug else None
+    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, events_to_read):
         event_weight = event['event']['eventWeight']
         record_reco_jets(is_sig, event_weight, event, event_data_dump)
 
