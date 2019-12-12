@@ -1,12 +1,5 @@
 #!/usr/bin/env python
-
 from acorn_backend import acorn_utils as autils
-import pickle
-import math
-import numpy
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import pyplot as plt
 
 #Define all the high level root stuff: ntuple files, branches to be used
 _input_type_options = {
