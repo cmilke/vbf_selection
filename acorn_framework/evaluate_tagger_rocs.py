@@ -6,7 +6,7 @@ import numpy
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-from acorn_backend.plotting_utils import retrieve_data, Hist_bins
+from acorn_backend.plotting_utils import retrieve_data, Hist_bins, accumulate_performance
 
 
 _filename_infix = ''
@@ -14,35 +14,34 @@ _filename_infix = ''
 
 _plot_specifications = {
     (2,'JVT','null','mjj') : '2: $M_{jj}$'
-  #, (2,'JVT','null','2jetNNtagger') : '2: NN Tagger'
+  , (2,'JVT','null','2jetNNtagger') : '2: NN Tagger'
   , (3,'JVT','2maxpt','mjj') : '3: 2 Leading $p_t$ - $M_{jj}$'
-  #, (3,'JVT','random','mjj') : '3: Random - $M_{jj}$'
-  #, (3,'JVT','truth','mjj') : '3: Truth - $M_{jj}$'
+  , (3,'JVT','random','mjj') : '3: Random - $M_{jj}$'
+  , (3,'JVT','truth','mjj') : '3: Truth - $M_{jj}$'
   , (3,'JVT','mjjmax','mjj') : '3: Max $M_{jj}$ - $M_{jj}$'
   #, (3,'JVT','coLinear-mjj','united-Deta') : '3: Merged $M_{jj}$ - $\Delta \eta$'
-  #, (3,'JVT','dummy3jet','coLinearity') : '3: Co-linearity'
+  , (3,'JVT','dummy3jet','3jNNtagger') : '3: NN Direct'
   #, (3,'JVT','pairMLP','mjj') : '3: MLP - $M_{jj}$'
   #, (3,'JVT','mjjmax','2jetNNtagger') : '3: Max $M_{jj}$ - NN Tagger'
   #, (3,'JVT','pairMLP','2jetNNtagger') : '3: MLP - NN Tagger'
-  , '>=2_pt' : '$\geq 2$: Leading $p_t$ - $M_{jj}$'
-  , '>=2_mjj' : '$\geq 2$: Maximized $M_{jj}$ - $M_{jj}$'
-  #, '>=2_MLP_NNtagger' : '$\geq 2$: MLP - NN'
+  #, '>=2_pt' : '$\geq 2$: Leading $p_t$ - $M_{jj}$'
+  #  '>=2_mjj' : '$\geq 2$: Maximized $M_{jj}$ - $M_{jj}$'
+  #, '>=2_NN' : '$\geq 2$: Dedicated NNs'
+  #, '>=2_NN/mjj' : '$\geq 2$: Maximized $M_{jj}$ - NN'
 }
 
 _performances_to_combine = {
-    '>=2_pt': [
-        (2,'JVT','null','mjj')
-      , (3,'JVT','2maxpt','mjj')
-    ]
-
-  , '>=2_mjj': [
+    '>=2_mjj': [
         (2,'JVT','null','mjj')
       , (3,'JVT','mjjmax','mjj')
     ]
-
-  , '>=2_MLP_NNtagger': [
+  , '>=2_NN/mjj': [
         (2,'JVT','null','2jetNNtagger')
-      , (3,'JVT','pairMLP','2jetNNtagger')
+      , (3,'JVT','mjjmax','2jetNNtagger')
+    ]
+  , '>=2_NN': [
+        (2,'JVT','null','2jetNNtagger')
+      , (3,'JVT','dummy3jet','3jNNtagger')
     ]
 }
 
@@ -66,12 +65,11 @@ def extract_tagger_information(input_type):
         if event_key not in _plot_specifications: continue
         discriminants, weights = data
         group_label = _plot_specifications[event_key]
+        plot_index = _key_order[event_key]
+
         counts, bins = numpy.histogram(discriminants, weights=weights, bins=Hist_bins, range=value_range)
         norms = counts / counts.sum()
-        sum_direction = 1 if input_type == 'bgd' else -1
-        flip = slice(None,None,sum_direction)
-        performance = norms[flip].cumsum()[flip]
-        plot_index = _key_order[event_key]
+        performance = accumulate_performance(norms, input_type == 'bgd')
         binned_data[plot_index] = performance
     return binned_data
 
@@ -92,11 +90,11 @@ def evaluate():
     plt.legend()
     plt.xlabel(r'Signal Efficiency')
     plt.ylabel(r'Background Rejection')
-    plt.xlim(0.2, 0.6)
-    plt.ylim(0.6, 1)
+    #plt.xlim(0.2, 0.6)
+    #plt.ylim(0.6, 1)
     plt.title(r'Efficiency/Rejection Performance of Various Taggers')
     plt.grid(True)
-    plt.savefig('plots/performance/focused_perf_'+_filename_infix+'roc_efficiency.pdf')
+    plt.savefig('plots/performance/roc_'+_filename_infix+'roc_efficiency.pdf')
     plt.close()
 
 

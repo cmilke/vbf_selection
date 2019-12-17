@@ -1,8 +1,11 @@
 import random
 import math
 from uproot_methods import TLorentzVector
+
+# Import all taggers I use
 from acorn_backend import simple_event_taggers
 from acorn_backend.machine_learning.simple_2_jet_tagger import basic_nn_tagger
+from acorn_backend.machine_learning.direct_3_jet_tagger import direct_3_jet_tagger
 
 
 # Return the first two jets.
@@ -53,7 +56,8 @@ class dummy_2_jet_selector(base_selector):
 # As above, but for 3-jet taggers
 class dummy_3_jet_selector(base_selector):
     key = 'dummy3jet'
-    tagger_class_list = [ simple_event_taggers.coLinearity_tagger ]
+    tagger_class_list = [ direct_3_jet_tagger ]
+    #tagger_class_list = [ simple_event_taggers.coLinearity_tagger ]
 
 
 # Select the vbf jets at random...

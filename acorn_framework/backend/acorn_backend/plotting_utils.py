@@ -32,3 +32,10 @@ def retrieve_data( input_type ):
                     event_key = (jet_count, category.key, selector.key, tagger.key)
                     fill_event_map(event_map, event_key, tagger, event_weight)
     return event_map
+
+
+def accumulate_performance(distro, is_bgd):
+        sum_direction = 1 if is_bgd else -1
+        flip = slice(None,None,sum_direction)
+        performance = distro[flip].cumsum()[flip]
+        return performance

@@ -13,11 +13,13 @@ class template_NN():
 
 
     @classmethod
-    def load_model(cls):
+    def load_model(cls, mode):
         try: cls.network_model = tb.keras.models.load_model(cls.model_file)
         except OSError:
-            print('\nWARNING: Model ' + cls.model_file + ' does not exist.'
-                ' If you are not currently tagging this model, then something has gone wrong!\n')
+            if mode == 'train':
+                print('Note: Model ' + cls.model_file + ' does not exist; ignoring for training mode.'
+            else:
+                raise
             
 
     @classmethod
