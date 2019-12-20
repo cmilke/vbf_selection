@@ -1,4 +1,6 @@
 import uproot
+import pickle
+import sys
 
 Flavntuple_list_VBFH125_gamgam = [
         "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-0.root",
@@ -92,3 +94,20 @@ def jet_iterator(jet_list):
         for index, key in enumerate(jet_list):
             package[key] = branch_collection[index]
         yield package
+
+
+def reload_data(regen, data_extraction_function):
+    data_file_root = sys.argv[0].split('/')[-1].split('.')[-2]
+    data_file = 'studies/cache/'+data_file_root+'.p'
+
+    if regen:
+        retrieved_data_values = data_extraction_function()
+        pickle.dump( retrieved_data_values, open(data_file, 'wb') )
+    else:
+        retrieved_data_values = pickle.load( open(data_file, 'rb') )
+
+    print('Retrieved Data. Plotting')
+    return retrieved_data_values
+
+
+

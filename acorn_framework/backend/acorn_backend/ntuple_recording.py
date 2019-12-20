@@ -36,7 +36,7 @@ def record_aviv_reco_jets(is_signal, event, event_data_dump):
 
     # Categorize event, and then either discard the event or perform tagging on it
     for category in event_data_dump.values():
-        category.add_event(recorded_jets, is_sig, event_weight)
+        category.add_event(recorded_jets, is_signal, event_weight)
 
 
 jet_recorder_options = {

@@ -17,7 +17,7 @@ class template_NN():
         try: cls.network_model = tb.keras.models.load_model(cls.model_file)
         except OSError:
             if mode == 'train':
-                print('Note: Model ' + cls.model_file + ' does not exist; ignoring for training mode.'
+                print('Note: Model ' + cls.model_file + ' does not exist; ignoring for training mode.')
             else:
                 raise
             

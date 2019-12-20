@@ -68,7 +68,7 @@ def record_events(input_type, args):
         print( category if args.debug else category.summary() )
 
     # Output the event categories for use by later scripts
-    pickle.dump( event_data_dump, open('data/output_'+args.mode+'_'+input_type+'.p', 'wb') )
+    pickle.dump( event_data_dump, open('data/output_'+args.ntuple+'_'+args.mode+'_'+input_type+'.p', 'wb') )
 
 
 def run():
@@ -109,18 +109,13 @@ def run():
         help = "Prints debug information",
     ) 
     parser.add_argument(
-        "--ntuple", required = False,
-        default = False, action = 'store_true',
-        help = "Use the old ntuples made by Aviv; these may break many things...",
-    ) 
-    parser.add_argument(
         "-t", required = False,
         default = False, action = 'store_true',
         help = "Use truth jets instead of reco",
     ) 
     args = parser.parse_args()
 
-    if mode != 'record': load_network_models(args.mode)
+    if args.mode != 'record': load_network_models(args.mode)
     if args.s: record_events('sig', args)
     if args.b: record_events('bgd', args)
     if not (args.b or args.s):
