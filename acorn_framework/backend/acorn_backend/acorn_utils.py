@@ -96,9 +96,9 @@ def jet_iterator(jet_list):
         yield package
 
 
-def reload_data(regen, data_extraction_function):
+def reload_data(regen, data_extraction_function, cache_dir='studies/cache/'):
     data_file_root = sys.argv[0].split('/')[-1].split('.')[-2]
-    data_file = 'studies/cache/'+data_file_root+'.p'
+    data_file = cache_dir+data_file_root+'.p'
 
     if regen:
         retrieved_data_values = data_extraction_function()
@@ -108,6 +108,3 @@ def reload_data(regen, data_extraction_function):
 
     print('Retrieved Data. Plotting')
     return retrieved_data_values
-
-
-

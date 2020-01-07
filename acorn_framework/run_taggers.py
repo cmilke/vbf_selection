@@ -68,7 +68,9 @@ def record_events(input_type, args):
         print( category if args.debug else category.summary() )
 
     # Output the event categories for use by later scripts
-    pickle.dump( event_data_dump, open('data/output_'+args.ntuple+'_'+args.mode+'_'+input_type+'.p', 'wb') )
+    reco_level = '_truth' if args.t else ''
+    data_dump_file_name = 'data/output_'+args.ntuple+reco_level+'_'+args.mode+'_'+input_type+'.p'
+    pickle.dump( event_data_dump, open(data_dump_file_name, 'wb') )
 
 
 def run():
@@ -93,7 +95,7 @@ def run():
         "--mode", required = False,
         default = 'tag', type=str,
         help = "Modes: 'tag'    - Standard tagging procedure;\n"
-               "       'train'  - Use training samples and keras models are permitted to fail on load;\n"
+               "       'train'  - Use training samples; keras models are permitted to fail on load;\n"
                "       'record' - Run over all samples, but merely categorize events, do not tag them",
     ) 
     parser.add_argument(

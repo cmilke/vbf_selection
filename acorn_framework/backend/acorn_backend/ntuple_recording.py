@@ -39,10 +39,33 @@ def record_aviv_reco_jets(is_signal, event, event_data_dump):
         category.add_event(recorded_jets, is_signal, event_weight)
 
 
+def record_aviv_truth_particles(is_signal, event, event_data_dump):
+    event_weight = event['event']['eventWeight']
+
+    recorded_jets = [] # Records all useable jets
+
+    # Loop over reco jets, and append them to the appropriate lists
+    for tpart in autils.jet_iterator(event['tpart']):
+        # Filter out jets on basic pt/eta/photon cuts
+        if not autils.passes_std_jet_cuts(tpart['tpartpT'], tpart['tparteta']): continue
+        v = TLorentzVector.from_ptetaphim(tpart['tpartpT'], tpart['tparteta'], tpart['tpartphi'], tpart['tpartm'])
+        pdgid = tpart['tpartpdgID']
+        if pdgid == autils.PDG['photon']: continue
+
+        # Create jet object storing the essential aspects of the ntuple reco jet,
+        # faking some of the data normally associated with reco jets
+        new_jet = acorn_jet(v, pdgid, False, True, True, 1)
+        recorded_jets.append(new_jet)
+
+    # Categorize event, and then either discard the event or perform tagging on it
+    for category in event_data_dump.values():
+        category.add_event(recorded_jets, is_signal, event_weight)
+
+
 jet_recorder_options = {
     'aviv': [
         record_aviv_reco_jets,
-        None
+        record_aviv_truth_particles
     ],
     'cmilkeV1': [
         None
