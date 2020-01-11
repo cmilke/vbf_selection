@@ -1,4 +1,3 @@
-import uproot
 import pickle
 import sys
 
@@ -30,6 +29,10 @@ Flavntuple_list_ggH125_gamgam = [
         "/nfs/slac/g/atlas/u02/cmilke/datasets/ggH125_gamgam/data-CxAOD-13.root"
 ]
 
+Flavntuple_list_VBFH125_gamgam_V2 = [
+    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/submitDir/data-ANALYSIS/sample.root'
+]
+
 PDG = {
     'down' : 1,
     'up' : 2,
@@ -56,44 +59,6 @@ def is_outgoing_quark(pdg, status): return (pdg in PDG['quarks'] and status == S
 
 
 def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
-
-
-def event_iterator(ntuple_list, tree_name, divided_branch_list, events_to_read):
-    bucket_size = 10000
-
-    event = {}
-    branch_list = []
-    for group_key,sublist in divided_branch_list.items():
-        branch_list += sublist
-        event[group_key] = {}
-        for branch_name in sublist:
-            event[group_key][branch_name] = None
-    
-    events_read = 0
-    for ntuple_file in ntuple_list:
-        print('\nnutple file: ' + ntuple_file)
-        tree = uproot.rootio.open(ntuple_file)[tree_name]
-        tree_iterator = tree.iterate(branches=branch_list, entrysteps=bucket_size) 
-        for basket_number, basket in enumerate(tree_iterator):
-            print('Basket: ' + str(basket_number) )
-            for entry in zip(*basket.values()):
-                index = 0
-                for group_key,sublist in divided_branch_list.items():
-                    for branch_name in sublist:
-                        event[group_key][branch_name] = entry[index]
-                        index += 1
-                yield event
-                events_read += 1
-                if events_to_read != None:
-                    if events_read >= events_to_read: return
-
-
-def jet_iterator(jet_list):
-    package = {}
-    for branch_collection in zip(*jet_list.values()):
-        for index, key in enumerate(jet_list):
-            package[key] = branch_collection[index]
-        yield package
 
 
 def reload_data(regen, data_extraction_function, cache_dir='studies/cache/'):

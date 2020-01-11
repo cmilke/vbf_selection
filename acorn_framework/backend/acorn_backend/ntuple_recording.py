@@ -1,10 +1,10 @@
 from uproot_methods import TLorentzVector
-from acorn_backend import acorn_utils as autils
+from acorn_backend import analysis_utils as autils
 from acorn_backend.acorn_containers import acorn_jet
 
 
 def match_aviv_reco_jet(vector_to_match, event):
-    for tp in autils.jet_iterator(event['tpart']):
+    for tp in event['truth_particles']:
         if tp['tpartpdgID'] == autils.PDG['photon']:
             if tp['tpartstatus'] != autils.Status['photon_out']: continue
         elif tp['tpartstatus'] != autils.Status['outgoing']: continue
@@ -22,7 +22,7 @@ def record_aviv_reco_jets(is_signal, event, event_data_dump):
     recorded_jets = [] # Records all useable jets
 
     # Loop over reco jets, and append them to the appropriate lists
-    for rj in autils.jet_iterator(event['j0']):
+    for rj in event['reco_jets']:
         # Filter out jets on basic pt/eta/photon cuts
         if not autils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']): continue
         v = TLorentzVector.from_ptetaphim(rj['j0pT'], rj['j0eta'], rj['j0phi'], rj['j0m'])
@@ -47,7 +47,7 @@ def record_aviv_truth_jets(is_signal, event, event_data_dump):
     recorded_jets = [] # Records all useable jets
 
     # Loop over truth jets, and append them to the appropriate lists
-    for tj in autils.jet_iterator(event['truthj']):
+    for tj in event['truth_jets']:
         # Filter out jets on basic pt/eta/photon cuts
         if not autils.passes_std_jet_cuts(tj['truthjpT'], tj['truthjeta']): continue
         v = TLorentzVector.from_ptetaphim(tj['truthjpT'], tj['truthjeta'], tj['truthjphi'], tj['truthjm'])
@@ -69,7 +69,7 @@ def record_aviv_truth_particles(is_signal, event, event_data_dump):
     recorded_jets = [] # Records all useable jets
 
     # Loop over reco jets, and append them to the appropriate lists
-    for tpart in autils.jet_iterator(event['tpart']):
+    for tpart in event['truth_particles']:
         # Filter out jets on basic pt/eta/photon cuts
         if tpart['tpartstatus'] != 23: continue
         if not autils.passes_std_jet_cuts(tpart['tpartpT'], tpart['tparteta']): continue

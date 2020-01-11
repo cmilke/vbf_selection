@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import argparse
 import pickle
+from acorn_backend import analysis_utils as autils
+from acorn_backend.uproot_wrapper import event_iterator
 from acorn_backend import categorization_classes
-from acorn_backend import acorn_utils as autils
 from acorn_backend.tagger_loader import load_network_models
 from acorn_backend.ntuple_recording import jet_recorder_options
 
@@ -10,7 +11,7 @@ from acorn_backend.ntuple_recording import jet_recorder_options
 _input_type_options = {
     'aviv': {
         'sig': {
-            'run': autils.Flavntuple_list_VBFH125_gamgam[:2]
+           'run': autils.Flavntuple_list_VBFH125_gamgam[:2]
          , 'train': autils.Flavntuple_list_VBFH125_gamgam[4:6]
          , 'record': autils.Flavntuple_list_VBFH125_gamgam
         },
@@ -20,25 +21,42 @@ _input_type_options = {
           , 'record': autils.Flavntuple_list_ggH125_gamgam
         }
     },
-    'cmilkeV1': None,
+    'cmilkeV1': {
+        'sig': {
+           'run': autils.Flavntuple_list_VBFH125_gamgam_V2[:1]
+         , 'train': None 
+         , 'record': autils.Flavntuple_list_VBFH125_gamgam_V2
+        },
+        'bgd': {
+            'run': None
+          , 'train': None
+          , 'record': None
+        }
+    },
     'data': None
 }
 
 _branches_list = {
-    'aviv': {
-        'event' : ['eventWeight']
-      , 'tpart' : ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']
-      , 'truthj': ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']
-      , 'j0'    : ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 'j0_QGTagger',
+    'aviv': [
+        'eventWeight',
+        ('truth_particles',
+            ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']
+        ),
+        ('truth_jets',
+            ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']
+        ),
+        ('reco_jets',
+            ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 'j0_QGTagger',
                             'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
-    },
+        )
+    ],
     'cmilkeV1': None,
     'data': None
 }
 
 _tree_names = {
     'aviv': 'Nominal',
-    'cmilkeV1': None,
+    'cmilkeV1': 'ntuple',
     'data': None
 }
 
@@ -60,7 +78,7 @@ def record_events(input_type, args):
 
     # Iterate over each event in the ntuple list,
     # storing/sorting/filtering events into the data_dump as it goes
-    for event in autils.event_iterator(input_list, tree_name, branches, events_to_read):
+    for event in event_iterator(input_list, tree_name, branches, events_to_read):
         record_jets(input_type == 'sig', event, event_data_dump)
 
     # Print out either the full debug information, or just a summary

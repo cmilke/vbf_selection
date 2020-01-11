@@ -1,0 +1,52 @@
+import uproot
+
+
+def unnest_list(nested_list, container_template):
+    expanded_list = []
+    for item in nested_list:
+        if isinstance(item, str): 
+            expanded_list.append(item)
+            container_template[item] = (1, None)
+        else:
+            key, nested_sublist = item
+            nested_container = {}
+            pre_expansion_size = len(expanded_list)
+            expanded_list += unnest_list(nested_sublist, nested_container)
+            size = len(expanded_list) - pre_expansion_size
+            container_template[key] = (size, nested_container)
+    return expanded_list
+
+
+def nested_generator(container_template, superindex, entry):
+    subgroup_container = { key: None for key in container_template }
+    subrange = slice(superindex,superindex+len(container_template)+1)
+    for subentry in zip(*entry[subrange]):
+        subindex = 0
+        for key, (size, sub_template) in container_template.items():
+            subgroup_container[key] = subentry[subindex] if sub_template == None else nested_generator(sub_template,subindex,subentry)
+            subindex += size
+        yield subgroup_container
+
+
+def event_iterator(ntuple_list, tree_name, nested_branch_list, events_to_read):
+    bucket_size = 10000
+
+    container_template = {}
+    branch_list = unnest_list(nested_branch_list, container_template)
+    event_container = { key: None for key in container_template }
+
+    events_read = 0
+    for ntuple_file in ntuple_list:
+        print('\nnutple file: ' + ntuple_file)
+        tree = uproot.rootio.open(ntuple_file)[tree_name]
+        tree_iterator = tree.iterate(branches=branch_list, entrysteps=bucket_size) 
+        for basket_number, basket in enumerate(tree_iterator):
+            print('Basket: ' + str(basket_number) )
+            for entry in zip(*basket.values()):
+                index = 0
+                for key, (size, sub_template) in container_template.items():
+                    event_container[key] = entry[index] if sub_template == None else nested_generator(sub_template,index,entry)
+                    index += size
+                yield event_container
+                events_read += 1
+                if events_to_read != None and events_read >= events_to_read: return
