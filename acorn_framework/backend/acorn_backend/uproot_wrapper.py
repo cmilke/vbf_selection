@@ -17,6 +17,22 @@ def unnest_list(nested_list, container_template):
     return expanded_list
 
 
+
+'''
+WARNING: The values "returned" by the two below functions (e.g. values such as event['reco_jets'])
+are GENERATORS, and therefore each element the generator produces (e.g. each reco jet)
+can only be accessed ONCE. After you cycle through the values (e.g. via a for loop),
+you CANNOT access the elements again.
+If you have a situation where you need to access the same elements many times,
+you should not access the generator directly.
+Instead, you should first convert it to a list ( e.g.: reco_jets = list(event['reco_jets']) ).
+Converting to a list in this fashion will allow you to access the same elements
+as many times as you want. (Converting to a list is slower and less memory efficient,
+which is why lists are not produced by default)
+'''
+
+
+
 def nested_generator(container_template, superindex, entry):
     subgroup_container = { key: None for key in container_template }
     subrange = slice(superindex,superindex+len(container_template)+1)

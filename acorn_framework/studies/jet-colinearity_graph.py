@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from matplotlib import rc
 rc('text', usetex=True)
 from matplotlib.backends.backend_pdf import PdfPages
-from acorn_backend.acorn_utils import reload_data
+from acorn_backend.analysis_utils import reload_data
 
 _category_key = 'JVT'
 

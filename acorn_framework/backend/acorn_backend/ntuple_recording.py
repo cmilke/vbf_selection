@@ -3,8 +3,9 @@ from acorn_backend import analysis_utils as autils
 from acorn_backend.acorn_containers import acorn_jet
 
 
-def match_aviv_reco_jet(vector_to_match, event):
-    for tp in event['truth_particles']:
+def match_aviv_reco_jet(vector_to_match, truth_particles):
+    for tp in truth_particles:
+        print('        Next tp')
         if tp['tpartpdgID'] == autils.PDG['photon']:
             if tp['tpartstatus'] != autils.Status['photon_out']: continue
         elif tp['tpartstatus'] != autils.Status['outgoing']: continue
@@ -17,16 +18,19 @@ def match_aviv_reco_jet(vector_to_match, event):
 
 
 def record_aviv_reco_jets(is_signal, event, event_data_dump):
-    event_weight = event['event']['eventWeight']
+    event_weight = event['eventWeight']
 
     recorded_jets = [] # Records all useable jets
 
     # Loop over reco jets, and append them to the appropriate lists
+    print('New Event:-----------')
+    truth_particles = list(event['truth_particles'])
     for rj in event['reco_jets']:
         # Filter out jets on basic pt/eta/photon cuts
         if not autils.passes_std_jet_cuts(rj['j0pT'], rj['j0eta']): continue
         v = TLorentzVector.from_ptetaphim(rj['j0pT'], rj['j0eta'], rj['j0phi'], rj['j0m'])
-        pdgid = match_aviv_reco_jet(v, event)
+        print('New Jet')
+        pdgid = match_aviv_reco_jet(v, truth_particles)
         if pdgid == autils.PDG['photon']: continue
         #if rj['j0_isTightPhoton']: continue
         #is_pileup = rj['j0_isPU']
@@ -42,16 +46,17 @@ def record_aviv_reco_jets(is_signal, event, event_data_dump):
 
 
 def record_aviv_truth_jets(is_signal, event, event_data_dump):
-    event_weight = event['event']['eventWeight']
+    event_weight = event['eventWeight']
 
     recorded_jets = [] # Records all useable jets
 
+    truth_particles = list(event['truth_particles'])
     # Loop over truth jets, and append them to the appropriate lists
     for tj in event['truth_jets']:
         # Filter out jets on basic pt/eta/photon cuts
         if not autils.passes_std_jet_cuts(tj['truthjpT'], tj['truthjeta']): continue
         v = TLorentzVector.from_ptetaphim(tj['truthjpT'], tj['truthjeta'], tj['truthjphi'], tj['truthjm'])
-        pdgid = match_aviv_reco_jet(v, event)
+        pdgid = match_aviv_reco_jet(v, truth_particles)
         if pdgid == autils.PDG['photon']: continue
 
         # Create jet object storing the essential aspects of the ntuple reco jet

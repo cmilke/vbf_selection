@@ -1,4 +1,4 @@
-from acorn_backend import acorn_utils as autils
+from acorn_backend import analysis_utils as autils
 from acorn_backend.tagger_loader import selector_options
 from uproot_methods import TLorentzVector
 
