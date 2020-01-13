@@ -30,8 +30,8 @@ def record_aviv_reco_jets(is_signal, event, event_data_dump):
         pdgid = match_aviv_reco_jet(v, truth_particles)
         if pdgid == autils.PDG['photon']: continue
         #if rj['j0_isTightPhoton']: continue
-        #is_pileup = rj['j0_isPU']
-        is_pileup = rj['tj0pT'] < 0
+        is_pileup = rj['j0_isPU']
+        #is_pileup = rj['tj0pT'] < 0
 
         # Create jet object storing the essential aspects of the ntuple reco jet
         new_jet = acorn_jet(v, pdgid, is_pileup, rj['j0_JVT'], rj['j0_fJVT_Tight'], rj['j0_QGTagger'])

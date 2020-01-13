@@ -68,7 +68,8 @@ class base_categorizer():
         if len(filtered_jets) < _min_jets: return
         if len(filtered_jets) > _max_jets: return
         if leading_jet_pt < _leading_jet_min_pt: return
-        if is_sig and num_quark_jets < _demanded_number_of_quarks: return
+        #if is_sig and num_quark_jets < _demanded_number_of_quarks: return
+        if is_sig and num_quark_jets != _demanded_number_of_quarks: return
 
         # Test category-specific event requirements
         if not self.passes_event_filter(filtered_jets): return
