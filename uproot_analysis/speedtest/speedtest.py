@@ -13,9 +13,9 @@ _input_type_options = {
 
 _branch_list = [
     'eventWeight',
-    ('tparts',  ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']),
-    ('truthjets', ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']),
-    ('j0s',     ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
+    ('truth_particles',  ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']),
+    ('truth_jets', ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']),
+    ('reco_jets',  ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
                         'j0_JVT', 'j0_fJVT_Loose', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m'])
 ]
 
@@ -47,9 +47,14 @@ _branch_list = [
 
 def test(input_type):
     input_list = _input_type_options[input_type]
-    num_events = 0
-    for event in event_iterator(input_list, 'Nominal', _branch_list, None): num_events += 1
-    print(num_events)
+    for event in event_iterator(input_list, 'Nominal', _branch_list, 100):
+        #tp = list(event['truth_particles'])
+        tp = [ x.copy() for x in event['truth_particles'] ]
+        rj = list(event['reco_jets'])
+        print(tp)
+        print()
+        print(rj)
+        print('\n------------\n')
         
 
 test('sig')

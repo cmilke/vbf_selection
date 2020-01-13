@@ -8,7 +8,7 @@ from acorn_backend.tagger_loader import selector_options
 
 def evaluate_selections():
     input_type = 'sig'
-    data_dump = pickle.load( open('data/output_'+input_type+'.p', 'rb') )
+    data_dump = pickle.load( open('data/output_aviv_tag_'+input_type+'.p', 'rb') )
 
     selector_scores = {}
     for category in data_dump.values():

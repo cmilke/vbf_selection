@@ -24,7 +24,7 @@ def retrieve_parameter(input_type, selector_key, tagger_key):
     parameter_list = []
     weight_list = []
 
-    data_dump = pickle.load( open('data/output_'+input_type+'.p', 'rb') )
+    data_dump = pickle.load( open('data/output_aviv_tag_'+input_type+'.p', 'rb') )
     event_index = 0
     for event in data_dump[_category_key].events:
         #if event_index >= 20: break

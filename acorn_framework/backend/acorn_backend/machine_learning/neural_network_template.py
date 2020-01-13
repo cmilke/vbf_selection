@@ -13,6 +13,10 @@ class template_NN():
 
 
     @classmethod
+    # We need selector models to be loaded in order to train tagger models
+    # so we have to be able to load models even in training mode.
+    # But since we can't load a model we haven't trained,
+    # I allow this loading model to fail in 'train' mode
     def load_model(cls, mode):
         try: cls.network_model = tb.keras.models.load_model(cls.model_file)
         except OSError:

@@ -14,7 +14,8 @@ _discriminator_titles = {
   , 'mjj'  : '$m_{jj}$'
   , 'mjjj' : '$m_{jjj}$'
   , 'coLinearity' : 'Co-linearity'
-  , '2jetNNtagger' : 'LLR Value'
+  , '2jetNNtagger' : '2-Jet NN LLR Value'
+  , '3jNNtagger' : '3-Jet NN LLR Value'
 }
 
 _filter_titles = {

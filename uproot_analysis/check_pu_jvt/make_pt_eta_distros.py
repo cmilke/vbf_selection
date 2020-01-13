@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-import sys
-sys.path.append('/nfs/slac/g/atlas/u02/cmilke/analysis/util')
-import cmilke_analysis_utils as autils
+import acorn_backend.analysis_utils as autils
+from acorn_backend.uproot_wrapper import event_iterator
 import math
 import numpy
 import matplotlib
@@ -15,10 +14,11 @@ _input_type_options = {
     'bgd': autils.Flavntuple_list_ggH125_gamgam[:1]
 }
 
-_branch_list = {
-    'j0'    : ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
+_branch_list = [
+    ('j0', ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
                         'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
-}
+    )
+]
 
 _hist_bins = 50
 
@@ -44,8 +44,8 @@ def record_events(input_type):
     input_list = _input_type_options[input_type]
     eta_list = []
     pt_list = []
-    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, None):
-        for rj in autils.jet_iterator(event['j0']):
+    for event in event_iterator(input_list, 'Nominal', _branch_list, 1000):
+        for rj in event['j0']:
             if rj['j0_isTightPhoton']: continue
             if rj['tj0pT'] > 0: continue # We are only looking at pileup jets
             eta_list.append(rj['j0eta'])

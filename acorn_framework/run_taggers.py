@@ -11,24 +11,24 @@ from acorn_backend.ntuple_recording import jet_recorder_options
 _input_type_options = {
     'aviv': {
         'sig': {
-           'run': autils.Flavntuple_list_VBFH125_gamgam[:2]
+           'tag': autils.Flavntuple_list_VBFH125_gamgam[:2]
          , 'train': autils.Flavntuple_list_VBFH125_gamgam[4:6]
          , 'record': autils.Flavntuple_list_VBFH125_gamgam
         },
         'bgd': {
-            'run': autils.Flavntuple_list_ggH125_gamgam[:2]
+            'tag': autils.Flavntuple_list_ggH125_gamgam[:2]
           , 'train': autils.Flavntuple_list_ggH125_gamgam[7:9]
           , 'record': autils.Flavntuple_list_ggH125_gamgam
         }
     },
     'cmilkeV1': {
         'sig': {
-           'run': autils.Flavntuple_list_VBFH125_gamgam_V2[:1]
+           'tag': autils.Flavntuple_list_VBFH125_gamgam_V2[:1]
          , 'train': None 
          , 'record': autils.Flavntuple_list_VBFH125_gamgam_V2
         },
         'bgd': {
-            'run': None
+            'tag': None
           , 'train': None
           , 'record': None
         }

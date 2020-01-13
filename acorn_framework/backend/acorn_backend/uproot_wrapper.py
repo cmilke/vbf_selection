@@ -25,7 +25,9 @@ can only be accessed ONCE. After you cycle through the values (e.g. via a for lo
 you CANNOT access the elements again.
 If you have a situation where you need to access the same elements many times,
 you should not access the generator directly.
-Instead, you should first convert it to a list ( e.g.: reco_jets = list(event['reco_jets']) ).
+Instead, you should first convert it to a list ( e.g.: 
+    reco_jets = [ rj.copy() for rj in event['reco_jets'] ]
+).
 Converting to a list in this fashion will allow you to access the same elements
 as many times as you want. (Converting to a list is slower and less memory efficient,
 which is why lists are not produced by default)

@@ -30,7 +30,7 @@ selector_options = [
 
 
 def load_network_models(mode):
-    tensorflow_buffer.load_tensorflow(mode)
+    tensorflow_buffer.load_tensorflow()
 
     #basic_neural_net_selector.load_model(mode)
     #dual_layer_selector.load_model(mode)

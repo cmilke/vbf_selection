@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from acorn_backend import acorn_utils as autils
+import acorn_backend.analysis_utils as autils
+from acorn_backend.uproot_wrapper import event_iterator
 import math
 import numpy
 import pickle
@@ -14,10 +15,11 @@ _input_type_options = {
     'bgd': autils.Flavntuple_list_ggH125_gamgam[:1]
 }
 
-_branch_list = {
-    'j0'    : ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
+_branch_list = [
+    ('j0', ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
                         'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
-}
+    )
+]
 
 
 def draw_distribution(file_infix, filter_title, unbinned_data):
@@ -45,8 +47,8 @@ def draw_distribution(file_infix, filter_title, unbinned_data):
 
 def record_events(input_type, categories):
     input_list = _input_type_options[input_type]
-    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, 0):
-        for rj in autils.jet_iterator(event['j0']):
+    for event in event_iterator(input_list, 'Nominal', _branch_list, 10000):
+        for rj in event['j0']:
             is_pu = rj['tj0pT'] < 0
             is_vbf = rj['j0truthid'] in autils.PDG['quarks']
             passes_jvt = rj['j0_JVT'] and rj['j0_fJVT_Tight']
