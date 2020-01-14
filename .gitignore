@@ -4,4 +4,5 @@
 *.swp
 *.h5
 *.nfs*
-uproot_analysis/util/aod_branches.txt
+uproot_analysis/util/*.txt
+uproot_analysis/.archive_200113/

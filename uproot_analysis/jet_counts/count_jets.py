@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from acorn_backend import acorn_utils as autils
+from acorn_backend import analysis_utils as autils
+from acorn_backend.uproot_wrapper import event_iterator
 from uproot_methods import TLorentzVector
 import pickle
 import math
@@ -15,19 +16,17 @@ _input_type_options = {
     'bgd': autils.Flavntuple_list_ggH125_gamgam[:1]
 }
 
-_branch_list = {
-    'event' : ['eventWeight']
-  , 'tpart' : ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']
-  , 'truthj': ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']
-  , 'j0'    : ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 
-                        'j0_JVT', 'j0_fJVT_Loose', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
-}
+_branch_list = [
+    ('tpart' , ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']),
+    ('truthj', ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']),
+    ('j0'    , ['j0_isTightPhoton', 'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m'])
+]
 
 _pt_cut = 0
 
 
-def match_jet(vector_to_match, event):
-    for tp in autils.jet_iterator(event['tpart']):
+def match_jet(vector_to_match, truth_particles):
+    for tp in truth_particles:
         if tp['tpartpdgID'] == autils.PDG['photon']:
             if tp['tpartstatus'] != autils.Status['photon_out']: continue
         elif tp['tpartstatus'] != autils.Status['outgoing']: continue
@@ -39,10 +38,10 @@ def match_jet(vector_to_match, event):
     return -1
 
 
-def event_fails_photon_cut(event):
+def event_fails_photon_cut(truth_particles):
     photon_pts = []
     photon_4vector = TLorentzVector.from_ptetaphim(0,0,0,0)
-    for tp in autils.jet_iterator(event['tpart']):
+    for tp in truth_particles:
         if tp['tpartpdgID'] != autils.PDG['photon']: continue
         if tp['tpartstatus'] != autils.Status['photon_out']: continue
         photon_pts.append(tp['tpartpT'])
@@ -56,12 +55,12 @@ def event_fails_photon_cut(event):
     return False
 
 
-def count_tjets_with_truthj(event):
+def count_tjets_with_truthj(event, truth_particles):
     num_tjets = 0
     num_tquarks = 0
     for tj in autils.jet_iterator(event['truthj']):
         v = TLorentzVector.from_ptetaphim(tj['truthjpT'], tj['truthjeta'], tj['truthjphi'], tj['truthjm'])
-        pdg = match_jet(v, event)
+        pdg = match_jet(v, truth_particles)
         if pdg == autils.PDG['photon']: continue
         if pdg < 0: continue
         if tj['truthjpT'] < _pt_cut: continue
@@ -72,12 +71,12 @@ def count_tjets_with_truthj(event):
     #return 0,0
 
 
-def count_rjets(event):
+def count_rjets(event, truth_particles):
     num_rjets = 0
     num_rquarks = 0
     for rj in autils.jet_iterator(event['j0']):
         v = TLorentzVector.from_ptetaphim(rj['j0pT'], rj['j0eta'], rj['j0phi'], rj['j0m'])
-        pdg = match_jet(v, event)
+        pdg = match_jet(v, truth_particles)
 
         if pdg == autils.PDG['photon']: continue
         #if rj['j0_isTightPhoton']: continue
@@ -95,10 +94,11 @@ def count_all_jets(input_type):
     rcounter = []
 
     input_list = _input_type_options[input_type]
-    for event in autils.event_iterator(input_list, 'Nominal', _branch_list, 10000, 0):
-        if event_fails_photon_cut(event): continue
-        num_tjets, num_tquarks = count_tjets_with_truthj(event)
-        num_rjets, num_rquarks = count_rjets(event)
+    truth_particles = [ tp.copy() for tp in event['tpart'] ]
+    for event in event_iterator(input_list, 'Nominal', _branch_list, 10000):
+        if event_fails_photon_cut(truth_particles): continue
+        num_tjets, num_tquarks = count_tjets_with_truthj(event,truth_particles)
+        num_rjets, num_rquarks = count_rjets(event,truth_particles)
 
         if num_rjets >= 2:
         #if num_rjets >= 2 and num_rquarks >= 2:
