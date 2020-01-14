@@ -37,7 +37,7 @@ which is why lists are not produced by default)
 
 def nested_generator(container_template, superindex, entry):
     subgroup_container = { key: None for key in container_template }
-    subrange = slice(superindex,superindex+len(container_template)+1)
+    subrange = slice(superindex,superindex+len(container_template))
     for subentry in zip(*entry[subrange]):
         subindex = 0
         for key, (size, sub_template) in container_template.items():
