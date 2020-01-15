@@ -36,20 +36,15 @@ class base_categorizer():
         self.tagging_events = tag_events
 
     def passes_jet_filters(self, jet):
-        for j,passes_filter in enumerate(self.jet_filter_list):
-            if not passes_filter(jet):
-                print('Jet Failed '+str(j))
-                return False
+        for j,passes_filter in enumerate(self.__class__.jet_filter_list):
+            if not passes_filter(jet): return False
         return True
 
     def add_event(self, jet_list, is_sig, event_weight):
-        if len(jet_list) > 3: print('POSSIBLE EVENT')
         filtered_jets = [ jet for jet in jet_list if self.passes_jet_filters(jet) ]
         new_event = acorn_event(filtered_jets, event_weight, is_sig)
-        for i,passes_event_filter in enumerate(self.event_filter_list):
-            if not passes_event_filter(new_event):
-                print('Failed ' + str(i))
-                return False
+        for i,passes_event_filter in enumerate(self.__class__.event_filter_list):
+            if not passes_event_filter(new_event): return False
         if self.tagging_events: new_event.tag_event()
         self.events.append(new_event)
         return True
