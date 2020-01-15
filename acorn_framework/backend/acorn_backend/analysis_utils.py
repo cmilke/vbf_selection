@@ -33,7 +33,7 @@ Flavntuple_list_VBFH125_gamgam_V2 = [
     '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/submitDir/data-ANALYSIS/sample.root'
 ]
 
-PDG = {
+PDGID = {
     'down' : 1,
     'up' : 2,
     'strange' : 3,
