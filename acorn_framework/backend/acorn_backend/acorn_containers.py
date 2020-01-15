@@ -28,7 +28,7 @@ class acorn_event:
         self.signal = is_sig
         self.num_quark_jets = 0
         for jet in jet_list:
-            if jet.is_truth_quark: self.num_quark_jets += 1
+            if jet.is_truth_quark(): self.num_quark_jets += 1
 
     def tag_event(self):
         # Use all available jet selectors to try and identify

@@ -19,7 +19,7 @@ from tagging, but is instead reduced to a 2-jet event which is tagged.
 Because of these annoying differences in categorization methods, each category has BOTH a
 jet-level filter, which strips jets out of an event; and an event-level filter, which 
 excludes an event from existing at all. However, most of the categories do not implement both filters,
-and instead allow one of them to default to the base_categorizer's version.
+and instead allow one of them to default to the minimal version.
 '''
 
 Max_jets = len(selector_options)-1
@@ -36,14 +36,14 @@ class base_categorizer():
         self.tagging_events = tag_events
 
     def passes_jet_filters(self, jet):
-        for j,passes_filter in enumerate(self.__class__.jet_filter_list):
+        for passes_filter in self.__class__.jet_filter_list:
             if not passes_filter(jet): return False
         return True
 
     def add_event(self, jet_list, is_sig, event_weight):
         filtered_jets = [ jet for jet in jet_list if self.passes_jet_filters(jet) ]
         new_event = acorn_event(filtered_jets, event_weight, is_sig)
-        for i,passes_event_filter in enumerate(self.__class__.event_filter_list):
+        for passes_event_filter in self.__class__.event_filter_list:
             if not passes_event_filter(new_event): return False
         if self.tagging_events: new_event.tag_event()
         self.events.append(new_event)
