@@ -94,7 +94,7 @@ def evaluate():
     #plt.ylim(0.6, 1)
     plt.title(r'Efficiency/Rejection Performance of Various Taggers')
     plt.grid(True)
-    plt.savefig('plots/performance/roc_'+_filename_infix+'roc_efficiency.pdf')
+    plt.savefig('plots/performance/roc_'+_filename_infix+'.pdf')
     plt.close()
 
 
