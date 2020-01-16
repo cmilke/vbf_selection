@@ -2,84 +2,74 @@
 import argparse
 import pickle
 from acorn_backend import analysis_utils as autils
-from acorn_backend.uproot_wrapper import event_iterator
 from acorn_backend import categorization_classes
 from acorn_backend.tagger_loader import load_network_models
-from acorn_backend.ntuple_recording import jet_recorder_options
+from acorn_backend import ntuple_recording
 
-#Define all the high level root stuff: ntuple files, branches to be used
-_input_type_options = {
+#Define all the high level root stuff: ntuple files, branches to be used, etc.
+_ntuples_configuration = {
     'aviv': {
-        'sig': {
-           'tag': autils.Flavntuple_list_VBFH125_gamgam[:2]
-         , 'train': autils.Flavntuple_list_VBFH125_gamgam[4:6]
-         , 'record': autils.Flavntuple_list_VBFH125_gamgam
+        'samples': {
+            'sig': {
+               'tag': autils.Flavntuple_list_VBFH125_gamgam[:2]
+             , 'train': autils.Flavntuple_list_VBFH125_gamgam[4:6]
+             , 'record': autils.Flavntuple_list_VBFH125_gamgam
+            },
+            'bgd': {
+                'tag': autils.Flavntuple_list_ggH125_gamgam[:2]
+              , 'train': autils.Flavntuple_list_ggH125_gamgam[7:9]
+              , 'record': autils.Flavntuple_list_ggH125_gamgam
+            }
         },
-        'bgd': {
-            'tag': autils.Flavntuple_list_ggH125_gamgam[:2]
-          , 'train': autils.Flavntuple_list_ggH125_gamgam[7:9]
-          , 'record': autils.Flavntuple_list_ggH125_gamgam
-        }
+        'recorders': [
+            ntuple_recording.record_aviv_reco_jets,
+            ntuple_recording.record_aviv_truth_jets
+        ]
     },
+
     'cmilkeV1': {
-        'sig': {
-           'tag': autils.Flavntuple_list_VBFH125_gamgam_V2[:1]
-         , 'train': None 
-         , 'record': autils.Flavntuple_list_VBFH125_gamgam_V2
+        'tree_name': 'ntuple',
+        'samples': {
+            'sig': {
+               'tag': autils.Flavntuple_list_VBFH125_gamgam_V2[:1]
+             , 'train': None 
+             , 'record': autils.Flavntuple_list_VBFH125_gamgam_V2
+            },
+            'bgd': {
+                'tag': None
+              , 'train': None
+              , 'record': None
+            }
         },
-        'bgd': {
-            'tag': None
-          , 'train': None
-          , 'record': None
-        }
     },
+
     'data': None
 }
 
-_branches_list = {
-    'aviv': [
-        'eventWeight',
-        ('truth_particles',
-            ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']
-        ),
-        ('truth_jets',
-            ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']
-        ),
-        ('reco_jets',
-            ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 'j0_QGTagger',
-                            'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
-        )
-    ],
-    'cmilkeV1': None,
-    'data': None
-}
-
-_tree_names = {
-    'aviv': 'Nominal',
-    'cmilkeV1': 'ntuple',
-    'data': None
-}
+_categories_to_dump = [
+    categorization_classes.filter_with_JVT
+]
 
 _Nevents_debug_default = 10
 
 
 def record_events(input_type, args):
-    # Define and initialize all event categories we want to use
-    categories_to_dump = [
-        categorization_classes.filter_with_JVT
-    ]
-    event_data_dump = { c.key: c(args.mode != 'record') for c in categories_to_dump }
-        
-    input_list = _input_type_options[args.ntuple][input_type][args.mode]
-    tree_name = _tree_names[args.ntuple]
-    branches = _branches_list[args.ntuple]
+    # Apply commandline arguments
+    record_jets = _ntuples_configuration[args.ntuple]['recorders'][args.t]
+    input_list = _ntuples_configuration[args.ntuple]['samples'][input_type][args.mode]
     events_to_read = _Nevents_debug_default if (args.debug and args.Nevents == None) else args.Nevents
-    record_jets = jet_recorder_options[args.ntuple][args.t]
+
+    # Define and initialize all event categories we want to use
+    event_data_dump = { c.key: c() for c in _categories_to_dump }
 
     # Iterate over each event in the ntuple list,
     # storing/sorting/filtering events into the data_dump as it goes
-    for event in event_iterator(input_list, tree_name, branches, events_to_read):
-        record_jets(input_type == 'sig', event, event_data_dump)
+    record_jets(input_type == 'sig', input_list, events_to_read, event_data_dump)
+
+    if args.mode != 'record':
+        print('Tagging Events Now!')
+        for category in event_data_dump.values(): category.tag_events()
+
 
     # Print out either the full debug information, or just a summary
     for category in event_data_dump.values():

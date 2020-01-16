@@ -19,64 +19,39 @@ from tagging, but is instead reduced to a 2-jet event which is tagged.
 Because of these annoying differences in categorization methods, each category has BOTH a
 jet-level filter, which strips jets out of an event; and an event-level filter, which 
 excludes an event from existing at all. However, most of the categories do not implement both filters,
-and instead allow one of them to default to the base_categorizer's version.
+and instead allow one of them to default to the minimal version.
 '''
 
-_min_jets = 2
-_max_jets = len(selector_options)-1
-_leading_jet_min_pt = 50 #GeV
-_demanded_number_of_quarks = 2
+Max_jets = len(selector_options)-1
 
 
 # The base categorizer only filters out the bare minimum of jets
 class base_categorizer():
     key = 'all'
+    jet_filter_list = [] 
+    event_filter_list = []
 
-    def __init__(self, tag_events):
+    def __init__(self):
         self.events = []
-        self.tagging_events = tag_events
 
-    def jet_passes_filter(self, jet):
+    def passes_jet_filters(self, jet):
+        for passes_filter in self.__class__.jet_filter_list:
+            if not passes_filter(jet): return False
         return True
 
-    # Removes individual jets from the jet list
-    # And records basic stats for the recorded jets
-    # Includes all jets by default
-    def filter_jets(self, jet_list):
-        filtered_jets = []
-        leading_jet_pt = 0.0
-        num_quark_jets = 0
-        for jet in jet_list:
-            if self.jet_passes_filter(jet):
-                filtered_jets.append(jet)
-                if jet.is_truth_quark(): num_quark_jets += 1
-                if jet.vector.pt > leading_jet_pt: leading_jet_pt = jet.vector.pt
-        return (filtered_jets, leading_jet_pt, num_quark_jets)
-
-    # Tells category whether or not to skip this event
-    # Allows all events by default
-    def passes_event_filter(self, jet_list):
-        return True
-
-    # Filter jets as per the child class's rules,
-    # then check if the remaining jets pass the overall event filters.
-    # If so, then create a new event.
     def add_event(self, jet_list, is_sig, event_weight):
-        filtered_jets, leading_jet_pt, num_quark_jets = self.filter_jets(jet_list)
-
-        # Test general event requirements
-        if len(filtered_jets) < _min_jets: return
-        if len(filtered_jets) > _max_jets: return
-        if leading_jet_pt < _leading_jet_min_pt: return
-        #if is_sig and num_quark_jets < _demanded_number_of_quarks: return
-        if is_sig and num_quark_jets != _demanded_number_of_quarks: return
-
-        # Test category-specific event requirements
-        if not self.passes_event_filter(filtered_jets): return
-
-        #Create new event, which will immediately tag itself
-        new_event = acorn_event(filtered_jets, event_weight, is_sig, self.tagging_events)
+        filtered_jets = [ jet for jet in jet_list if self.passes_jet_filters(jet) ]
+        new_event = acorn_event(filtered_jets, event_weight, is_sig)
+        for passes_event_filter in self.__class__.event_filter_list:
+            if not passes_event_filter(new_event): return False
         self.events.append(new_event)
+        return True
+
+    def tag_events(self):
+        for index, event in enumerate(self.events):
+            event.tag_event()
+            if index % 1000 == 0:
+                print('...Tagged ' + str(index))
 
     def summary(self):
         summary  = 'Category ' + self.__class__.__name__ + ': '
