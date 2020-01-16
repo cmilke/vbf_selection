@@ -24,7 +24,6 @@ def retrieve_data( input_type ):
     event_map = {}
     event_dump = pickle.load( open('data/output_aviv_tag_'+input_type+'.p', 'rb') )
     for category in event_dump.values():
-        print(category.__class__)
         for event in category.events:
             jet_count = len(event.jets)
             event_weight = event.event_weight

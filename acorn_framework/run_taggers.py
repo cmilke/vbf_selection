@@ -2,7 +2,6 @@
 import argparse
 import pickle
 from acorn_backend import analysis_utils as autils
-from acorn_backend.uproot_wrapper import event_iterator
 from acorn_backend import categorization_classes
 from acorn_backend.tagger_loader import load_network_models
 from acorn_backend import ntuple_recording
@@ -10,7 +9,6 @@ from acorn_backend import ntuple_recording
 #Define all the high level root stuff: ntuple files, branches to be used, etc.
 _ntuples_configuration = {
     'aviv': {
-        'tree_name': 'Nominal',
         'samples': {
             'sig': {
                'tag': autils.Flavntuple_list_VBFH125_gamgam[:2]
@@ -23,19 +21,6 @@ _ntuples_configuration = {
               , 'record': autils.Flavntuple_list_ggH125_gamgam
             }
         },
-        'branches': [
-            'eventWeight',
-            ('truth_particles',
-                ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']
-            ),
-            ('truth_jets',
-                ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']
-            ),
-            ('reco_jets',
-                ['tj0pT', 'j0truthid', 'j0_isTightPhoton', 'j0_isPU', 'j0_QGTagger',
-                                'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
-            )
-        ],
         'recorders': [
             ntuple_recording.record_aviv_reco_jets,
             ntuple_recording.record_aviv_truth_jets
@@ -56,7 +41,6 @@ _ntuples_configuration = {
               , 'record': None
             }
         },
-        'branches': None
     },
 
     'data': None
@@ -71,20 +55,21 @@ _Nevents_debug_default = 10
 
 def record_events(input_type, args):
     # Apply commandline arguments
-    config = _ntuples_configuration[args.ntuple]
-    tree_name = config['tree_name']
-    input_list = config['samples'][input_type][args.mode]
-    branches = config['branches']
-    record_jets = config['recorders'][args.t]
+    record_jets = _ntuples_configuration[args.ntuple]['recorders'][args.t]
+    input_list = _ntuples_configuration[args.ntuple]['samples'][input_type][args.mode]
     events_to_read = _Nevents_debug_default if (args.debug and args.Nevents == None) else args.Nevents
 
     # Define and initialize all event categories we want to use
-    event_data_dump = { c.key: c(args.mode != 'record') for c in _categories_to_dump }
+    event_data_dump = { c.key: c() for c in _categories_to_dump }
 
     # Iterate over each event in the ntuple list,
     # storing/sorting/filtering events into the data_dump as it goes
-    for event in event_iterator(input_list, tree_name, branches, events_to_read):
-        record_jets(input_type == 'sig', event, event_data_dump)
+    record_jets(input_type == 'sig', input_list, events_to_read, event_data_dump)
+
+    if args.mode != 'record':
+        print('Tagging Events Now!')
+        for category in event_data_dump.values(): category.tag_events()
+
 
     # Print out either the full debug information, or just a summary
     for category in event_data_dump.values():

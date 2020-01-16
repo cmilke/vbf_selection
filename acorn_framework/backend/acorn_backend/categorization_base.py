@@ -31,9 +31,8 @@ class base_categorizer():
     jet_filter_list = [] 
     event_filter_list = []
 
-    def __init__(self, tag_events):
+    def __init__(self):
         self.events = []
-        self.tagging_events = tag_events
 
     def passes_jet_filters(self, jet):
         for passes_filter in self.__class__.jet_filter_list:
@@ -45,9 +44,14 @@ class base_categorizer():
         new_event = acorn_event(filtered_jets, event_weight, is_sig)
         for passes_event_filter in self.__class__.event_filter_list:
             if not passes_event_filter(new_event): return False
-        if self.tagging_events: new_event.tag_event()
         self.events.append(new_event)
         return True
+
+    def tag_events(self):
+        for index, event in enumerate(self.events):
+            event.tag_event()
+            if index % 1000 == 0:
+                print('...Tagged ' + str(index))
 
     def summary(self):
         summary  = 'Category ' + self.__class__.__name__ + ': '
