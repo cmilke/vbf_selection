@@ -10,7 +10,7 @@ from acorn_backend.plotting_utils import retrieve_data, Hist_bins, accumulate_pe
 
 
 _filename_infix = ''
-#_filename_infix = '2-3-summary' +'_'
+#_filename_infix = '_2-3-summary'
 
 _plot_specifications = {
     (2,'JVT','null','mjj') : '2: $M_{jj}$'
@@ -94,7 +94,7 @@ def evaluate():
     #plt.ylim(0.6, 1)
     plt.title(r'Efficiency/Rejection Performance of Various Taggers')
     plt.grid(True)
-    plt.savefig('plots/performance/roc_'+_filename_infix+'.pdf')
+    plt.savefig('plots/performance/roc'+_filename_infix+'.pdf')
     plt.close()
 
 

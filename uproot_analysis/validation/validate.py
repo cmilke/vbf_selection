@@ -28,6 +28,7 @@ _branch_list = [
 _Nevents = 10000
 _hist_bins = 100
 
+
 def recursive_load(key, value, validation_data, input_type):
     if isinstance(value, types.GeneratorType):
         for entry in value:
@@ -53,13 +54,13 @@ def validate():
         plot_values = { 'x': [], 'label': [] }
         for input_type,data in inputs.items():
             plot_values['x'].append(data)
-            plot_values['label'].append(input_type)
+            plot_values['label'].append( input_type+' - '+str(len(data)) )
 
         fig,ax = plt.subplots()
         counts, bins, hist = plt.hist(**plot_values, histtype='step', linewidth=2, bins=_hist_bins)
         ax.legend()
         plt.grid()
-        plt.title('Distribution of '+plot_name)
+        plt.title('Distribution of '+plot_name+' Over '+str(_Nevents)+' Events')
         output.savefig()
         plt.close()
     output.close()
