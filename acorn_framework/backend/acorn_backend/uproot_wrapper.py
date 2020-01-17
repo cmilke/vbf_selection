@@ -35,13 +35,16 @@ which is why lists are not produced by default)
 
 
 
-def nested_generator(container_template, superindex, entry):
+def nested_generator(container_template, container_size, superindex, entry):
     subgroup_container = { key: None for key in container_template }
-    subrange = slice(superindex,superindex+len(container_template))
+    subrange = slice(superindex,superindex+container_size)
     for subentry in zip(*entry[subrange]):
         subindex = 0
         for key, (size, sub_template) in container_template.items():
-            subgroup_container[key] = subentry[subindex] if sub_template == None else nested_generator(sub_template,subindex,subentry)
+            if sub_template == None:
+                subgroup_container[key] = subentry[subindex]
+            else:
+                subgroup_container[key] = nested_generator(sub_template,size,subindex,subentry)
             subindex += size
         yield subgroup_container
 
@@ -63,7 +66,10 @@ def event_iterator(ntuple_list, tree_name, nested_branch_list, events_to_read):
             for entry in zip(*basket.values()):
                 index = 0
                 for key, (size, sub_template) in container_template.items():
-                    event_container[key] = entry[index] if sub_template == None else nested_generator(sub_template,index,entry)
+                    if sub_template == None:
+                        event_container[key] = entry[index] 
+                    else:
+                        event_container[key] = nested_generator(sub_template,size,index,entry)
                     index += size
                 yield event_container
                 events_read += 1
