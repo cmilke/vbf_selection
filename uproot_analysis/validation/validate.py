@@ -11,13 +11,17 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 #Define all the high level root stuff: ntuple files, branches to be used
+#_input_type_options = {
+#    'sig': autils.Flavntuple_list_VBFH125_gamgam[:1],
+#    'bgd': autils.Flavntuple_list_ggH125_gamgam[:1]
+#}
 _input_type_options = {
-    'sig': autils.Flavntuple_list_VBFH125_gamgam[:1],
-    'bgd': autils.Flavntuple_list_ggH125_gamgam[:1]
+    'sig': ['/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/submitDir/data-ANALYSIS/sample.root'],
+    'bgd': None
 }
 #input_list = ['/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/submitDir/data-ANALYSIS/sample.root']
 
-_branch_list = [
+_aviv_branch_list = [
     'eventWeight',
     ('truth_particles',  ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']),
     ('truth_jets', ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm']),
@@ -25,7 +29,37 @@ _branch_list = [
                         'j0_JVT', 'j0_fJVT_Loose', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m'])
 ]
 
-_Nevents = 10000
+_cmilkeV1_branch_list = [
+    'RunNumber', 'EventNumber', 'EventWeight', 'MU',
+    ('truth_jets', [
+        'TruthJetPt', 'TruthJetEta', 'TruthJetPhi', 'TruthJetID'
+    ]),
+    ('reco_jets', [
+        'JetE_constit', 'JetPt_constit', 'JetEta_constit', 'JetPhi_constit', 'JetM_constit',
+        'JetE_calib', 'JetPt_calib', 'JetEta_calib', 'JetPhi_calib', 'JetM_calib',
+        'JetTiming', 'JetNegE', 'JetCharge', 'JetAngularity', 'JetFlavor', 'JetScatterType', 'JetMatchIndex',
+        ('tracks', [
+            'JetTrkPt', 'JetTrkEta', 'JetTrkPhi', 'JetTrkZ0', 'JetTrkD0', 'JetTrkZ0err',
+            'JetTrkD0err', 'JetTrkVertex', 'JetTrkTruthVertex'
+        ])
+    ]),
+    #'NPV'
+    #('recoVtx', [
+    #    ('vtx', [
+    #        'RecoVtx_z', 'RecoVtx_z_err', 'RecoVtx_index',
+    #        'TruthVtx_z', 'TruthVtx_x', 'TruthVtx_y', 'TruthVtx_t', 'TruthVtx_index',
+    #        'RecoVtx_sumPt', 'RecoVtx_WsumPt',
+    #        'VtxTrkPt', 'VtxTrkEta', 'VtxTrkPhi', 'VtxTrkZ0', 'VtxTrkD0', 'VtxTrkZ0err',
+    #        'VtxTrkD0err', 'VtxTrkW', 'VtxTrkVertex', 'VtxTrkTruthVertex'
+    #    ])
+    #])
+]
+
+
+
+#_Nevents = 10000
+#_Nevents = None
+_Nevents = 10
 _hist_bins = 100
 
 
@@ -38,31 +72,44 @@ def recursive_load(key, value, validation_data, input_type):
 
 
 def validate():
+    #branch_list = _aviv_branch_list
+    #tree_name = 'Nominal'
+    branch_list = _cmilkeV1_branch_list
+    tree_name = 'ntuple'
+
     # Load data
-    branch_keys = unnest_list(_branch_list, {})
-    input_keys = ['sig', 'bgd']
+    branch_keys = unnest_list(branch_list, {})
+    print(branch_keys)
+    #input_keys = ['sig', 'bgd']
+    input_keys = ['sig']
     validation_data = { b_key:{i_key:[] for i_key in input_keys} for b_key in branch_keys }
     for input_type in input_keys:
         input_list = _input_type_options[input_type]
-        event_generator = event_iterator(input_list, 'Nominal', _branch_list, _Nevents)
+        event_generator = event_iterator(input_list, tree_name, branch_list, _Nevents)
         recursive_load(None, event_generator, validation_data, input_type)
 
+    for key,value in validation_data.items():
+        print(key)
+        print(value['sig'])
+        print()
+
     # Plot data
-    output = PdfPages('validation_plots.pdf')
+    #output = PdfPages('validation_plots.pdf')
 
     for plot_name, inputs in validation_data.items():
         plot_values = { 'x': [], 'label': [] }
         for input_type,data in inputs.items():
             plot_values['x'].append(data)
             plot_values['label'].append( input_type+' - '+str(len(data)) )
+        print( plot_name, plot_values['label'] )
 
-        fig,ax = plt.subplots()
-        counts, bins, hist = plt.hist(**plot_values, histtype='step', linewidth=2, bins=_hist_bins)
-        ax.legend()
-        plt.grid()
-        plt.title('Distribution of '+plot_name+' Over '+str(_Nevents)+' Events')
-        output.savefig()
-        plt.close()
-    output.close()
+    #    fig,ax = plt.subplots()
+    #    counts, bins, hist = plt.hist(**plot_values, histtype='step', linewidth=2, bins=_hist_bins)
+    #    ax.legend()
+    #    plt.grid()
+    #    plt.title('Distribution of '+plot_name+' Over '+str(_Nevents)+' Events')
+    #    output.savefig()
+    #    plt.close()
+    #output.close()
 
 validate()
