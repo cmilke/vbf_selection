@@ -44,6 +44,37 @@ def record_aviv_reco_jets(is_signal, input_list, events_to_read, event_data_dump
             category.add_event(recorded_jets, is_signal, event['eventWeight'])
 
 
+def record_cmilkeV1_truth_jets(is_signal, input_list, events_to_read, event_data_dump):
+    tree_name = 'ntuple'
+    branches = [
+        'EventWeight',
+        ('truth_jets',
+            ['TruthJetPt', 'TruthJetEta', 'TruthJetPhi', 'TruthJetM', 'TruthJetID']
+        )
+    ]
+
+    for event in event_iterator(input_list, tree_name, branches, events_to_read):
+        # Loop over truth jets and convert them into generic acorn_jet objects
+        recorded_jets = []
+        for truth_jet in event['truth_jets']:
+            v = TLorentzVector.from_ptetaphim(
+                    truth_jet['TruthJetPt'],
+                    truth_jet['TruthJetEta'],
+                    truth_jet['TruthJetPhi'],
+                    truth_jet['TruthJetM']
+            )
+            pdgid = truth_jet['TruthJetID']
+
+            # Create jet object storing the essential aspects of the ntuple truth jet,
+            # faking some of the data normally associated with reco jets
+            new_jet = acorn_jet(v, pdgid, False, True, True, -1)
+            recorded_jets.append(new_jet)
+
+        # Categorize event, and then either discard the event or perform tagging on it
+        for category in event_data_dump.values():
+            category.add_event(recorded_jets, is_signal, event['EventWeight'])
+
+
 def record_aviv_truth_jets(is_signal, input_list, events_to_read, event_data_dump):
     tree_name = 'Nominal'
     branches = [
@@ -58,7 +89,7 @@ def record_aviv_truth_jets(is_signal, input_list, events_to_read, event_data_dum
 
     for event in event_iterator(input_list, tree_name, branches, events_to_read):
         # Loop over truth jets and convert them into generic acorn_jet objects
-        truth_particles = list(event['truth_particles'])
+        truth_particles = [ tp.copy() for tp in event['truth_particles'] ]
         recorded_jets = []
         for tj in event['truth_jets']:
             v = TLorentzVector.from_ptetaphim(tj['truthjpT'], tj['truthjeta'], tj['truthjphi'], tj['truthjm'])

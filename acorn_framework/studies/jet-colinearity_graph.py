@@ -136,13 +136,13 @@ def draw_2dhist(retrieved_data_values, pt_min, pt_max):
 def draw_all():
     retrieved_data_values = reload_data(len(sys.argv) > 1, retrieve_data)
 
-    #draw_normalized_graph(retrieved_data_values,30,200)
-    #draw_normalized_graph(retrieved_data_values,30,60)
-    #draw_normalized_graph(retrieved_data_values,60,200)
+    draw_normalized_graph(retrieved_data_values,30,200)
+    draw_normalized_graph(retrieved_data_values,30,60)
+    draw_normalized_graph(retrieved_data_values,60,200)
 
-    #draw_graph(retrieved_data_values,30,200)
-    #draw_graph(retrieved_data_values,30,60)
-    #draw_graph(retrieved_data_values,60,200)
+    draw_graph(retrieved_data_values,30,200)
+    draw_graph(retrieved_data_values,30,60)
+    draw_graph(retrieved_data_values,60,200)
 
     draw_2dhist(retrieved_data_values,30,100)
     draw_2dhist(retrieved_data_values,30,200)

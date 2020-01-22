@@ -31,16 +31,20 @@ _ntuples_configuration = {
         'tree_name': 'ntuple',
         'samples': {
             'sig': {
-               'tag': autils.Flavntuple_list_VBFH125_gamgam_V2[:1]
+               'tag': autils.Flavntuple_list_VBFH125_gamgam_V2
              , 'train': None 
              , 'record': autils.Flavntuple_list_VBFH125_gamgam_V2
             },
             'bgd': {
-                'tag': None
+                'tag': autils.Flavntuple_list_ggH125_gamgam_V2
               , 'train': None
-              , 'record': None
+              , 'record': autils.Flavntuple_list_ggH125_gamgam_V2
             }
         },
+        'recorders': [
+            None,
+            ntuple_recording.record_cmilkeV1_truth_jets
+        ]
     },
 
     'data': None

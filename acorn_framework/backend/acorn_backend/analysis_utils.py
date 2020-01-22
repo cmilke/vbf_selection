@@ -30,7 +30,11 @@ Flavntuple_list_ggH125_gamgam = [
 ]
 
 Flavntuple_list_VBFH125_gamgam_V2 = [
-    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/submitDir/data-ANALYSIS/sample.root'
+    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/signal/data-ANALYSIS/sample.root'
+]
+
+Flavntuple_list_ggH125_gamgam_V2 = [
+    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/background/data-ANALYSIS/sample.root'
 ]
 
 PDGID = {
