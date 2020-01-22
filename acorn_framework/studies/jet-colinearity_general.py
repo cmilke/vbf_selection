@@ -40,15 +40,30 @@ def extract_input(input_type):
 
 
         # Use quark jets as primaries
-        #primary_jets = []
-        #for jet in event.jets: 
-        #    if jet.truth_id in range(1,7): primary_jets.append(jet)
-        #    else: extra_jet = jet
+        #if False: 
+        if input_type == 'sig':
+            primary_jets = []
+            for jet in event.jets: 
+                if jet.truth_id in range(1,7): primary_jets.append(jet)
+                else: extra_jet = jet
+        else:
+            # Use highest mjj pair as primaries
+            #jets = sorted(event.jets, key = lambda j:j.vector.pt)
+            highest_mjj = 0
+            primary_jets = None
+            extra_jet = None
+            jet_permutations = [ (0,1,2), (1,2,0), (2,0,1) ]
+            for i,j,k in jet_permutations:
+                mjj = (event.jets[i].vector + event.jets[j].vector).mass
+                if mjj > highest_mjj:
+                    highest_mjj = mjj
+                    primary_jets = [ event.jets[i], event.jets[j] ]
+                    extra_jet = event.jets[k]
 
         # Use highest pt jets as primaries
-        jets = sorted(event.jets, key = lambda j:j.vector.pt)
-        primary_jets = jets[1:]
-        extra_jet = jets[0]
+        #jets = sorted(event.jets, key = lambda j:j.vector.pt)
+        #primary_jets = jets[1:]
+        #extra_jet = jets[0]
 
         # Use most forward jets as primaries
         #jets = sorted(event.jets, key = lambda j:j.vector.eta)
@@ -68,8 +83,8 @@ def extract_input(input_type):
 
 def extract_data():
     retrieved_data_dictionary = {
-        'sig': extract_input('sig'),
-        'bgd': extract_input('bgd')
+        'sig - quarks': extract_input('sig'),
+        'bgd - $M_{jj}$ Max': extract_input('bgd')
     }
     return retrieved_data_dictionary
 
@@ -98,7 +113,8 @@ def draw_distribution(retrieved_data_dictionary, pt_cut):
     #plt.ylim(10e-6, 1)
     #plt.ylim(0, 0.35)
     plt.xlabel(r'$2 \times (\frac{\eta_3 - \eta_{q-}}{\eta_{q+} - \eta_{q-}} - 0.5)$')
-    plt.title('Co-linearity Distribution of 3-Jet Events,\nFor Lowest $p_T$ Jets with $p_T$ > '+str(pt_cut))
+    #plt.title('Co-linearity Distribution of 3-Jet Events,\nFor Lowest $p_T$ Jets with $p_T$ > '+str(pt_cut))
+    plt.title('Co-linearity Distribution of 3-Jet Events,\nWith $p_T$ > '+str(pt_cut))
     fig.savefig('plots/figures/colinearity_pt_'+str(pt_cut)+'.pdf')
     plt.close()
 
