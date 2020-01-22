@@ -21,7 +21,8 @@ _data_dump = {}
 def extract_input(input_type):
     global _data_dump
     if input_type not in _data_dump:
-        input_file = 'data/output_aviv_truth_record_'+input_type+'.p'
+        #input_file = 'data/output_aviv_truth_record_'+input_type+'.p'
+        input_file = 'data/output_cmilkeV1_truth_record_'+input_type+'.p'
         #input_file = 'data/output_aviv_record_'+input_type+'.p'
         _data_dump[input_type] = pickle.load( open(input_file, 'rb') )
 
