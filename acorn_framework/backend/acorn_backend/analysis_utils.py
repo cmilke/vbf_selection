@@ -65,9 +65,9 @@ def is_outgoing_quark(pdg, status): return (pdg in PDG['quarks'] and status == S
 def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
 
 
-def reload_data(regen, data_extraction_function, cache_dir='studies/cache/'):
+def reload_data(regen, data_extraction_function, cache_dir='studies/cache/', suffix=''):
     data_file_root = sys.argv[0].split('/')[-1].split('.')[-2]
-    data_file = cache_dir+data_file_root+'.p'
+    data_file = cache_dir+data_file_root+suffix+'.p'
 
     if regen:
         retrieved_data_values = data_extraction_function()

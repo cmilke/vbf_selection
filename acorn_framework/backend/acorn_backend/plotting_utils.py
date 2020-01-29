@@ -4,6 +4,8 @@ import pickle
 Hist_bins = 200
 
 
+# Used by the retrieve_data function to deal with the intricacies of 
+# dumping valies into the data map
 def fill_event_map(event_map, event_key, tagger, event_weight):
     discriminant = tagger.discriminant
     value_range = tagger.__class__.value_range
@@ -23,6 +25,7 @@ def fill_event_map(event_map, event_key, tagger, event_weight):
 def retrieve_data( input_type ):
     event_map = {}
     event_dump = pickle.load( open('data/output_aviv_tag_'+input_type+'.p', 'rb') )
+    #event_dump = pickle.load( open('data/output_cmilkeV1_truth_tag_'+input_type+'.p', 'rb') )
     for category in event_dump.values():
         for event in category.events:
             jet_count = len(event.jets)

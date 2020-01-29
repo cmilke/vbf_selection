@@ -9,18 +9,18 @@ from matplotlib import pyplot as plt
 from acorn_backend.plotting_utils import retrieve_data, Hist_bins, accumulate_performance
 
 
-_filename_infix = ''
+_filename_infix = '_aviv'
 #_filename_infix = '_2-3-summary'
 
 _plot_specifications = {
     (2,'JVT','null','mjj') : '2: $M_{jj}$'
-  , (2,'JVT','null','2jetNNtagger') : '2: NN Tagger'
+  #, (2,'JVT','null','2jetNNtagger') : '2: NN Tagger'
   , (3,'JVT','2maxpt','mjj') : '3: 2 Leading $p_t$ - $M_{jj}$'
   , (3,'JVT','random','mjj') : '3: Random - $M_{jj}$'
   , (3,'JVT','truth','mjj') : '3: Truth - $M_{jj}$'
   , (3,'JVT','mjjmax','mjj') : '3: Max $M_{jj}$ - $M_{jj}$'
   #, (3,'JVT','coLinear-mjj','united-Deta') : '3: Merged $M_{jj}$ - $\Delta \eta$'
-  , (3,'JVT','dummy3jet','3jNNtagger') : '3: NN Direct'
+  #, (3,'JVT','dummy3jet','3jNNtagger') : '3: NN Direct'
   #, (3,'JVT','pairMLP','mjj') : '3: MLP - $M_{jj}$'
   #, (3,'JVT','mjjmax','2jetNNtagger') : '3: Max $M_{jj}$ - NN Tagger'
   #, (3,'JVT','pairMLP','2jetNNtagger') : '3: MLP - NN Tagger'
@@ -31,18 +31,18 @@ _plot_specifications = {
 }
 
 _performances_to_combine = {
-    '>=2_mjj': [
-        (2,'JVT','null','mjj')
-      , (3,'JVT','mjjmax','mjj')
-    ]
-  , '>=2_NN/mjj': [
-        (2,'JVT','null','2jetNNtagger')
-      , (3,'JVT','mjjmax','2jetNNtagger')
-    ]
-  , '>=2_NN': [
-        (2,'JVT','null','2jetNNtagger')
-      , (3,'JVT','dummy3jet','3jNNtagger')
-    ]
+  #  '>=2_mjj': [
+  #      (2,'JVT','null','mjj')
+  #    , (3,'JVT','mjjmax','mjj')
+  #  ]
+  #, '>=2_NN/mjj': [
+  #      (2,'JVT','null','2jetNNtagger')
+  #    , (3,'JVT','mjjmax','2jetNNtagger')
+  #  ]
+  #, '>=2_NN': [
+  #      (2,'JVT','null','2jetNNtagger')
+  #    , (3,'JVT','dummy3jet','3jNNtagger')
+  #  ]
 }
 
 _key_order = { key:index for index,key in enumerate(_plot_specifications) }

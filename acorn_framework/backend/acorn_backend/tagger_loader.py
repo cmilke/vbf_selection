@@ -21,7 +21,7 @@ selector_options = [
       , base_selectors.random_selector
       #, base_selectors.quark_gluon_tag_selector
       #, base_selectors.coLinearity_merger
-      , base_selectors.dummy_3_jet_selector
+      #, base_selectors.dummy_3_jet_selector
       #, basic_neural_net_selector 
       #, dual_layer_selector 
       #, pair_MLP_selector
@@ -35,5 +35,5 @@ def load_network_models(mode):
     #basic_neural_net_selector.load_model(mode)
     #dual_layer_selector.load_model(mode)
     #pair_MLP_selector.load_model(mode)
-    basic_nn_tagger.load_model(mode)
-    direct_3_jet_tagger.load_model(mode)
+    #basic_nn_tagger.load_model(mode)
+    #direct_3_jet_tagger.load_model(mode)

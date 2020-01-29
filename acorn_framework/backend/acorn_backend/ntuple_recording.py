@@ -24,7 +24,7 @@ def record_aviv_reco_jets(is_signal, input_list, events_to_read, event_data_dump
             ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm']
         ),
         ('reco_jets',
-            ['j0_isPU', 'j0_QGTagger', 'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
+            ['tj0pT', 'j0_isPU', 'j0_QGTagger', 'j0_JVT', 'j0_fJVT_Tight', 'j0pT', 'j0eta', 'j0phi', 'j0m']
         )
     ]
 
@@ -35,7 +35,8 @@ def record_aviv_reco_jets(is_signal, input_list, events_to_read, event_data_dump
         for rj in event['reco_jets']:
             v = TLorentzVector.from_ptetaphim(rj['j0pT'], rj['j0eta'], rj['j0phi'], rj['j0m'])
             pdgid = match_aviv_reco_jet(v, truth_particles)
-            is_pileup = rj['j0_isPU']
+            #is_pileup = rj['j0_isPU']
+            is_pileup = rj['tj0pT'] < 0
             new_jet = acorn_jet(v, pdgid, is_pileup, rj['j0_JVT'], rj['j0_fJVT_Tight'], rj['j0_QGTagger'])
             recorded_jets.append(new_jet)
 
@@ -64,6 +65,8 @@ def record_cmilkeV1_truth_jets(is_signal, input_list, events_to_read, event_data
                     truth_jet['TruthJetM']
             )
             pdgid = truth_jet['TruthJetID']
+            if pdgid == -22: pdgid = 0
+            pdgid = abs(pdgid)
 
             # Create jet object storing the essential aspects of the ntuple truth jet,
             # faking some of the data normally associated with reco jets
