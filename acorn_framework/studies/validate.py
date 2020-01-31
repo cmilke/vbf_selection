@@ -15,7 +15,7 @@ _category_key = 'JVT20'
 
 _xlimits = {
     'PDGID':[-5,40], '$p_T$':[20,200], '$\eta$':None, '$\phi$':None, 'Mass':None,
-    'Leading $p_T$ Mass':None, '$\Delta \eta_{max}$':None
+    'Leading $p_T$ Mass':[0,3000], '$\Delta \eta_{max}$':None
 }
 
 

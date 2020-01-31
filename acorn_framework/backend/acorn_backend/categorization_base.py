@@ -28,7 +28,7 @@ Max_jets = len(selector_options)-1
 # The base categorizer only filters out the bare minimum of jets
 class base_categorizer():
     key = 'all'
-    jet_filter_list = [] 
+    jet_filter_list = []
     event_filter_list = []
 
     def __init__(self):

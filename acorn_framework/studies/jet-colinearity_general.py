@@ -116,11 +116,11 @@ def extract_input(input_type, method):
 
 def extract_data():
     retrieved_data_dictionary = {
-        #'sigC': extract_input('sig','cheat')
-       'sigpt': extract_input('sig','pt')
-      #, 'sigR': extract_input('sig','random')
+        'sigC': extract_input('sig','cheat')
+      , 'sigpt': extract_input('sig','pt')
+      , 'sigR': extract_input('sig','random')
       #, 'sigF': extract_input('sig','forward')
-      #, 'sigM': extract_input('sig','mjj')
+      , 'sigM': extract_input('sig','mjj')
         #'bgd': extract_input('bgd',method)
     }
     return retrieved_data_dictionary
@@ -156,7 +156,7 @@ def draw_distribution(retrieved_data_dictionary, mjj_cut):
     ax.legend()
     plt.grid()
 
-    plt.ylim(0, 0.04)
+    #plt.ylim(0, 0.06)
     #plt.ylim(0, 1)
     plt.xlim(-3, 3)
 

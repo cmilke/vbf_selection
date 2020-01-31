@@ -7,6 +7,9 @@ from acorn_backend.tagger_loader import load_network_models
 from acorn_backend import ntuple_recording
 
 #Define all the high level root stuff: ntuple files, branches to be used, etc.
+# TODO: Can you have only one sample, that you only record once,
+#   and then the tag/train samples are just limited slices of that pre-recorded sample
+#   (since the tag method is now seperated from the recording method)
 _ntuples_configuration = {
     'aviv': {
         'samples': {
@@ -51,7 +54,8 @@ _ntuples_configuration = {
 }
 
 _categories_to_dump = [
-    categorization_classes.filter_with_JVTmin20
+    #categorization_classes.filter_with_JVTmin20,
+    categorization_classes.filter_with_JVT
 ]
 
 _Nevents_debug_default = 10

@@ -19,9 +19,10 @@ selector_options = [
       , base_selectors.maximal_mjj_selector
       , base_selectors.highest_pt_selector
       , base_selectors.random_selector
+      , base_selectors.maximal_Delta_eta_selector
       #, base_selectors.quark_gluon_tag_selector
       #, base_selectors.coLinearity_merger
-      #, base_selectors.dummy_3_jet_selector
+      , base_selectors.dummy_3_jet_selector
       #, basic_neural_net_selector 
       #, dual_layer_selector 
       #, pair_MLP_selector

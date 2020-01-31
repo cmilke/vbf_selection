@@ -14,9 +14,8 @@ class base_selector():
     key = 'null'
     tagger_class_list = [
         simple_event_taggers.mjj_tagger
+      , simple_event_taggers.delta_eta_tagger
       #, basic_nn_tagger
-      #, simple_event_taggers.delta_eta_tagger
-      #, simple_event_taggers.mjjj_tagger
     ]
 
     def select(self, event):
@@ -46,17 +45,18 @@ class base_selector():
         return rep
 
 
-# Does not actually select jets.
-# Meant for 2-jet taggers that do not depend on selections
+# Just a copy of the base_selector, but for taggers I don't want
+# inherited by other selectors
 class dummy_2_jet_selector(base_selector):
     key = 'dummy2jet'
-    tagger_class_list = [ simple_event_taggers.mjjj_tagger ]
+    tagger_class_list = []
 
 
 # As above, but for 3-jet taggers
 class dummy_3_jet_selector(base_selector):
     key = 'dummy3jet'
-    tagger_class_list = [ direct_3_jet_tagger ]
+    tagger_class_list = [ simple_event_taggers.mjjj_tagger ]
+    #tagger_class_list = [ direct_3_jet_tagger ]
     #tagger_class_list = [ simple_event_taggers.coLinearity_tagger ]
 
 
@@ -156,31 +156,6 @@ class maximal_Delta_R_selector(base_selector):
         return tuple(jet_idents)
 
 
-# Select the two jets with the largest
-# product of mjj and Deta
-class maximal_mjjXDeta_selector(base_selector):
-    key = 'mjjXetamax'
-
-    def select(self, event):
-        jet_idents = [-1,-1]
-        max_product = -1
-        num_jets = len(event.jets)
-        for i in range(0, num_jets):
-            for j in range(i+1, num_jets):
-                j0 = event.jets[i]
-                j1 = event.jets[j]
-                v0 = TLorentzVector.from_ptetaphim(j0.vector.pt, j0.vector.eta, j0.vector.phi, j0.vector.mass)
-                v1 = TLorentzVector.from_ptetaphim(j1.vector.pt, j1.vector.eta, j1.vector.phi, j1.vector.mass)
-                combined = v0 + v1
-                mjj = combined.mass
-                delta_eta = abs(j0.vector.eta - j1.vector.eta)
-                DetaXmjj = mjj*delta_eta
-                if DetaXmjj > max_product:
-                    max_product = DetaXmjj
-                    jet_idents = [i,j]
-        return tuple(jet_idents)
-
-
 # Selects the correct vbf jets based on truth info
 # Returns the first two if background
 class truth_selector(base_selector):
@@ -210,8 +185,6 @@ class quark_gluon_tag_selector(base_selector):
         quark_gluon_scores.sort()
         jet_idents = [ index for (qgScore, index) in quark_gluon_scores ]
         return tuple(jet_idents[:2])
-
-
 
 
 # Select the two jets with the largest mjj

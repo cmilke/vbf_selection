@@ -72,7 +72,7 @@ def make_group_label( event_key ):
 def extract_tagger_information(event_map):
     # Group the same taggers together
     tagger_map = {}
-    for event_key, (value_range, data_lists) in event_map.items():
+    for event_key, (value_range, data_lists) in sorted( event_map.items() ):
         tagger_key = event_key[3]
         if tagger_key not in tagger_map: tagger_map[tagger_key] = (value_range, {})
         tagger_map[tagger_key][1][event_key] = data_lists
@@ -91,9 +91,10 @@ def extract_tagger_information(event_map):
 
 
 def plot_input_type(input_type):
-    event_map = retrieve_data(input_type)
+    data_file = 'data/output_aviv_tag_'+input_type+'.p'
+    event_map = retrieve_data(data_file)
     binned_tagger_map = extract_tagger_information(event_map)
-    for tagger_key, (value_range, binned_data) in binned_tagger_map.items():
+    for tagger_key, (value_range, binned_data) in sorted(binned_tagger_map.items()):
         plot_performance(input_type, tagger_key, value_range, binned_data)
 
 

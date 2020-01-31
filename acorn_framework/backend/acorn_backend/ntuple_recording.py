@@ -5,15 +5,17 @@ from acorn_backend.acorn_containers import acorn_jet
 
 
 def match_aviv_reco_jet(vector_to_match, truth_particles):
+    max_pt = 0
+    max_pt_pdgid = -1
     for tp in truth_particles:
-        if tp['tpartpdgID'] == autils.PDGID['photon']:
-            if tp['tpartstatus'] != autils.Status['photon_out']: continue
-        elif tp['tpartstatus'] != autils.Status['outgoing']: continue
+        if tp['tpartpdgID'] == autils.PDGID['higgs']: continue
 
         truth_vec = TLorentzVector.from_ptetaphim(tp['tpartpT'], tp['tparteta'], tp['tpartphi'], tp['tpartm'])
         deltaR = vector_to_match.delta_r(truth_vec)
-        if deltaR < 0.3: return tp['tpartpdgID']
-    return -1
+        if deltaR < 0.3 and truth_vec.pt > max_pt:
+            max_pt = truth_vec.pt
+            max_pt_pdgid = tp['tpartpdgID']
+    return max_pt_pdgid
 
 
 def record_aviv_reco_jets(is_signal, input_list, events_to_read, event_data_dump):

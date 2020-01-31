@@ -14,11 +14,17 @@ _filename_infix = '_aviv'
 
 _plot_specifications = {
     (2,'JVT','null','mjj') : '2: $M_{jj}$'
+  #, (2,'JVT','null','Deta') : '2: $\Delta \eta$'
   #, (2,'JVT','null','2jetNNtagger') : '2: NN Tagger'
-  , (3,'JVT','2maxpt','mjj') : '3: 2 Leading $p_t$ - $M_{jj}$'
-  , (3,'JVT','random','mjj') : '3: Random - $M_{jj}$'
   , (3,'JVT','truth','mjj') : '3: Truth - $M_{jj}$'
+  #, (3,'JVT','truth','Deta') : '3: Truth - $\Delta \eta$'
   , (3,'JVT','mjjmax','mjj') : '3: Max $M_{jj}$ - $M_{jj}$'
+  #, (3,'JVT','mjjmax','Deta') : '3: Max $M_{jj}$ - $\Delta \eta$'
+  , (3,'JVT','2maxpt','mjj') : '3: 2 Leading $p_t$ - $M_{jj}$'
+  #, (3,'JVT','2maxpt','Deta') : '3: 2 Leading $p_t$ - $\Delta \eta$'
+  #, (3,'JVT','dummy3jet','mjjj') : '3: $M_{jjj}$'
+  , (3,'JVT','random','mjj') : '3: Random - $M_{jj}$'
+  #, (3,'JVT','random','Deta') : '3: Random - $\Delta \eta$'
   #, (3,'JVT','coLinear-mjj','united-Deta') : '3: Merged $M_{jj}$ - $\Delta \eta$'
   #, (3,'JVT','dummy3jet','3jNNtagger') : '3: NN Direct'
   #, (3,'JVT','pairMLP','mjj') : '3: MLP - $M_{jj}$'
@@ -49,8 +55,10 @@ _key_order = { key:index for index,key in enumerate(_plot_specifications) }
 
 
 def extract_tagger_information(input_type):
-    event_map = retrieve_data(input_type)
-    for combination_key, key_list in _performances_to_combine.items():
+    #data_file = 'data/output_cmilkeV1_truth_tag_'+input_type+'.p', 'rb') )
+    data_file = 'data/output_aviv_tag_'+input_type+'.p'
+    event_map = retrieve_data(data_file)
+    for combination_key, key_list in sorted( _performances_to_combine.items() ):
         value_range = event_map[key_list[0]][0]
         combined_discriminants = []
         combined_weights = []
@@ -60,8 +68,13 @@ def extract_tagger_information(input_type):
         data = ( combined_discriminants, combined_weights )
         event_map[combination_key] = ( value_range, data )
 
+    for key in _plot_specifications:
+        if key not in event_map:
+            raise LookupError( str(key) + ' IS EMPTY!\n'
+                 '             Did you include this in your tagging list or make a typo?')
+
     binned_data = [None] * len(_plot_specifications)
-    for event_key, (value_range, data) in event_map.items():
+    for event_key, (value_range, data) in sorted( event_map.items() ):
         if event_key not in _plot_specifications: continue
         discriminants, weights = data
         group_label = _plot_specifications[event_key]
