@@ -77,18 +77,20 @@ class highest_pt_selector(base_selector):
     key = '2maxpt'
 
     def select(self, event):
-        jet_idents = [-1,-1]
-        max_pts = [-1,-1]
-        for index, jet in enumerate(event.jets):
-            if jet.vector.pt > max_pts[0]:
-                max_pts[1] = max_pts[0]
-                jet_idents[1] = jet_idents[0]
-                max_pts[0] = jet.vector.pt
-                jet_idents[0] = index
-            elif jet.vector.pt > max_pts[1]:
-                max_pts[1] = jet.vector.pt
-                jet_idents[1] = index
-        return tuple(jet_idents)
+        return (1,2)
+    #def select(self, event):
+    #    jet_idents = [-1,-1]
+    #    max_pts = [-1,-1]
+    #    for index, jet in enumerate(event.jets):
+    #        if jet.vector.pt > max_pts[0]:
+    #            max_pts[1] = max_pts[0]
+    #            jet_idents[1] = jet_idents[0]
+    #            max_pts[0] = jet.vector.pt
+    #            jet_idents[0] = index
+    #        elif jet.vector.pt > max_pts[1]:
+    #            max_pts[1] = jet.vector.pt
+    #            jet_idents[1] = index
+    #    return tuple(jet_idents)
 
 
 # Select the two jets with the
@@ -124,12 +126,27 @@ class maximal_mjj_selector(base_selector):
             for j in range(i+1, num_jets):
                 jet0 = event.jets[i]
                 jet1 = event.jets[j]
-                mjj = (jet0.vector+jet1.vector).mass
+                mjj = (jet0.vector+jet1.vector).pt
                 if mjj > max_mjj:
                     max_mjj = mjj
                     jet_idents = [i,j]
 
         return tuple(jet_idents)
+#    def select(self, event):
+#        jet_idents = [-1,-1]
+#        max_mjj = -1
+#
+#        num_jets = len(event.jets)
+#        for i in range(0, num_jets):
+#            for j in range(i+1, num_jets):
+#                jet0 = event.jets[i]
+#                jet1 = event.jets[j]
+#                mjj = (jet0.vector+jet1.vector).mass
+#                if mjj > max_mjj:
+#                    max_mjj = mjj
+#                    jet_idents = [i,j]
+#
+#        return tuple(jet_idents)
 
 
 # Select the two jets with the

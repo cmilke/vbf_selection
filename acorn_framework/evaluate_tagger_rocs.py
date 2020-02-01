@@ -51,14 +51,12 @@ _performances_to_combine = {
   #  ]
 }
 
-_key_order = { key:index for index,key in enumerate(_plot_specifications) }
-
 
 def extract_tagger_information(input_type):
     #data_file = 'data/output_cmilkeV1_truth_tag_'+input_type+'.p', 'rb') )
     data_file = 'data/output_aviv_tag_'+input_type+'.p'
     event_map = retrieve_data(data_file)
-    for combination_key, key_list in sorted( _performances_to_combine.items() ):
+    for combination_key, key_list in _performances_to_combine.items():
         value_range = event_map[key_list[0]][0]
         combined_discriminants = []
         combined_weights = []
@@ -73,17 +71,16 @@ def extract_tagger_information(input_type):
             raise LookupError( str(key) + ' IS EMPTY!\n'
                  '             Did you include this in your tagging list or make a typo?')
 
-    binned_data = [None] * len(_plot_specifications)
-    for event_key, (value_range, data) in sorted( event_map.items() ):
+    binned_data = {}
+    for event_key, (value_range, data) in event_map.items():
         if event_key not in _plot_specifications: continue
         discriminants, weights = data
-        group_label = _plot_specifications[event_key]
-        plot_index = _key_order[event_key]
 
         counts, bins = numpy.histogram(discriminants, weights=weights, bins=Hist_bins, range=value_range)
         norms = counts / counts.sum()
         performance = accumulate_performance(norms, input_type == 'bgd')
-        binned_data[plot_index] = performance
+
+        binned_data[event_key] = performance
     return binned_data
 
 
@@ -94,9 +91,9 @@ def evaluate():
     #evaluate overall performance
     roc_curves = {}
     roc_ax = plt.subplots()
-    for raw_eff,raw_rej,label in zip(sig_data, bgd_data, _plot_specifications.values() ):
-        eff = [1] + list(raw_eff)
-        rej = [0] + list(raw_rej)
+    for event_key, label in _plot_specifications.items():
+        eff = [1] + list(sig_data[event_key])
+        rej = [0] + list(bgd_data[event_key])
         roc_curves[label] = (eff, rej)
         plt.plot(eff, rej, label=label, linewidth=1)
     
