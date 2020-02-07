@@ -14,8 +14,8 @@ from acorn_backend.analysis_utils import reload_data
 _category_key = 'JVT20'
 _data_title = sys.argv[1]
 
-_hist_bins = 200000
-_hist_range = (-10000,10000)
+_hist_bins = 200
+_hist_range = (-10,10)
 #_hist_range = (0,4)
 
 #_hist_range = (1-4,1+4)
@@ -93,23 +93,11 @@ def extract_input(input_type, method):
 
         primary_Deta = primary_jets[1].vector.eta - primary_jets[0].vector.eta
         extra_Deta = extra_jet.vector.eta - primary_jets[0].vector.eta
+        centrality = 2*extra_Deta / primary_Deta - 1
+        flip = -1 if primary_jets[0].vector.pt > primary_jets[1].vector.pt else 1
         primary_mjj = (primary_jets[1].vector + primary_jets[0].vector).mass
-        parameter_list.append( (primary_Deta, extra_Deta, primary_mjj) )
+        parameter_list.append( (centrality, flip, primary_mjj) )
 
-
-        #if primary_mjj > 500: num_crossing += 1
-        #if ( primary_jets[0].is_truth_quark() and primary_jets[1].is_truth_quark() ):
-        #    num_pt_matched += 1
-        #    if primary_mjj > 500:
-        #        num_crossing_matched += 1
-        #elif primary_mjj > 500:
-        #    quark_Deta = quark_jets[1].vector.eta - quark_jets[0].vector.eta
-        #    gluon_Deta = gluon_jet.vector.eta - quark_jets[0].vector.eta
-        #    f1 = abs(extra_Deta / primary_Deta)
-        #    f2 = abs(gluon_Deta / quark_Deta)
-        #    print( '{:.02}/{:.02} ; {:.02}/{:.02} ; ( {:.02}, {:.02} )'.format(extra_Deta, primary_Deta, gluon_Deta, quark_Deta, f1,f2) )
-
-    #print(num_total, num_pt_matched, num_crossing, num_crossing_matched)
     print(num_total)
     return(parameter_list)
 
@@ -117,11 +105,13 @@ def extract_input(input_type, method):
 def extract_data():
     retrieved_data_dictionary = {
         'sigC': extract_input('sig','cheat')
+      #, 'sigF': extract_input('sig','forward')
       , 'sigpt': extract_input('sig','pt')
       , 'sigR': extract_input('sig','random')
-      #, 'sigF': extract_input('sig','forward')
       , 'sigM': extract_input('sig','mjj')
-        #'bgd': extract_input('bgd',method)
+      , 'bgdpt': extract_input('bgd','pt')
+      , 'bgdR': extract_input('bgd','random')
+      , 'bgdM': extract_input('bgd','mjj')
     }
     return retrieved_data_dictionary
 
@@ -129,16 +119,21 @@ def extract_data():
 def draw_distribution(retrieved_data_dictionary, mjj_cut):
     plot_values = {'x':[], 'weights':[], 'label':[]}
     titles = {
-        'sigC': 'Sig - Quarks'
-      , 'sigpt': 'Sig - $p_T$'
-      , 'sigR': 'Sig - Random'
-      , 'sigF': 'Sig - Forward'
-      , 'sigM': 'Sig - $M_{jj}$'
-      , 'bgd': 'Bgd - Forward'
+      #  'sigC':  'Sig - Quarks'
+        'sigpt': 'Sig - $p_T$'
+      #, 'sigR':  'Sig - Random'
+      #, 'sigF':  'Sig - Forward'
+      , 'sigM':  'Sig - $M_{jj}$'
+      , 'bgdpt': 'Bgd - $p_T$'
+      #, 'bgdR':  'Bgd - Random'
+      #, 'bgdF':  'Bgd - Forward'
+      , 'bgdM':  'Bgd - $M_{jj}$'
     }
 
     for key, retrieved_data in retrieved_data_dictionary.items():
-        parameter_list = [ 2*(extra/primary-0.5) for primary,extra,mjj in retrieved_data if mjj > mjj_cut]
+        if key not in titles: continue
+        #parameter_list = [ 2*(extra/primary-0.5) for primary,extra,mjj in retrieved_data if mjj > mjj_cut]
+        parameter_list = [ max( _hist_range[0], min(centrality,_hist_range[1]) ) for centrality,flip,mjj in retrieved_data if mjj > mjj_cut]
         counts, bins = numpy.histogram(parameter_list, bins=_hist_bins, range=_hist_range)
         print(key, counts.sum())
         norms = counts / counts.sum()
@@ -149,16 +144,17 @@ def draw_distribution(retrieved_data_dictionary, mjj_cut):
 
     fig,ax = plt.subplots()
     counts, bins, hist = plt.hist( **plot_values, histtype='step', bins=_hist_bins, linewidth=2, range=_hist_range)
-    plt.axvline(x=1, color='black')
     plt.axvline(x=-1, color='black')
+    plt.axvline(x= 1, color='black')
 
     #ax.legend(loc='upper center')
-    ax.legend()
+    ax.legend(prop={'size':8})
     plt.grid()
 
-    #plt.ylim(0, 0.06)
+    plt.ylim(0, 0.06)
     #plt.ylim(0, 1)
     plt.xlim(-3, 3)
+    #plt.xlim(.5-2.5, .5+2.5)
 
     plt.xlabel(r'$2 \times (\frac{\eta_3 - \eta_{q-}}{\eta_{q+} - \eta_{q-}} - 0.5)$')
     #plt.title('Co-linearity Distribution of 3-Jet Events,\nFor Lowest $p_T$ Jets with $p_T$ > '+str(mjj_cut))
@@ -171,6 +167,6 @@ def draw_all():
     retrieved_data = reload_data(len(sys.argv) > 2, extract_data, suffix='_'+_data_title)
 
     draw_distribution(retrieved_data, 0)
-    draw_distribution(retrieved_data, 500)
+    #draw_distribution(retrieved_data, 500)
 
 draw_all()

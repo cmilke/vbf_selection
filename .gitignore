@@ -5,4 +5,4 @@
 *.h5
 *.nfs*
 uproot_analysis/util/*.txt
-uproot_analysis/.archive_200113/
+uproot_analysis/.archive_*

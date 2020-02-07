@@ -77,20 +77,18 @@ class highest_pt_selector(base_selector):
     key = '2maxpt'
 
     def select(self, event):
-        return (1,2)
-    #def select(self, event):
-    #    jet_idents = [-1,-1]
-    #    max_pts = [-1,-1]
-    #    for index, jet in enumerate(event.jets):
-    #        if jet.vector.pt > max_pts[0]:
-    #            max_pts[1] = max_pts[0]
-    #            jet_idents[1] = jet_idents[0]
-    #            max_pts[0] = jet.vector.pt
-    #            jet_idents[0] = index
-    #        elif jet.vector.pt > max_pts[1]:
-    #            max_pts[1] = jet.vector.pt
-    #            jet_idents[1] = index
-    #    return tuple(jet_idents)
+        jet_idents = [-1,-1]
+        max_pts = [-1,-1]
+        for index, jet in enumerate(event.jets):
+            if jet.vector.pt > max_pts[0]:
+                max_pts[1] = max_pts[0]
+                jet_idents[1] = jet_idents[0]
+                max_pts[0] = jet.vector.pt
+                jet_idents[0] = index
+            elif jet.vector.pt > max_pts[1]:
+                max_pts[1] = jet.vector.pt
+                jet_idents[1] = index
+        return tuple(jet_idents)
 
 
 # Select the two jets with the
@@ -126,27 +124,12 @@ class maximal_mjj_selector(base_selector):
             for j in range(i+1, num_jets):
                 jet0 = event.jets[i]
                 jet1 = event.jets[j]
-                mjj = (jet0.vector+jet1.vector).pt
+                mjj = (jet0.vector+jet1.vector).mass
                 if mjj > max_mjj:
                     max_mjj = mjj
                     jet_idents = [i,j]
 
         return tuple(jet_idents)
-#    def select(self, event):
-#        jet_idents = [-1,-1]
-#        max_mjj = -1
-#
-#        num_jets = len(event.jets)
-#        for i in range(0, num_jets):
-#            for j in range(i+1, num_jets):
-#                jet0 = event.jets[i]
-#                jet1 = event.jets[j]
-#                mjj = (jet0.vector+jet1.vector).mass
-#                if mjj > max_mjj:
-#                    max_mjj = mjj
-#                    jet_idents = [i,j]
-#
-#        return tuple(jet_idents)
 
 
 # Select the two jets with the
@@ -186,10 +169,11 @@ class truth_selector(base_selector):
         if len(jet_idents) >= 2:
             return tuple(jet_idents)
         else:
-            jet_indices = list( range(0,len(event.jets)) )
-            random.shuffle(jet_indices)
-            chosen_jets = jet_indices[:2]
-            return tuple(chosen_jets)
+            return (0,1)
+            #jet_indices = list( range(0,len(event.jets)) )
+            #random.shuffle(jet_indices)
+            #chosen_jets = event.jets[:2]
+            #return tuple(chosen_jets)
 
 
 # Picks out the quark jets based on the jets with

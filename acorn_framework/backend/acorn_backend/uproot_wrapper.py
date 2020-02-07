@@ -74,3 +74,16 @@ def event_iterator(ntuple_list, tree_name, nested_branch_list, events_to_read):
                 yield event_container
                 events_read += 1
                 if events_to_read != None and events_read >= events_to_read: return
+
+
+def basket_generator(ntuple_list, tree_name, branch_list):
+    bucket_size = 10000
+
+    events_read = 0
+    for ntuple_file in ntuple_list:
+        print('\nnutple file: ' + ntuple_file)
+        tree = uproot.rootio.open(ntuple_file)[tree_name]
+        tree_iterator = tree.iterate(branches=branch_list, entrysteps=bucket_size) 
+        for basket_number, basket in enumerate(tree_iterator):
+            print('Basket: ' + str(basket_number) )
+            yield basket
