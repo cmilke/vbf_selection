@@ -2,13 +2,20 @@ from acorn_backend import analysis_utils as autils
 from acorn_backend.tagger_loader import selector_options
 from uproot_methods import TLorentzVector
 
+class acorn_track:
+    def __init__(self, track_vector):
+        self.vector = track_vector
+
+
 class acorn_jet:
-    def __init__(self, v, pdgid, pu, JVT, fJVT, qgTagger):
+    def __init__(self, v, pdgid, pu, JVT, fJVT, qgTagger, jet_pull, track_list):
         self.vector = v
         self.truth_id = pdgid
         self.is_pileup = pu
         self.passes_JVT = (JVT and fJVT)
         self.quark_gluon_tagger_value = qgTagger
+        self.pull = jet_pull
+        self.tracks = track_list
 
     def __repr__(self):
         representation = '|---|---|---'

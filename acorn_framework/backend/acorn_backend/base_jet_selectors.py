@@ -14,7 +14,8 @@ class base_selector():
     key = 'null'
     tagger_class_list = [
         simple_event_taggers.mjj_tagger
-      , simple_event_taggers.delta_eta_tagger
+      , simple_event_taggers.centrality_tagger
+      #, simple_event_taggers.delta_eta_tagger
       #, basic_nn_tagger
     ]
 

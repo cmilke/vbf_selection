@@ -45,7 +45,7 @@ _ntuples_configuration = {
             }
         },
         'recorders': [
-            None,
+            ntuple_recording.record_cmilkeV1_reco_jets,
             ntuple_recording.record_cmilkeV1_truth_jets
         ]
     },

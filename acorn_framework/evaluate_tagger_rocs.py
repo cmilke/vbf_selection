@@ -19,11 +19,14 @@ _plot_specifications = {
   , (3,'JVT','truth','mjj') : '3: Truth - $M_{jj}$'
   #, (3,'JVT','truth','Deta') : '3: Truth - $\Delta \eta$'
   , (3,'JVT','mjjmax','mjj') : '3: Max $M_{jj}$ - $M_{jj}$'
+  , (3,'JVT','mjjmax','centrality') : '3: Max $M_{jj}$ - Centrality'
   #, (3,'JVT','mjjmax','Deta') : '3: Max $M_{jj}$ - $\Delta \eta$'
   , (3,'JVT','2maxpt','mjj') : '3: 2 Leading $p_t$ - $M_{jj}$'
+  , (3,'JVT','2maxpt','centrality') : '3: 2 Leading $p_t$ - Centrality'
   #, (3,'JVT','2maxpt','Deta') : '3: 2 Leading $p_t$ - $\Delta \eta$'
   #, (3,'JVT','dummy3jet','mjjj') : '3: $M_{jjj}$'
   , (3,'JVT','random','mjj') : '3: Random - $M_{jj}$'
+  , (3,'JVT','random','centrality') : '3: Random - Centrality'
   #, (3,'JVT','random','Deta') : '3: Random - $\Delta \eta$'
   #, (3,'JVT','coLinear-mjj','united-Deta') : '3: Merged $M_{jj}$ - $\Delta \eta$'
   #, (3,'JVT','dummy3jet','3jNNtagger') : '3: NN Direct'
@@ -92,10 +95,12 @@ def evaluate():
     roc_curves = {}
     roc_ax = plt.subplots()
     for event_key, label in _plot_specifications.items():
-        eff = [1] + list(sig_data[event_key])
-        rej = [0] + list(bgd_data[event_key])
+        #eff = [1] + list(sig_data[event_key])
+        #rej = [0] + list(bgd_data[event_key])
+        eff = sig_data[event_key]
+        rej = bgd_data[event_key]
         roc_curves[label] = (eff, rej)
-        plt.plot(eff, rej, label=label, linewidth=1)
+        plt.plot(eff, rej, marker='.',label=label, linewidth=1)
     
     plt.legend()
     plt.xlabel(r'Signal Efficiency')

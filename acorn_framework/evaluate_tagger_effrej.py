@@ -13,7 +13,7 @@ _discriminator_titles = {
     'Deta' : '$\Delta \eta$'
   , 'mjj'  : '$m_{jj}$'
   , 'mjjj' : '$m_{jjj}$'
-  , 'coLinearity' : 'Co-linearity'
+  , 'centrality' : 'Centrality'
   , '2jetNNtagger' : '2-Jet NN LLR Value'
   , '3jNNtagger' : '3-Jet NN LLR Value'
 }
@@ -55,7 +55,11 @@ def plot_performance(input_type, tagger_key, value_range, binned_data):
         histtype='step', bins=Hist_bins, cumulative=cumulative, linewidth=1)
 
     discriminator_name = _discriminator_titles[tagger_key]
-    ax.legend( *map(reversed, ax.get_legend_handles_labels()) )
+    #plt.xscale('log')
+    #ax.legend( *map(reversed, ax.get_legend_handles_labels()) )
+    legend_location = 'lower right' if input_type == 'bgd' else 'upper right'
+    ax.legend(loc=legend_location)
+    #ax.legend()
     plt.xlabel(r'Cut on '+discriminator_name)
     plt.ylabel(ytitle)
     plt.title(ytitle+' of '+discriminator_name+'-Based Tagging')

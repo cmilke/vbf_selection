@@ -2,6 +2,7 @@
 import sys
 import pickle
 import random
+import math
 import numpy
 import matplotlib
 matplotlib.use('Agg')
@@ -11,11 +12,11 @@ from matplotlib.backends.backend_pdf import PdfPages
 from acorn_backend.plotting_utils import accumulate_performance
 from acorn_backend.analysis_utils import reload_data
 
-_category_key = 'JVT20'
+_category_key = 'JVT'
 _data_title = sys.argv[1]
 
 _hist_bins = 200
-_hist_range = (-10,10)
+_hist_range = (-5,5)
 #_hist_range = (0,4)
 
 #_hist_range = (1-4,1+4)
@@ -92,11 +93,12 @@ def extract_input(input_type, method):
         primary_jets.sort(key=lambda j: j.vector.eta)
 
         primary_Deta = primary_jets[1].vector.eta - primary_jets[0].vector.eta
-        extra_Deta = extra_jet.vector.eta - primary_jets[0].vector.eta
-        centrality = 2*extra_Deta / primary_Deta - 1
-        flip = -1 if primary_jets[0].vector.pt > primary_jets[1].vector.pt else 1
+        extra_Deta0 = extra_jet.vector.eta - primary_jets[0].vector.eta
+        extra_Deta1 = extra_jet.vector.eta - primary_jets[1].vector.eta
+        #centrality = 2*extra_Deta / primary_Deta - 1
+        #flip = -1 if primary_jets[0].vector.pt > primary_jets[1].vector.pt else 1
         primary_mjj = (primary_jets[1].vector + primary_jets[0].vector).mass
-        parameter_list.append( (centrality, flip, primary_mjj) )
+        parameter_list.append( (primary_Deta, extra_Deta0, extra_Deta1, primary_mjj) )
 
     print(num_total)
     return(parameter_list)
@@ -105,13 +107,14 @@ def extract_input(input_type, method):
 def extract_data():
     retrieved_data_dictionary = {
         'sigC': extract_input('sig','cheat')
-      #, 'sigF': extract_input('sig','forward')
+      , 'sigF': extract_input('sig','forward')
       , 'sigpt': extract_input('sig','pt')
       , 'sigR': extract_input('sig','random')
       , 'sigM': extract_input('sig','mjj')
       , 'bgdpt': extract_input('bgd','pt')
       , 'bgdR': extract_input('bgd','random')
       , 'bgdM': extract_input('bgd','mjj')
+      , 'bgdF': extract_input('bgd','forward')
     }
     return retrieved_data_dictionary
 
@@ -119,24 +122,30 @@ def extract_data():
 def draw_distribution(retrieved_data_dictionary, mjj_cut):
     plot_values = {'x':[], 'weights':[], 'label':[]}
     titles = {
-      #  'sigC':  'Sig - Quarks'
-        'sigpt': 'Sig - $p_T$'
+        'sigC':  'Sig - Quarks'
+      #, 'sigpt': 'Sig - $p_T$'
       #, 'sigR':  'Sig - Random'
-      #, 'sigF':  'Sig - Forward'
-      , 'sigM':  'Sig - $M_{jj}$'
-      , 'bgdpt': 'Bgd - $p_T$'
+      , 'sigF':  'Sig - Forward'
+      #, 'sigM':  'Sig - $M_{jj}$'
+      #, 'bgdpt': 'Bgd - $p_T$'
       #, 'bgdR':  'Bgd - Random'
-      #, 'bgdF':  'Bgd - Forward'
-      , 'bgdM':  'Bgd - $M_{jj}$'
+      , 'bgdF':  'Bgd - Forward'
+      #, 'bgdM':  'Bgd - $M_{jj}$'
     }
 
     for key, retrieved_data in retrieved_data_dictionary.items():
         if key not in titles: continue
         #parameter_list = [ 2*(extra/primary-0.5) for primary,extra,mjj in retrieved_data if mjj > mjj_cut]
-        parameter_list = [ max( _hist_range[0], min(centrality,_hist_range[1]) ) for centrality,flip,mjj in retrieved_data if mjj > mjj_cut]
+        #parameter_list = [ max( _hist_range[0], min(centrality,_hist_range[1]) ) for centrality,flip,mjj in retrieved_data if mjj > mjj_cut]
+        #parameter_list = [ centrality for centrality,flip,mjj in retrieved_data if mjj > mjj_cut]
+        #parameter_list = [ min(abs(extra0),abs(extra1))/prim for prim, extra0, extra1, mjj in retrieved_data if mjj > mjj_cut]
+        parameter_list = [ 2*extra0/prim-1 for prim, extra0, extra1, mjj in retrieved_data if mjj > mjj_cut]
+        #parameter_list = [ math.log(abs(centrality)) for centrality,flip,mjj in retrieved_data if mjj > mjj_cut]
+        #parameter_list = [ math.exp(-centrality**2) for centrality,flip,mjj in retrieved_data if mjj > mjj_cut]
         counts, bins = numpy.histogram(parameter_list, bins=_hist_bins, range=_hist_range)
         print(key, counts.sum())
         norms = counts / counts.sum()
+        #norms = counts
 
         plot_values['x'].append(bins[:-1])
         plot_values['weights'].append(norms)
@@ -144,21 +153,21 @@ def draw_distribution(retrieved_data_dictionary, mjj_cut):
 
     fig,ax = plt.subplots()
     counts, bins, hist = plt.hist( **plot_values, histtype='step', bins=_hist_bins, linewidth=2, range=_hist_range)
-    plt.axvline(x=-1, color='black')
-    plt.axvline(x= 1, color='black')
+    #plt.axvline(x=-1, color='black')
+    #plt.axvline(x= 1, color='black')
 
     #ax.legend(loc='upper center')
     ax.legend(prop={'size':8})
     plt.grid()
 
-    plt.ylim(0, 0.06)
+    #plt.ylim(0, 0.06)
     #plt.ylim(0, 1)
     plt.xlim(-3, 3)
     #plt.xlim(.5-2.5, .5+2.5)
 
     plt.xlabel(r'$2 \times (\frac{\eta_3 - \eta_{q-}}{\eta_{q+} - \eta_{q-}} - 0.5)$')
     #plt.title('Co-linearity Distribution of 3-Jet Events,\nFor Lowest $p_T$ Jets with $p_T$ > '+str(mjj_cut))
-    plt.title('Co-linearity Distribution of 3-Jet Events,\nWith Primary $M_{jj}$ > '+str(mjj_cut)+' and All $p_T$ > 20')
+    plt.title('Co-linearity Distribution of 3-Jet Events,\nWith Primary $M_{jj}$ > '+str(mjj_cut)+' and All $p_T$ > 30')
     fig.savefig('plots/figures/colinearity_'+_data_title+'_mjj_'+str(mjj_cut)+'.pdf')
     plt.close()
 

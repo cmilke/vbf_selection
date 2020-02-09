@@ -1,4 +1,5 @@
 from uproot_methods import TLorentzVector
+import math
 
 # Don't use the base tagger. Ever.
 class base_tagger():
@@ -69,16 +70,20 @@ class mjjj_tagger(base_tagger):
         self.discriminant = mjjj
 
 
-class coLinearity_tagger(base_tagger):
-    key = 'coLinearity'
-    value_range = (0, 0.5)
+class centrality_tagger(base_tagger):
+    key = 'centrality'
+    value_range = (-1,1)
 
     def __init__(self, event, selections):
-        eta_list = [ jet.vector.eta for jet in event.jets ]
-        eta_list.sort()
+        if len(event.jets) < 3:
+            self.discriminant = -1
+        else:
+            primary_jets = [ event.jets[selections[0]], event.jets[selections[1]] ]
+            primary_jets.sort(key=lambda j: j.vector.eta)
+            extra_index = ({0,1,2} - set(selections[:2])).pop()
+            extra_jet = event.jets[extra_index]
 
-        eta_normalization = eta_list[2] - eta_list[0]
-        extra_jet_distance_to_leftMost_jet = eta_list[1] - eta_list[0]
-        colinearity_measure = extra_jet_distance_to_leftMost_jet / eta_normalization
-        colinearity_discriminant = abs( colinearity_measure - 0.5 )
-        self.discriminant = colinearity_discriminant
+            primary_Deta = primary_jets[1].vector.eta - primary_jets[0].vector.eta
+            extra_Deta = extra_jet.vector.eta - primary_jets[0].vector.eta
+            centrality = abs(2*extra_Deta / primary_Deta - 1)
+            self.discriminant = math.exp(-centrality**2)
