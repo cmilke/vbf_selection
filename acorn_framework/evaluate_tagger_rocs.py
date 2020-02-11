@@ -100,7 +100,8 @@ def evaluate():
         eff = sig_data[event_key]
         rej = bgd_data[event_key]
         roc_curves[label] = (eff, rej)
-        plt.plot(eff, rej, marker='.',label=label, linewidth=1)
+        #plt.plot(eff, rej, marker='.',label=label, linewidth=1)
+        plt.plot(eff, rej, label=label, linewidth=1)
     
     plt.legend()
     plt.xlabel(r'Signal Efficiency')
