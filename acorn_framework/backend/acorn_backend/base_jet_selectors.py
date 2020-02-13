@@ -2,6 +2,9 @@ import random
 import math
 from uproot_methods import TLorentzVector
 
+# Import Deep Filters
+from acorn_backend import deep_filter_base
+
 # Import all taggers I use
 from acorn_backend import simple_event_taggers
 from acorn_backend.machine_learning.simple_2_jet_tagger import basic_nn_tagger
@@ -19,30 +22,36 @@ class base_selector():
       #, basic_nn_tagger
     ]
 
+    deep_filter_class_list = [
+        deep_filter_base.default_deep_filter
+      , deep_filter_base.mjj500_filter
+    ]
+
     def select(self, event):
         return (0,1)
 
 
     def __init__(self, event):
         self.selections = self.select(event)
-        self.taggers = {}
         self.is_correct = True
         for jet in [ event.jets[i] for i in self.selections[:2] ]:
             if not jet.is_truth_quark():
                 self.is_correct = False
                 break
 
-        # Tag the event with this selection,
-        # with all available taggers
-        for tagger_class in self.__class__.tagger_class_list:
-            self.taggers[tagger_class.key] = tagger_class(event, self.selections)
+        # Run the selected pair of jets through a deep filter.
+        # If the pair passes the filter, add it to the filter_list
+        # The filter will then apply all provided taggers to the event
+        self.deep_filters = {}
+        for deep_filter_class in self.__class__.deep_filter_class_list:
+            if deep_filter_class.passes_filter(event, self.selections):
+                filtered_selection = deep_filter_class(event, self.selections, self.__class__.tagger_class_list)
+                self.deep_filters[deep_filter_class.key] = filtered_selection
+
 
     def __repr__(self):
-        rep  = '|---|---|---'
         rep += self.__class__.__name__ + ': '
-        rep += str(self.selections) + '\n'
-        for tagger in self.taggers.values(): rep += str(tagger) + '\n'
-        rep += '|---|---|'
+        rep += str(self.selections)
         return rep
 
 

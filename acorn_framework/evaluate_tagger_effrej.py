@@ -56,9 +56,8 @@ def plot_performance(input_type, tagger_key, value_range, binned_data):
 
     discriminator_name = _discriminator_titles[tagger_key]
     #plt.xscale('log')
-    #ax.legend( *map(reversed, ax.get_legend_handles_labels()) )
     legend_location = 'lower right' if input_type == 'bgd' else 'upper right'
-    ax.legend(loc=legend_location)
+    ax.legend(loc=legend_location, prop={'size':7})
     #ax.legend()
     plt.xlabel(r'Cut on '+discriminator_name)
     plt.ylabel(ytitle)
@@ -70,14 +69,14 @@ def plot_performance(input_type, tagger_key, value_range, binned_data):
 
 
 def make_group_label( event_key ):
-    return str(event_key[0]) + ': ' + event_key[1] + ' - ' + event_key[2]
+    return str(event_key[0]) + ': ' + event_key[1] + ' - ' + event_key[2] + ', ' + event_key[3]
 
 
 def extract_tagger_information(event_map):
     # Group the same taggers together
     tagger_map = {}
     for event_key, (value_range, data_lists) in sorted( event_map.items() ):
-        tagger_key = event_key[3]
+        tagger_key = event_key[4]
         if tagger_key not in tagger_map: tagger_map[tagger_key] = (value_range, {})
         tagger_map[tagger_key][1][event_key] = data_lists
 

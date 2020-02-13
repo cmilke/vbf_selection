@@ -6,7 +6,7 @@ from acorn_backend.uproot_wrapper import event_iterator, unnest_list
 from uproot_methods import TLorentzVector
 
 
-_Nevents = 10000
+_Nevents = 100000
 
 _input_type_options = {
     'aviv': {
@@ -89,6 +89,8 @@ def draw(input_type):
     tagged_pt = 0
     tagged_mjj = 0
     events_with_3_jets = 0
+    pt_based_jets = 0
+    mjj_based_jets = 0
 
     ntuple_type = 'aviv' #sys.argv[1]
     branch_list = _branch_options[ntuple_type]
@@ -127,7 +129,11 @@ def draw(input_type):
             correct_pt += int(correct_jets)
             contains_leading_quark_pt += int(has_leading_pt)
 
-        tagged_pt += int( (pt_chosen_jets[0][0] + pt_chosen_jets[1][0]).mass > 252 )
+        if (pt_chosen_jets[0][0] + pt_chosen_jets[1][0]).mass > 500:
+            pt_based_jets += 1
+            #tagged_pt += int( (pt_chosen_jets[0][0] + pt_chosen_jets[1][0]).mass > 252 )
+            tagged_pt += int( (pt_chosen_jets[0][0] + pt_chosen_jets[1][0]).mass > 700 )
+
         
         
         # Maximized Mjj
@@ -138,13 +144,16 @@ def draw(input_type):
             correct_mjj += int(correct_jets)
             contains_leading_quark_mjj += int(has_leading_pt)
 
-        tagged_mjj += int( (mjj_chosen_jets[0][0] + mjj_chosen_jets[1][0]).mass > 310 )
+        if (mjj_chosen_jets[0][0] + mjj_chosen_jets[1][0]).mass > 500:
+            mjj_based_jets += 1
+            #tagged_mjj += int( (mjj_chosen_jets[0][0] + mjj_chosen_jets[1][0]).mass > 310 )
+            tagged_mjj += int( (mjj_chosen_jets[0][0] + mjj_chosen_jets[1][0]).mass > 700 )
 
     num_jets = events_with_3_jets
     print()
     print(num_jets)
     if input_type == 'sig': print('{}, {}, {:.02}, {:.02} | {:.02}, {:.02}'.format(correct_pt, correct_mjj, correct_pt/num_jets, correct_mjj/num_jets, contains_leading_quark_pt/num_jets, contains_leading_quark_mjj/num_jets) )
-    print('{}, {}, {:.02}, {:.02}'.format(tagged_pt, tagged_mjj, tagged_pt/num_jets, tagged_mjj/num_jets) )
+    print('{}, {} | {}, {} | {:.02}, {:.02}'.format(tagged_pt, pt_based_jets, tagged_mjj, mjj_based_jets, tagged_pt/pt_based_jets, tagged_mjj/mjj_based_jets) )
 
         
 

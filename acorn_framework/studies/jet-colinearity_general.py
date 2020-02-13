@@ -9,7 +9,6 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-from acorn_backend.plotting_utils import accumulate_performance
 from acorn_backend.analysis_utils import reload_data
 
 _category_key = 'JVT'

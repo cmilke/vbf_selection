@@ -30,9 +30,10 @@ def retrieve_data( data_file ):
             jet_count = len(event.jets)
             event_weight = event.event_weight
             for selector in event.selectors.values():
-                for tagger in selector.taggers.values():
-                    event_key = (jet_count, category.key, selector.key, tagger.key)
-                    fill_event_map(event_map, event_key, tagger, event_weight)
+                for deep_filter in selector.deep_filters.values():
+                    for tagger in deep_filter.taggers.values():
+                        event_key = (jet_count, category.key, selector.key, deep_filter.key, tagger.key)
+                        fill_event_map(event_map, event_key, tagger, event_weight)
     return event_map
 
 

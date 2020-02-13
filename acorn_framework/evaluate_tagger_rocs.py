@@ -13,20 +13,25 @@ _filename_infix = '_aviv'
 #_filename_infix = '_2-3-summary'
 
 _plot_specifications = {
-    (2,'JVT','null','mjj') : '2: $M_{jj}$'
+    (2,'JVT','null', 'any','mjj') : '2: $M_{jj}$'
+  , (2,'JVT','null', 'mjj500','mjj') : '2: $M_{jj} > 500$ GeV - $M_{jj}$'
   #, (2,'JVT','null','Deta') : '2: $\Delta \eta$'
   #, (2,'JVT','null','2jetNNtagger') : '2: NN Tagger'
-  , (3,'JVT','truth','mjj') : '3: Truth - $M_{jj}$'
+  , (3,'JVT','truth', 'any','mjj') : '3: Truth - $M_{jj}$'
+  , (3,'JVT','truth', 'mjj500','mjj') : '3: Truth, $M_{jj} > 500$ GeV - $M_{jj}$'
   #, (3,'JVT','truth','Deta') : '3: Truth - $\Delta \eta$'
-  , (3,'JVT','mjjmax','mjj') : '3: Max $M_{jj}$ - $M_{jj}$'
-  , (3,'JVT','mjjmax','centrality') : '3: Max $M_{jj}$ - Centrality'
+  , (3,'JVT','mjjmax', 'any','mjj') : '3: Max $M_{jj}$ - $M_{jj}$'
+  , (3,'JVT','mjjmax', 'mjj500','mjj') : '3: Max $M_{jj}$, $M_{jj} > 500$ GeV - $M_{jj}$'
+  #, (3,'JVT','mjjmax','centrality') : '3: Max $M_{jj}$ - Centrality'
   #, (3,'JVT','mjjmax','Deta') : '3: Max $M_{jj}$ - $\Delta \eta$'
-  , (3,'JVT','2maxpt','mjj') : '3: 2 Leading $p_t$ - $M_{jj}$'
-  , (3,'JVT','2maxpt','centrality') : '3: 2 Leading $p_t$ - Centrality'
+  , (3,'JVT','2maxpt', 'any','mjj') : '3: 2 Leading $p_t$ - $M_{jj}$'
+  , (3,'JVT','2maxpt', 'mjj500','mjj') : '3: 2 Leading $p_t$, $M_{jj} > 500$ GeV - $M_{jj}$'
+  #, (3,'JVT','2maxpt','centrality') : '3: 2 Leading $p_t$ - Centrality'
   #, (3,'JVT','2maxpt','Deta') : '3: 2 Leading $p_t$ - $\Delta \eta$'
   #, (3,'JVT','dummy3jet','mjjj') : '3: $M_{jjj}$'
-  , (3,'JVT','random','mjj') : '3: Random - $M_{jj}$'
-  , (3,'JVT','random','centrality') : '3: Random - Centrality'
+  , (3,'JVT','random', 'any','mjj') : '3: Rand - $M_{jj}$'
+  , (3,'JVT','random', 'mjj500','mjj') : '3: Rand, $M_{jj} > 500$ GeV - $M_{jj}$'
+  #, (3,'JVT','random','centrality') : '3: Random - Centrality'
   #, (3,'JVT','random','Deta') : '3: Random - $\Delta \eta$'
   #, (3,'JVT','coLinear-mjj','united-Deta') : '3: Merged $M_{jj}$ - $\Delta \eta$'
   #, (3,'JVT','dummy3jet','3jNNtagger') : '3: NN Direct'
@@ -103,7 +108,7 @@ def evaluate():
         #plt.plot(eff, rej, marker='.',label=label, linewidth=1)
         plt.plot(eff, rej, label=label, linewidth=1)
     
-    plt.legend()
+    plt.legend(prop={'size':7})
     plt.xlabel(r'Signal Efficiency')
     plt.ylabel(r'Background Rejection')
     #plt.xlim(0.2, 0.6)
