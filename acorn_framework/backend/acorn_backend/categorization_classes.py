@@ -31,6 +31,12 @@ class bare_minumum(base_categorizer):
     event_filter_list = [ _min2jets, _maxjets, _leadingPt50, _exactQuarks2 ]
 
 
+class barer_minumum(base_categorizer):
+    key = 'minimaler'
+    jet_filter_list = [ _notphoton, _minpt20, _maxeta4 ] 
+    event_filter_list = [ _min2jets, _maxjets, _leadingPt50, _exactQuarks2 ]
+
+
 # Do not allow any truth pileup jets in event
 class no_pileup(bare_minumum):
     key = 'noPU'
@@ -40,13 +46,19 @@ class no_pileup(bare_minumum):
 # Allow only two truth non-pileup jets. 
 class with_pileup(bare_minumum):
     key = 'withPU'
-    jet_filter_list = bare_minumum.event_filter_list + [ _demandPU ]
+    event_filter_list = bare_minumum.event_filter_list + [ _demandPU ]
 
 
 # Do not allow any jets marked by JVT or fJVT
 class filter_with_JVT(bare_minumum):
     key = 'JVT'
     jet_filter_list = bare_minumum.jet_filter_list + [ _passesJVT ]
+
+
+# Do not allow any jets marked by JVT or fJVT
+class filter_with_JVTmin20(barer_minumum):
+    key = 'JVT20'
+    jet_filter_list = barer_minumum.jet_filter_list + [ _passesJVT ]
 
 
 # Do not allow any jets marked by JVT or fJVT,
@@ -81,3 +93,10 @@ class pt_eta_v1_with_JVT(filter_with_JVT):
 class filter_with_JVT_noPU(no_pileup):
     key = 'JVTnoPU'
     jet_filter_list = no_pileup.jet_filter_list + [ _passesJVT ]
+
+
+# A combination of the filter_with_JVT and no_pileup filters
+class filter_with_JVTmin20_noPU(base_categorizer):
+    key = 'JVT20noPU'
+    jet_filter_list = [ _notphoton, _minpt20, _maxeta4 ] 
+    event_filter_list = [ _min2jets, _maxjets, _leadingPt50, _exactQuarks2, _noPileup, _passesJVT ]

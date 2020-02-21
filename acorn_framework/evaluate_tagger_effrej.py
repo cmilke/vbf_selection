@@ -9,11 +9,21 @@ from matplotlib import pyplot as plt
 from acorn_backend.plotting_utils import retrieve_data, Hist_bins
 
 
+_whitelist = {
+    (2,'JVT','null', 'any','mjj')
+  , (3,'JVT','truth', 'any','mjj')
+  , (3,'JVT','mjjmax', 'any','mjj')
+  , (3,'JVT','mjjSL', 'any','mjj')
+  , (3,'JVT','mjjSSL', 'any','mjj')
+  , (3,'JVT','2maxpt', 'any','mjj')
+}
+
+
 _discriminator_titles = {
     'Deta' : '$\Delta \eta$'
   , 'mjj'  : '$m_{jj}$'
   , 'mjjj' : '$m_{jjj}$'
-  , 'coLinearity' : 'Co-linearity'
+  , 'centrality' : 'Centrality'
   , '2jetNNtagger' : '2-Jet NN LLR Value'
   , '3jNNtagger' : '3-Jet NN LLR Value'
 }
@@ -41,7 +51,7 @@ _jet_selection_titles = {
 }
 
 
-def plot_performance(input_type, tagger_key, value_range, binned_data):
+def plot_performance(input_type, tagger_key, value_range, binned_data, data_dump_infix):
     if input_type == 'sig':
         ytitle = 'Efficiency'
         cumulative = -1
@@ -55,25 +65,30 @@ def plot_performance(input_type, tagger_key, value_range, binned_data):
         histtype='step', bins=Hist_bins, cumulative=cumulative, linewidth=1)
 
     discriminator_name = _discriminator_titles[tagger_key]
-    ax.legend( *map(reversed, ax.get_legend_handles_labels()) )
+    #plt.xscale('log')
+    legend_location = 'lower right' if input_type == 'bgd' else 'upper right'
+    ax.legend(loc=legend_location, prop={'size':7})
+    #ax.legend()
     plt.xlabel(r'Cut on '+discriminator_name)
     plt.ylabel(ytitle)
     plt.title(ytitle+' of '+discriminator_name+'-Based Tagging')
     plt.grid(which='both', axis='both')
-    fig.savefig('plots/performance/perf_'+tagger_key+'_'+ytitle+'.pdf')
+    fig.savefig('plots/performance/perf_'+data_dump_infix+'_'+tagger_key+'_'+ytitle+'.pdf')
     plt.close()
     return counts
 
 
 def make_group_label( event_key ):
-    return str(event_key[0]) + ': ' + event_key[1] + ' - ' + event_key[2]
+    return str(event_key[0]) + ': ' + event_key[1] + ' - ' + event_key[2] + ', ' + event_key[3]
 
 
 def extract_tagger_information(event_map):
     # Group the same taggers together
     tagger_map = {}
-    for event_key, (value_range, data_lists) in event_map.items():
-        tagger_key = event_key[3]
+    for event_key, (value_range, data_lists) in sorted( event_map.items() ):
+        tagger_key = event_key[4]
+        #if event_key in _blacklist: continue
+        if event_key not in _whitelist: continue
         if tagger_key not in tagger_map: tagger_map[tagger_key] = (value_range, {})
         tagger_map[tagger_key][1][event_key] = data_lists
 
@@ -91,10 +106,12 @@ def extract_tagger_information(event_map):
 
 
 def plot_input_type(input_type):
-    event_map = retrieve_data(input_type)
+    data_dump_infix = sys.argv[1]
+    data_file = 'data/output_'+data_dump_infix+'_'+input_type+'.p'
+    event_map = retrieve_data(data_file)
     binned_tagger_map = extract_tagger_information(event_map)
-    for tagger_key, (value_range, binned_data) in binned_tagger_map.items():
-        plot_performance(input_type, tagger_key, value_range, binned_data)
+    for tagger_key, (value_range, binned_data) in sorted(binned_tagger_map.items()):
+        plot_performance(input_type, tagger_key, value_range, binned_data, data_dump_infix)
 
 
 plot_input_type('sig')

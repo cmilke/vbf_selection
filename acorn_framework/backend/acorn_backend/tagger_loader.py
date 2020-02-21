@@ -17,11 +17,15 @@ selector_options = [
     [ #3
         base_selectors.truth_selector
       , base_selectors.maximal_mjj_selector
+      , base_selectors.subleading_mjj_selector
+      , base_selectors.subsubleading_mjj_selector
       , base_selectors.highest_pt_selector
+      , base_selectors.fantasy_optimal_mjj_selector
+      , base_selectors.dummy_3_jet_selector
       , base_selectors.random_selector
+      #, base_selectors.maximal_Delta_eta_selector
       #, base_selectors.quark_gluon_tag_selector
       #, base_selectors.coLinearity_merger
-      , base_selectors.dummy_3_jet_selector
       #, basic_neural_net_selector 
       #, dual_layer_selector 
       #, pair_MLP_selector
@@ -35,5 +39,5 @@ def load_network_models(mode):
     #basic_neural_net_selector.load_model(mode)
     #dual_layer_selector.load_model(mode)
     #pair_MLP_selector.load_model(mode)
-    basic_nn_tagger.load_model(mode)
-    direct_3_jet_tagger.load_model(mode)
+    #basic_nn_tagger.load_model(mode)
+    #direct_3_jet_tagger.load_model(mode)

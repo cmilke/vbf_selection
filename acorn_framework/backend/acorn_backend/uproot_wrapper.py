@@ -64,6 +64,15 @@ def event_iterator(ntuple_list, tree_name, nested_branch_list, events_to_read):
         for basket_number, basket in enumerate(tree_iterator):
             print('Basket: ' + str(basket_number) )
             for entry in zip(*basket.values()):
+                # Ensure that the key order I assign is preserved by uproot.
+                # If this 'if' EVER gets tripped, it means uproot's behaviour
+                # may have changed, in which case this entire function may need to
+                # be completely rewritten, or possibly removed altogether.
+                basket_key_list = [ key.decode() for key in basket.keys() ]
+                if basket_key_list != branch_list:
+                    raise IOError('The order of the Basket Keys differs from your own! ABORT!!\n'
+                        '\n\nThe uproot_wrapper functions may need to be PERMANENTLY ABONDONED!!!\n\n')
+
                 index = 0
                 for key, (size, sub_template) in container_template.items():
                     if sub_template == None:
@@ -74,3 +83,16 @@ def event_iterator(ntuple_list, tree_name, nested_branch_list, events_to_read):
                 yield event_container
                 events_read += 1
                 if events_to_read != None and events_read >= events_to_read: return
+
+
+def basket_generator(ntuple_list, tree_name, branch_list):
+    bucket_size = 10000
+
+    events_read = 0
+    for ntuple_file in ntuple_list:
+        print('\nnutple file: ' + ntuple_file)
+        tree = uproot.rootio.open(ntuple_file)[tree_name]
+        tree_iterator = tree.iterate(branches=branch_list, entrysteps=bucket_size) 
+        for basket_number, basket in enumerate(tree_iterator):
+            print('Basket: ' + str(basket_number) )
+            yield basket

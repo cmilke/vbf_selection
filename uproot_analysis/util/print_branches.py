@@ -4,7 +4,7 @@ import uproot
 
 #ntuple_file = Flavntuple_list_VBFH125_gamgam[0]
 #ntuple_file = autils.Flavntuple_list_ggH125_gamgam[0]
-ntuple_file = '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/signal/data-ANALYSIS/sample.root'
+ntuple_file = '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_sig_V3_00/data-ANALYSIS/sample.root'
 #tree = uproot.rootio.open(ntuple_file)['Nominal']
 tree = uproot.rootio.open(ntuple_file)['ntuple']
 for key in tree.keys(): print(key)

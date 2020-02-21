@@ -13,7 +13,8 @@ from acorn_backend.analysis_utils import reload_data
 _category_key = 'JVT'
 
 def retrieve_data():
-    data_dump = pickle.load( open('data/output_aviv_record_sig.p', 'rb') )
+    #data_dump = pickle.load( open('data/output_aviv_record_sig.p', 'rb') )
+    data_dump = pickle.load( open('data/output_cmilkeV1_truth_record_sig.p', 'rb') )
     data_list = []
 
     event_index = 0

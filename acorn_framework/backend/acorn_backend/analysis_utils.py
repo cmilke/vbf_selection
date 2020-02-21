@@ -29,12 +29,18 @@ Flavntuple_list_ggH125_gamgam = [
         "/nfs/slac/g/atlas/u02/cmilke/datasets/ggH125_gamgam/data-CxAOD-13.root"
 ]
 
-Flavntuple_list_VBFH125_gamgam_V2 = [
-    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/signal/data-ANALYSIS/sample.root'
+Flavntuple_list_VBFH125_gamgam_cmilke = [
+    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_sig_V4_00/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_sig_V4_01/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_sig_V4_02/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_sig_V4_03/data-ANALYSIS/sample.root'
 ]
 
-Flavntuple_list_ggH125_gamgam_V2 = [
-    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/background/data-ANALYSIS/sample.root'
+Flavntuple_list_ggH125_gamgam_cmilke = [
+    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_bgd_V4_00/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_bgd_V4_01/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_bgd_V4_02/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_bgd_V4_03/data-ANALYSIS/sample.root'
 ]
 
 PDGID = {
@@ -65,9 +71,9 @@ def is_outgoing_quark(pdg, status): return (pdg in PDG['quarks'] and status == S
 def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
 
 
-def reload_data(regen, data_extraction_function, cache_dir='studies/cache/'):
+def reload_data(regen, data_extraction_function, cache_dir='studies/cache/', suffix=''):
     data_file_root = sys.argv[0].split('/')[-1].split('.')[-2]
-    data_file = cache_dir+data_file_root+'.p'
+    data_file = cache_dir+data_file_root+suffix+'.p'
 
     if regen:
         retrieved_data_values = data_extraction_function()
