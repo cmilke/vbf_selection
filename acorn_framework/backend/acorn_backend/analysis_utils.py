@@ -29,20 +29,18 @@ Flavntuple_list_ggH125_gamgam = [
         "/nfs/slac/g/atlas/u02/cmilke/datasets/ggH125_gamgam/data-CxAOD-13.root"
 ]
 
-Flavntuple_list_VBFH125_gamgam_cmilkeV1 = [
-    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/signal/data-ANALYSIS/sample.root'
+Flavntuple_list_VBFH125_gamgam_cmilke = [
+    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_sig_V4_00/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_sig_V4_01/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_sig_V4_02/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_sig_V4_03/data-ANALYSIS/sample.root'
 ]
 
-Flavntuple_list_ggH125_gamgam_cmilkeV1 = [
-    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/background/data-ANALYSIS/sample.root'
-]
-
-Flavntuple_list_VBFH125_gamgam_cmilkeV2 = [
-    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/signalV2/data-ANALYSIS/sample.root'
-]
-
-Flavntuple_list_ggH125_gamgam_cmilkeV2 = [
-    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/backgroundV2/data-ANALYSIS/sample.root'
+Flavntuple_list_ggH125_gamgam_cmilke = [
+    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_bgd_V4_00/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_bgd_V4_01/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_bgd_V4_02/data-ANALYSIS/sample.root'
+  , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_bgd_V4_03/data-ANALYSIS/sample.root'
 ]
 
 PDGID = {

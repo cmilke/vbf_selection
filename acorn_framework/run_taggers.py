@@ -34,14 +34,14 @@ _ntuples_configuration = {
         'tree_name': 'ntuple',
         'samples': {
             'sig': {
-               'tag': autils.Flavntuple_list_VBFH125_gamgam_cmilkeV2
-             , 'train': None 
-             , 'record': autils.Flavntuple_list_VBFH125_gamgam_cmilkeV2
+               'tag': autils.Flavntuple_list_VBFH125_gamgam_cmilke[:1]
+             , 'train': autils.Flavntuple_list_VBFH125_gamgam_cmilke[1:2]
+             , 'record': autils.Flavntuple_list_VBFH125_gamgam_cmilke
             },
             'bgd': {
-                'tag': autils.Flavntuple_list_ggH125_gamgam_cmilkeV2
-              , 'train': None
-              , 'record': autils.Flavntuple_list_ggH125_gamgam_cmilkeV2
+               'tag': autils.Flavntuple_list_ggH125_gamgam_cmilke[:1]
+             , 'train': autils.Flavntuple_list_ggH125_gamgam_cmilke[1:2]
+             , 'record': autils.Flavntuple_list_ggH125_gamgam_cmilke
             }
         },
         'recorders': [

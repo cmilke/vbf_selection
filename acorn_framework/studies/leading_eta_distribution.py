@@ -13,7 +13,7 @@ _category_key = 'JVT'
 _selector_key = '2maxpt'
 _hist_bins = 50
 _Nevents = 10000
-_events_with_3_jets = None
+_events_with_3_jets = {}
 _max_parameter_size = 100
 
 def retrieve_parameter(input_type, deep_filter_key):
@@ -23,11 +23,11 @@ def retrieve_parameter(input_type, deep_filter_key):
     eta1_list = []
     weight_list = []
 
-    if _events_with_3_jets == None:
+    if input_type not in _events_with_3_jets:
         data_dump = pickle.load( open('data/output_aviv_tag_'+input_type+'.p', 'rb') )
-        _events_with_3_jets = [ event for event in data_dump[_category_key].events if len(event.jets) > 2 ]
+        _events_with_3_jets[input_type] = [ event for event in data_dump[_category_key].events if len(event.jets) > 2 ]
 
-    for event in _events_with_3_jets:
+    for event in _events_with_3_jets[input_type]:
         selector = event.selectors[_selector_key]
         if deep_filter_key in selector.deep_filters:
             eta0 = event.jets[selector.selections[0]].vector.eta

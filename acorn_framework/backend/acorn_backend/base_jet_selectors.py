@@ -1,6 +1,7 @@
 import random
 import math
 from uproot_methods import TLorentzVector
+import itertools
 
 # Import Deep Filters
 from acorn_backend import deep_filter_base
@@ -142,6 +143,52 @@ class maximal_mjj_selector(base_selector):
         return tuple(jet_idents)
 
 
+# Select the two jets with the subleading mjj
+# This should really only be used for experimentation...
+class subleading_mjj_selector(base_selector):
+    key = 'mjjSL'
+
+    def select(self, event):
+        index_combinations = itertools.combinations(range(len(event.jets)), 2)
+        mass_pairs = [ ( (event.jets[i].vector+event.jets[j].vector).mass, i,j ) for i,j in index_combinations ]
+        mass_pairs.sort(reverse=True, key=lambda t: t[0]) # Sort by invariant mass of the pairs, highest first
+        sub_leading_mjj_pair = mass_pairs[1]
+        jet_idents = sub_leading_mjj_pair[1:] # Get jet indices
+        return tuple(jet_idents)
+
+
+# Select the two jets with the subleading mjj
+# This should REALLY only be used for experimentation...
+class subsubleading_mjj_selector(base_selector):
+    key = 'mjjSSL'
+
+    def select(self, event):
+        index_combinations = itertools.combinations(range(len(event.jets)), 2)
+        mass_pairs = [ ( (event.jets[i].vector+event.jets[j].vector).mass, i,j ) for i,j in index_combinations ]
+        mass_pairs.sort(reverse=True, key=lambda t: t[0]) # Sort by invariant mass of the pairs, highest first
+        sub_sub_leading_mjj_pair = mass_pairs[2]
+        jet_idents = sub_sub_leading_mjj_pair[1:] # Get jet indices
+        return tuple(jet_idents)
+
+
+# Select the optimal pair of jets for mjj tagging
+# So, pick the highest mjj pair for signal,
+# but the lowest mjj pair for background.
+# WARNING: this selector is an absolute FANTASY
+# It should be used for investigation ONLY.
+class fantasy_optimal_mjj_selector(base_selector):
+    key = 'mjjFantasy'
+
+    def select(self, event):
+        index_combinations = itertools.combinations(range(len(event.jets)), 2)
+        mass_pairs = [ ( (event.jets[i].vector+event.jets[j].vector).mass, i,j ) for i,j in index_combinations ]
+        mass_pairs.sort(reverse=True, key=lambda t: t[0]) # Sort by invariant mass of the pairs, highest first
+        optimal_index = 0 if event.signal else -1
+        optimal_mjj_pair = mass_pairs[optimal_index]
+        jet_idents = optimal_mjj_pair[1:] # Get jet indices
+        return tuple(jet_idents)
+
+
 # Select the two jets with the
 # largest Delta-R between them
 class maximal_Delta_R_selector(base_selector):
@@ -167,7 +214,7 @@ class maximal_Delta_R_selector(base_selector):
 
 
 # Selects the correct vbf jets based on truth info
-# Returns the first two if background
+# Returns mjjmax if background
 class truth_selector(base_selector):
     key = 'truth'
 
@@ -176,14 +223,22 @@ class truth_selector(base_selector):
         for index, jet in enumerate(event.jets):
             if jet.is_truth_quark(): jet_idents.append(index)
 
-        if len(jet_idents) >= 2:
+        if event.signal:
             return tuple(jet_idents)
         else:
-            return (0,1)
-            #jet_indices = list( range(0,len(event.jets)) )
-            #random.shuffle(jet_indices)
-            #chosen_jets = event.jets[:2]
-            #return tuple(chosen_jets)
+            max_mjj = -1
+            num_jets = len(event.jets)
+            for i in range(0, num_jets):
+                for j in range(i+1, num_jets):
+                    jet0 = event.jets[i]
+                    jet1 = event.jets[j]
+                    mjj = (jet0.vector+jet1.vector).mass
+                    if mjj > max_mjj:
+                        max_mjj = mjj
+                        jet_idents = [i,j]
+
+            return tuple(jet_idents)
+
 
 
 # Picks out the quark jets based on the jets with

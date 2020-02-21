@@ -28,14 +28,17 @@ _philabels=[
 _jet_radius=0.4
 _spread = None # I don't think this works correctly...
 _category_key = 'JVT'
-_num_events_to_check = 20
+_deep_filter = 'mjj500'
+_num_events_to_check = 100000
 _display_pull = True
 _display_tracks = True
 _mjjj_80percent_rejection_cut = 630 # GeV
 _mjj_2maxpt_80percent_rejection_cut = 400 # GeV
 _mjj_mjjmax_80percent_rejection_cut = 500 # GeV
-_mjj_2maxpt_40percent_rejection_cut = 170 # GeV
-_mjj_mjjmax_40percent_rejection_cut = 210 # GeV
+#_mjj_2maxpt_40percent_rejection_cut = 170 # GeV , for all
+#_mjj_mjjmax_40percent_rejection_cut = 210 # GeV , for all
+_mjj_2maxpt_40percent_rejection_cut = 778 # GeV , for mjj > 500
+_mjj_mjjmax_40percent_rejection_cut = 812 # GeV , for mjj > 500
 
 #_jet_marker_style = matplotlib.markers.MarkerStyle(marker='o', fillstyle='none')
 
@@ -118,15 +121,19 @@ def display_event(event, output, plot_title):
 
 def display(event_list, passes_event_test, type_name, type_title):
     print( 'Displaying ' + type_name )
-    output = PdfPages('plots/event_displays/fig_event_display_'+type_name+'.pdf')
+    #output = PdfPages('plots/event_displays/fig_event_display_'+type_name+'.pdf')
+    total = 0
     num_pass = 0
     for event_index, event in enumerate(event_list):
-        if passes_event_test(event):
-            num_pass+=1
-            plot_title = 'Event Display for ' + type_title + ' ' + str(event_index) 
-            display_event(event, output, plot_title)
-    output.close()
-    print(event_index+1, num_pass, int(100*num_pass/(event_index+1) ) )
+        valid, passes = passes_event_test(event)
+        if valid:
+            total += 1
+            if passes:
+                num_pass+=1
+                #plot_title = 'Event Display for ' + type_title + ' ' + str(event_index) 
+                #display_event(event, output, plot_title)
+    #output.close()
+    print('{}, {}, {:.02f}%'.format(total, num_pass, 100*num_pass/(total) ) )
 
 
 def pass_all(event):
@@ -143,40 +150,48 @@ def fails_mjjj(event):
 
 
 def passes_mjjj_and_fails_mjj2maxpt(event):
-    mjjj = event.selectors['2maxpt'].taggers['mjjj'].discriminant
-    mjj = event.selectors['2maxpt'].taggers['mjj'].discriminant
+    mjjj = event.selectors['2maxpt'].deep_filters[_deep_filter].taggers['mjjj'].discriminant
+    mjj = event.selectors['2maxpt'].deep_filters[_deep_filter].taggers['mjj'].discriminant
     passes_mjjj = mjjj > _mjjj_80percent_rejection_cut 
     fails_mjj = mjj < _mjj_2maxpt_80percent_rejection_cut
     return passes_mjjj and fails_mjj
 
 
 def tagger_selector_performance_is_inverted(event):
-    mjjmax = event.selectors['mjjmax']
     maxpt = event.selectors['2maxpt']
+    mjjmax = event.selectors['mjjmax']
+    rand = event.selectors['random']
+    #if not (_deep_filter in maxpt.deep_filters and _deep_filter in mjjmax.deep_filters):
+    #if _deep_filter not in mjjmax.deep_filters:
+    if _deep_filter not in rand.deep_filters:
+        return (False,False)
 
-    mjj_from_pt = maxpt.taggers['mjj'].discriminant
-    mjj_from_mjj = mjjmax.taggers['mjj'].discriminant
-    pt_passes = mjj_from_pt > _mjj_2maxpt_40percent_rejection_cut
+    #mjj_from_pt = maxpt.deep_filters[_deep_filter].taggers['mjj'].discriminant
+    #pt_passes = mjj_from_pt > _mjj_2maxpt_40percent_rejection_cut
+    mjj_from_mjj = mjjmax.deep_filters[_deep_filter].taggers['mjj'].discriminant
     mjj_passes = mjj_from_mjj > _mjj_mjjmax_40percent_rejection_cut
 
-    if maxpt.is_correct and not mjjmax.is_correct:
-        if not pt_passes and mjj_passes: return True
-
-    return False
+    return (True, (
+        rand.is_correct
+        #maxpt.is_correct and
+        #mjjmax.is_correct #and
+        #pt_passes #and
+        #mjj_passes
+    ) )
 
 
 def event_display():
-    #sig_data_dump = pickle.load( open('data/output_aviv_tag_sig.p', 'rb') )
-    sig_data_dump = pickle.load( open('data/output_cmilke_record_sig.p', 'rb') )
-    #sig_event_list = [ event for event in sig_data_dump[_category_key].events if len(event.jets) > 2 ][:_num_events_to_check]
-    sig_event_list = [ event for event in sig_data_dump[_category_key].events if len(event.jets) == 2 ][:_num_events_to_check]
+    sig_data_dump = pickle.load( open('data/output_aviv_tag_sig.p', 'rb') )
+    #sig_data_dump = pickle.load( open('data/output_cmilke_record_sig.p', 'rb') )
+    sig_event_list = [ event for event in sig_data_dump[_category_key].events if len(event.jets) > 2 ][:_num_events_to_check]
+    #sig_event_list = [ event for event in sig_data_dump[_category_key].events if len(event.jets) == 2 ][:_num_events_to_check]
 
-    #bgd_data_dump = pickle.load( open('data/output_aviv_tag_bgd.p', 'rb') )
-    #bgd_event_list = [ event for event in bgd_data_dump[_category_key].events if len(event.jets) > 2 ][:_num_events_to_check]
+    bgd_data_dump = pickle.load( open('data/output_aviv_tag_bgd.p', 'rb') )
+    bgd_event_list = [ event for event in bgd_data_dump[_category_key].events if len(event.jets) > 2 ][:_num_events_to_check]
 
-    display(sig_event_list, pass_all, 'all', 'Signal Event')
-    #display(sig_event_list, tagger_selector_performance_is_inverted, 'inversion', 'Signal Event with Inverted Performance')
-    #display(bgd_event_list, tagger_selector_performance_is_inverted, 'inversion', 'Background Event with Inverted Selector/Tagger Performance')
+    #display(sig_event_list, pass_all, 'all', 'Signal Event')
+    display(sig_event_list, tagger_selector_performance_is_inverted, 'inversion', 'Signal Event with Inverted Performance')
+    display(bgd_event_list, tagger_selector_performance_is_inverted, 'inversion', 'Background Event with Inverted Performance')
 
     #display(sig_data_dump, passes_mjjj, 'sig_pass_mjjj', 'Signal Event which\nCorrectly Pass $M_{jjj}$')
     #display(bgd_data_dump, fails_mjjj, 'bgd_fail_mjjj', 'Background Event which\nCorrectly Fail $M_{jjj}$')

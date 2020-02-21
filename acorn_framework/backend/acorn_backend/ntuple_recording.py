@@ -152,7 +152,8 @@ def record_cmilke_reco_jets(is_signal, input_list, events_to_read, event_data_du
         'EventWeight',
         ('reco_jets', [
             'JetPt_calib', 'JetEta_calib', 'JetPhi_calib', 'JetM_calib',
-            'JetFlavor', 'JetScatterType', 'JetPullMagnitude', 'JetPullAngle',
+            'JetFlavor', 'JetScatterType', 'JetIsTightPhoton', 'JetJVT', 'JetfJVT_tight',
+            'JetPullMagnitude', 'JetPullAngle',
             ('reco_tracks', ['JetTrkPt', 'JetTrkEta', 'JetTrkPhi', 'JetTrkM'])
         ])
     ]
@@ -179,8 +180,8 @@ def record_cmilke_reco_jets(is_signal, input_list, events_to_read, event_data_du
                 track_list.append(new_track)
 
             # Create jet object storing the essential aspects of the ntuple reco jet,
-            new_jet = acorn_jet(jet_vector, pdgid,
-                    is_pileup, not is_pileup, not is_pileup, -1,
+            new_jet = acorn_jet(jet_vector, pdgid, is_pileup,
+                    reco_jet['JetJVT'], reco_jet['JetfJVT_tight'], -1,
                     jet_pull, track_list
             )
             recorded_jets.append(new_jet)

@@ -9,35 +9,25 @@ from matplotlib import pyplot as plt
 from acorn_backend.plotting_utils import retrieve_data, Hist_bins, accumulate_performance
 
 
-_filename_infix = '_aviv'
-#_filename_infix = '_2-3-summary'
+#_filename_suffix = '_2-3-summary'
+_filename_suffix = ''
 
 _plot_specifications = {
     (2,'JVT','null', 'any','mjj') : '2: $M_{jj}$'
-  , (2,'JVT','null', 'mjj500','mjj') : '2: $M_{jj} > 500$ GeV - $M_{jj}$'
-  #, (2,'JVT','null','Deta') : '2: $\Delta \eta$'
-  #, (2,'JVT','null','2jetNNtagger') : '2: NN Tagger'
-  , (3,'JVT','truth', 'any','mjj') : '3: Truth - $M_{jj}$'
-  , (3,'JVT','truth', 'mjj500','mjj') : '3: Truth, $M_{jj} > 500$ GeV - $M_{jj}$'
-  #, (3,'JVT','truth','Deta') : '3: Truth - $\Delta \eta$'
+  , (3,'JVT','truth', 'any','mjj') : '3: Harsh Truth - $M_{jj}$'
   , (3,'JVT','mjjmax', 'any','mjj') : '3: Max $M_{jj}$ - $M_{jj}$'
-  , (3,'JVT','mjjmax', 'mjj500','mjj') : '3: Max $M_{jj}$, $M_{jj} > 500$ GeV - $M_{jj}$'
-  #, (3,'JVT','mjjmax','centrality') : '3: Max $M_{jj}$ - Centrality'
-  #, (3,'JVT','mjjmax','Deta') : '3: Max $M_{jj}$ - $\Delta \eta$'
-  , (3,'JVT','2maxpt', 'any','mjj') : '3: 2 Leading $p_t$ - $M_{jj}$'
-  , (3,'JVT','2maxpt', 'mjj500','mjj') : '3: 2 Leading $p_t$, $M_{jj} > 500$ GeV - $M_{jj}$'
-  #, (3,'JVT','2maxpt','centrality') : '3: 2 Leading $p_t$ - Centrality'
-  #, (3,'JVT','2maxpt','Deta') : '3: 2 Leading $p_t$ - $\Delta \eta$'
+  , (3,'JVT','mjjFantasy', 'any','mjj') : '3: Fantasy - $M_{jj}$'
+  , (3,'JVT','mjjSL', 'any','mjj') : '3: $M_{jj}-SL$ - $M_{jj}$'
+  , (3,'JVT','mjjSSL', 'any','mjj') : '3: Min $M_{jj}$ - $M_{jj}$'
+  , (3,'JVT','2maxpt', 'any','mjj') : '3: Leading $p_t$ - $M_{jj}$'
+  #, (3,'JVT','truth', 'any','mjj') : '3: Truth - $M_{jj}$'
+  #, (3,'JVT','truth','Deta') : '3: Truth - $\Delta \eta$'
   #, (3,'JVT','dummy3jet','mjjj') : '3: $M_{jjj}$'
-  , (3,'JVT','random', 'any','mjj') : '3: Rand - $M_{jj}$'
-  , (3,'JVT','random', 'mjj500','mjj') : '3: Rand, $M_{jj} > 500$ GeV - $M_{jj}$'
-  #, (3,'JVT','random','centrality') : '3: Random - Centrality'
-  #, (3,'JVT','random','Deta') : '3: Random - $\Delta \eta$'
-  #, (3,'JVT','coLinear-mjj','united-Deta') : '3: Merged $M_{jj}$ - $\Delta \eta$'
-  #, (3,'JVT','dummy3jet','3jNNtagger') : '3: NN Direct'
+  #, (3,'JVT','random', 'any','mjj') : '3: Rand - $M_{jj}$'
   #, (3,'JVT','pairMLP','mjj') : '3: MLP - $M_{jj}$'
-  #, (3,'JVT','mjjmax','2jetNNtagger') : '3: Max $M_{jj}$ - NN Tagger'
-  #, (3,'JVT','pairMLP','2jetNNtagger') : '3: MLP - NN Tagger'
+  #, (2,'JVT','null', 'mjj500','mjj') : '2: $M_{jj} > 500$ GeV - $M_{jj}$'
+  #, (3,'JVT','mjjmax', 'mjj500','mjj') : '3: Max $M_{jj}$, $M_{jj} > 500$ GeV - $M_{jj}$'
+  #, (3,'JVT','random', 'mjj500','mjj') : '3: Rand, $M_{jj} > 500$ GeV - $M_{jj}$'
   #, '>=2_pt' : '$\geq 2$: Leading $p_t$ - $M_{jj}$'
   #  '>=2_mjj' : '$\geq 2$: Maximized $M_{jj}$ - $M_{jj}$'
   #, '>=2_NN' : '$\geq 2$: Dedicated NNs'
@@ -60,9 +50,8 @@ _performances_to_combine = {
 }
 
 
-def extract_tagger_information(input_type):
-    #data_file = 'data/output_cmilkeV1_truth_tag_'+input_type+'.p', 'rb') )
-    data_file = 'data/output_aviv_tag_'+input_type+'.p'
+def extract_tagger_information(input_type, data_dump_infix):
+    data_file = 'data/output_'+data_dump_infix+'_'+input_type+'.p'
     event_map = retrieve_data(data_file)
     for combination_key, key_list in _performances_to_combine.items():
         value_range = event_map[key_list[0]][0]
@@ -93,8 +82,9 @@ def extract_tagger_information(input_type):
 
 
 def evaluate():
-    sig_data = extract_tagger_information('sig')
-    bgd_data = extract_tagger_information('bgd')
+    data_dump_infix = sys.argv[1]
+    sig_data = extract_tagger_information('sig', data_dump_infix)
+    bgd_data = extract_tagger_information('bgd', data_dump_infix)
 
     #evaluate overall performance
     roc_curves = {}
@@ -115,7 +105,7 @@ def evaluate():
     #plt.ylim(0.6, 1)
     plt.title(r'Efficiency/Rejection Performance of Various Taggers')
     plt.grid(True)
-    plt.savefig('plots/performance/roc'+_filename_infix+'.pdf')
+    plt.savefig('plots/performance/roc'+'_'+data_dump_infix+_filename_suffix+'.pdf')
     plt.close()
 
 

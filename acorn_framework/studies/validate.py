@@ -9,22 +9,23 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 #Define all the high level root stuff: ntuple files, branches to be used
 _Nevents = 30000
-_hist_bins = 100
-_category_key = 'JVT20'
+_hist_bins = 32
+_category_key = 'JVT'
 
 
 _xlimits = {
-    'PDGID':[-5,40], '$p_T$':[20,200], '$\eta$':None, '$\phi$':None, 'Mass':None,
-    'Leading $p_T$ Mass':[0,3000], '$\Delta \eta_{max}$':None
+    'Event Count':None, 'PDGID':[-5,40], '$p_T$':[20,200], '$\eta$':None, '$\phi$':None,
+    'Mass':None, 'Leading $p_T$ Mass':[0,3000], '$\Delta \eta_{max}$':None
 }
 
 
 def load_data(record_name, input_type, validation_data):
-    input_file = 'data/output_'+record_name+'_record_'+input_type+'.p'
+    input_file = 'data/output_'+record_name+'_'+input_type+'.p'
     data_dump = pickle.load( open(input_file, 'rb') )
     num_events = 0
     for event in data_dump[_category_key].events:
         if len(event.jets) < 3: continue
+        validation_data['Event Count'][input_type].append( int(event.signal) )
         for jet in event.jets:
             validation_data['PDGID'][input_type].append( jet.truth_id )
             validation_data['$p_T$'][input_type].append( jet.vector.pt )
