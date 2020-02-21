@@ -18,8 +18,7 @@ class base_selector():
     key = 'null'
     tagger_class_list = [
         simple_event_taggers.mjj_tagger
-      , simple_event_taggers.centrality_tagger
-      #, simple_event_taggers.delta_eta_tagger
+      , simple_event_taggers.delta_eta_tagger
       #, basic_nn_tagger
     ]
 
@@ -56,6 +55,20 @@ class base_selector():
         return rep
 
 
+# A base selector for 3-jet events.
+# Same as the base_selector, but with added taggers
+# and deep filters that only function on >3 jet events
+class base_3jet_selector(base_selector):
+    key = 'null3'
+    tagger_class_list = base_selector.tagger_class_list + [
+        simple_event_taggers.centrality_tagger
+    ]
+
+    deep_filter_class_list = base_selector.deep_filter_class_list + [
+        deep_filter_base.centrality_filter
+    ]
+
+
 # Just a copy of the base_selector, but for taggers I don't want
 # inherited by other selectors
 class dummy_2_jet_selector(base_selector):
@@ -63,17 +76,22 @@ class dummy_2_jet_selector(base_selector):
     tagger_class_list = []
 
 
-# As above, but for 3-jet taggers
+# A selector that doesn't actually do anything.
+# It is intended for taggers that use all available jets,
+# and do not care about selection
 class dummy_3_jet_selector(base_selector):
     key = 'dummy3jet'
-    tagger_class_list = [ simple_event_taggers.mjjj_tagger ]
+    tagger_class_list = [
+        simple_event_taggers.mjjj_tagger 
+      , simple_event_taggers.forward_centrality_tagger
+    ]
     #tagger_class_list = [ direct_3_jet_tagger ]
-    #tagger_class_list = [ simple_event_taggers.coLinearity_tagger ]
+    deep_filter_class_list = [ deep_filter_base.default_deep_filter ]
 
 
 # Select the vbf jets at random...
 # This is just to establish a lower bound on performance
-class random_selector(base_selector):
+class random_selector(base_3jet_selector):
     key = 'random'
 
     def select(self, event):
@@ -84,7 +102,7 @@ class random_selector(base_selector):
 
    
 # Select two highest pt jets
-class highest_pt_selector(base_selector):
+class highest_pt_selector(base_3jet_selector):
     key = '2maxpt'
 
     def select(self, event):
@@ -104,7 +122,7 @@ class highest_pt_selector(base_selector):
 
 # Select the two jets with the
 # largest Delta-eta between them
-class maximal_Delta_eta_selector(base_selector):
+class maximal_Delta_eta_selector(base_3jet_selector):
     key = 'etamax'
 
     def select(self, event):
@@ -123,7 +141,7 @@ class maximal_Delta_eta_selector(base_selector):
 
 
 # Select the two jets with the largest mjj
-class maximal_mjj_selector(base_selector):
+class maximal_mjj_selector(base_3jet_selector):
     key = 'mjjmax'
 
     def select(self, event):
@@ -145,7 +163,7 @@ class maximal_mjj_selector(base_selector):
 
 # Select the two jets with the subleading mjj
 # This should really only be used for experimentation...
-class subleading_mjj_selector(base_selector):
+class subleading_mjj_selector(base_3jet_selector):
     key = 'mjjSL'
 
     def select(self, event):
@@ -159,7 +177,7 @@ class subleading_mjj_selector(base_selector):
 
 # Select the two jets with the subleading mjj
 # This should REALLY only be used for experimentation...
-class subsubleading_mjj_selector(base_selector):
+class subsubleading_mjj_selector(base_3jet_selector):
     key = 'mjjSSL'
 
     def select(self, event):
@@ -176,7 +194,7 @@ class subsubleading_mjj_selector(base_selector):
 # but the lowest mjj pair for background.
 # WARNING: this selector is an absolute FANTASY
 # It should be used for investigation ONLY.
-class fantasy_optimal_mjj_selector(base_selector):
+class fantasy_optimal_mjj_selector(base_3jet_selector):
     key = 'mjjFantasy'
 
     def select(self, event):
@@ -191,7 +209,7 @@ class fantasy_optimal_mjj_selector(base_selector):
 
 # Select the two jets with the
 # largest Delta-R between them
-class maximal_Delta_R_selector(base_selector):
+class maximal_Delta_R_selector(base_3jet_selector):
     key = 'Rmax'
 
     def select(self, event):
@@ -215,7 +233,7 @@ class maximal_Delta_R_selector(base_selector):
 
 # Selects the correct vbf jets based on truth info
 # Returns mjjmax if background
-class truth_selector(base_selector):
+class truth_selector(base_3jet_selector):
     key = 'truth'
 
     def select(self, event):
@@ -243,7 +261,7 @@ class truth_selector(base_selector):
 
 # Picks out the quark jets based on the jets with
 # the two highest quark-gluon tagger scores
-class quark_gluon_tag_selector(base_selector):
+class quark_gluon_tag_selector(base_3jet_selector):
     key = 'qgtag'
 
     def select(self, event):
@@ -257,7 +275,7 @@ class quark_gluon_tag_selector(base_selector):
 # then possibly merge the third jet based on co-linearity.
 # The tuple is arranged such that the 0 and 2 index jets
 # are the colinear jets, with jets 0 and 1 still being the VBF jets.
-class coLinearity_merger(base_selector):
+class coLinearity_merger(base_3jet_selector):
     key = 'coLinear-mjj'
     tagger_class_list = [ simple_event_taggers.unified_delta_eta_tagger ]
 

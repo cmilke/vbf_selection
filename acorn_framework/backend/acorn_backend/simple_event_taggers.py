@@ -70,20 +70,32 @@ class mjjj_tagger(base_tagger):
         self.discriminant = mjjj
 
 
+# REQUIRES at least 3 jets!
 class centrality_tagger(base_tagger):
     key = 'centrality'
-    value_range = (-1,1)
+    value_range = (0,10)
 
     def __init__(self, event, selections):
-        if len(event.jets) < 3:
-            self.discriminant = -1
-        else:
-            primary_jets = [ event.jets[selections[0]], event.jets[selections[1]] ]
-            primary_jets.sort(key=lambda j: j.vector.eta)
-            extra_index = ({0,1,2} - set(selections[:2])).pop()
-            extra_jet = event.jets[extra_index]
+        primary_jets = [ event.jets[selections[0]], event.jets[selections[1]] ]
+        primary_jets.sort(key=lambda j: j.vector.eta)
+        extra_index = ({0,1,2} - set(selections[:2])).pop()
+        extra_jet = event.jets[extra_index]
 
-            primary_Deta = primary_jets[1].vector.eta - primary_jets[0].vector.eta
-            extra_Deta = extra_jet.vector.eta - primary_jets[0].vector.eta
-            centrality = abs(2*extra_Deta / primary_Deta - 1)
-            self.discriminant = math.exp(-centrality**2)
+        primary_Deta = primary_jets[1].vector.eta - primary_jets[0].vector.eta
+        extra_Deta = extra_jet.vector.eta - primary_jets[0].vector.eta
+        centrality = abs(2*extra_Deta / primary_Deta - 1)
+        self.discriminant = centrality
+
+
+# Same as above, but only using the most forward jets
+# This simplifies the discriminant
+class forward_centrality_tagger(base_tagger):
+    key = 'Fcentrality'
+    value_range = (0,1)
+
+    def __init__(self, event, selections):
+        eta_sorted_jets = sorted(event.jets, key=lambda j: j.vector.eta)
+        primary_Deta = eta_sorted_jets[2].vector.eta - eta_sorted_jets[0].vector.eta
+        extra_Deta = eta_sorted_jets[1].vector.eta - eta_sorted_jets[0].vector.eta
+        centrality = abs(2*extra_Deta / primary_Deta - 1)
+        self.discriminant = centrality
