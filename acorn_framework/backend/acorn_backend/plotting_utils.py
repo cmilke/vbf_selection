@@ -42,3 +42,47 @@ def accumulate_performance(distro, is_bgd):
         flip = slice(None,None,sum_direction)
         performance = distro[flip].cumsum()[flip]
         return performance
+
+
+_category_titles = {
+    'minimal': ' w/o JVT'
+  , 'JVT': ''
+  , 'JVT20': ' >20GeV'
+}
+
+_selector_titles = {
+    'null'     : ''
+  , 'truth'    : ': Harsh Truth'
+  , 'mjjSL'    : ': $M_{jj-SL}$'
+  , 'mjjmax'   : ': Max $M_{jj}$'
+  , '2maxpt'   : ': Leading $p_t$'
+  , 'dummy3jet': ''
+  , 'random'   : ': Random'
+  , 'pairMLP'  : ': pairMLP'
+}
+
+_deep_filter_titles = {
+    'any': ''
+  , 'mjj500': ', $M_{jj} > 500$ GeV'
+}
+
+_tagger_titles = {
+    'mjj': ' - $M_{jj}$'
+  , 'Deta': ' - $\Delta \eta$'
+  , 'centrality': ' - Centrality'
+  , 'Fcentrality': ' - Forward Centrality'
+  , 'mjjj': ' - $M_{jjj}$'
+}
+
+
+def make_title(event_key):
+    num_title = str(event_key[0])
+    category_title = _category_titles[ event_key[1] ]
+    selector_title = _selector_titles[ event_key[2] ]
+    deep_filter_title = _deep_filter_titles[ event_key[3] ]
+    tagger_title = _tagger_titles[ event_key[4] ]
+
+    title = num_title+category_title
+    title += selector_title+deep_filter_title+tagger_title
+
+    return title
