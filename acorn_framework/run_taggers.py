@@ -7,49 +7,16 @@ from acorn_backend.tagger_loader import load_network_models
 from acorn_backend import ntuple_recording
 
 #Define all the high level root stuff: ntuple files, branches to be used, etc.
-# TODO: Can you have only one sample, that you only record once,
-#   and then the tag/train samples are just limited slices of that pre-recorded sample
-#   (since the tag method is now seperated from the recording method)
+# samples = [ signal, background ] - recorders = [ reco jets, truth jets ]
 _ntuples_configuration = {
     'aviv': {
-        'samples': {
-            'sig': {
-               'tag': autils.Flavntuple_list_VBFH125_gamgam[:2]
-             , 'train': autils.Flavntuple_list_VBFH125_gamgam[4:6]
-             , 'record': autils.Flavntuple_list_VBFH125_gamgam
-            },
-            'bgd': {
-                'tag': autils.Flavntuple_list_ggH125_gamgam[:2]
-              , 'train': autils.Flavntuple_list_ggH125_gamgam[7:9]
-              , 'record': autils.Flavntuple_list_ggH125_gamgam
-            }
-        },
-        'recorders': [
-            ntuple_recording.record_aviv_reco_jets,
-            ntuple_recording.record_aviv_truth_jets
-        ]
+        'samples': [ autils.Flavntuple_list_VBFH125_gamgam, autils.Flavntuple_list_ggH125_gamgam ],
+        'recorders': [ ntuple_recording.record_aviv_reco_jets, ntuple_recording.record_aviv_truth_jets ]
     },
-
     'cmilke': {
-        'tree_name': 'ntuple',
-        'samples': {
-            'sig': {
-               'tag': autils.Flavntuple_list_VBFH125_gamgam_cmilke[:1]
-             , 'train': autils.Flavntuple_list_VBFH125_gamgam_cmilke[1:2]
-             , 'record': autils.Flavntuple_list_VBFH125_gamgam_cmilke
-            },
-            'bgd': {
-               'tag': autils.Flavntuple_list_ggH125_gamgam_cmilke[:1]
-             , 'train': autils.Flavntuple_list_ggH125_gamgam_cmilke[1:2]
-             , 'record': autils.Flavntuple_list_ggH125_gamgam_cmilke
-            }
-        },
-        'recorders': [
-            ntuple_recording.record_cmilke_reco_jets,
-            ntuple_recording.record_cmilke_truth_jets
-        ]
+        'samples': [ autils.Flavntuple_list_VBFH125_gamgam_cmilke, autils.Flavntuple_list_ggH125_gamgam_cmilke ],
+        'recorders': [ ntuple_recording.record_cmilke_reco_jets, ntuple_recording.record_cmilke_truth_jets ]
     },
-
     'data': None
 }
 
@@ -59,34 +26,46 @@ _categories_to_dump = [
 ]
 
 _Nevents_debug_default = 10
+_tag_fraction = 0.5
+_train_fraction = 0.5
 
 
 def record_events(input_type, args):
-    # Apply commandline arguments
-    record_jets = _ntuples_configuration[args.ntuple]['recorders'][args.t]
-    input_list = _ntuples_configuration[args.ntuple]['samples'][input_type][args.mode]
+    reco_level = '_truth' if args.t else ''
     events_to_read = _Nevents_debug_default if (args.debug and args.Nevents == None) else args.Nevents
-
-    # Define and initialize all event categories we want to use
-    event_data_dump = { c.key: c() for c in _categories_to_dump }
 
     # Iterate over each event in the ntuple list,
     # storing/sorting/filtering events into the data_dump as it goes
-    record_jets(input_type == 'sig', input_list, events_to_read, event_data_dump)
+    if args.mode == 'record':
+        # Define and initialize all event categories we want to use
+        event_data_dump = { c.key: c() for c in _categories_to_dump }
 
-    if args.mode != 'record':
-        print('Tagging Events Now!')
-        for category in event_data_dump.values(): category.tag_events()
-
+        # Record and categorize all events based on commandline args
+        record_jets = _ntuples_configuration[args.ntuple]['recorders'][args.t]
+        input_list = _ntuples_configuration[args.ntuple]['samples'][input_type == 'bgd']
+        record_jets(input_type == 'sig', input_list, events_to_read, event_data_dump)
+    else:
+        print('Opening recorded categories...')
+        record_name = 'data/output_'+args.ntuple+reco_level+'_record_'+input_type+'.p'
+        event_data_dump = pickle.load( open(record_name, 'rb') )
+        for key, category in event_data_dump.items():
+            print( 'Processing ' + key + '...' )
+            tag_index = int( len(category.events)*_tag_fraction )
+            deletion_slice = slice(None, tag_index) if args.mode == 'train' else slice(tag_index, None)
+            del(category.events[deletion_slice])
+            if events_to_read != None: del(category.events[events_to_read:])
+            print( 'Tagging...' )
+            category.tag_events()
 
     # Print out either the full debug information, or just a summary
     for category in event_data_dump.values():
         print( category if args.debug else category.summary() )
 
     # Output the event categories for use by later scripts
-    reco_level = '_truth' if args.t else ''
+    print('\nEvents recorded, pickling now...')
     data_dump_file_name = 'data/output_'+args.ntuple+reco_level+'_'+args.mode+'_'+input_type+'.p'
     pickle.dump( event_data_dump, open(data_dump_file_name, 'wb') )
+    print('Finished '+input_type+'!\n')
 
 
 def run():
@@ -118,7 +97,7 @@ def run():
         "--ntuple", required = False,
         default = 'cmilke', type=str,
         help = "Ntuples: 'aviv'      - Original ntuples from Aviv. Legacy based;"
-               "         'cmilke'  - Newer ntuples generated by Chris Milke with track info;"
+               "         'cmilke'    - Newer ntuples generated by Chris Milke with track info;"
                "         'data'      - Ntuples based on real data",
     ) 
     parser.add_argument(

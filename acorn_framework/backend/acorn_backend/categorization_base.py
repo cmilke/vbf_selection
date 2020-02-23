@@ -50,7 +50,7 @@ class base_categorizer():
     def tag_events(self):
         for index, event in enumerate(self.events):
             event.tag_event()
-            if index % 1000 == 0:
+            if index % 2000 == 0:
                 print('...Tagged ' + str(index))
 
     def summary(self):
