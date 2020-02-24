@@ -27,7 +27,6 @@ _categories_to_dump = [
 
 _Nevents_debug_default = 10
 _tag_fraction = 0.5
-_train_fraction = 0.5
 
 
 def record_events(input_type, args):
@@ -71,6 +70,11 @@ def record_events(input_type, args):
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "-t", required = False,
+        default = False, action = 'store_true',
+        help = "Use truth jets instead of reco",
+    ) 
+    parser.add_argument(
         "-s", required = False,
         default = False, action = 'store_true',
         help = "Run over Signal events",
@@ -79,12 +83,12 @@ def run():
         "-b", required = False,
         default = False, action = 'store_true',
         help = "Run over Background events"
-            "(Note: if neither -s or -b are given, default behaviour is to run over both)",
+            "(Note: if neither -s nor -b are given, default behaviour is to run over both)",
     ) 
     parser.add_argument(
         "--Nevents", required = False,
         default = None, type=int,
-        help     = "How many events you want to run over",
+        help     = "How many events you want to run over. Default is all available",
     ) 
     parser.add_argument(
         "--mode", required = False,
@@ -104,11 +108,6 @@ def run():
         "--debug", required = False,
         default = False, action = 'store_true',
         help = "Prints debug information",
-    ) 
-    parser.add_argument(
-        "-t", required = False,
-        default = False, action = 'store_true',
-        help = "Use truth jets instead of reco",
     ) 
     args = parser.parse_args()
 

@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 #Define all the high level root stuff: ntuple files, branches to be used
-_Nevents = 30000
+_Nevents = 100
 _hist_bins = 32
 _category_key = 'JVT'
 
