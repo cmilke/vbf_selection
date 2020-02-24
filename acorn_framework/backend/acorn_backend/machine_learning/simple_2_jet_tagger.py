@@ -4,7 +4,7 @@ import acorn_backend.machine_learning.tensorflow_buffer as tb
 import acorn_backend.simple_event_taggers
 from acorn_backend.machine_learning.neural_network_template import template_NN
 
-class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger, template_NN):
+class simple_2_jet_tagger(acorn_backend.simple_event_taggers.base_tagger, template_NN):
     #############################################
     ### Neural Network specific class members ###
     #############################################
@@ -66,8 +66,8 @@ class basic_nn_tagger(acorn_backend.simple_event_taggers.base_tagger, template_N
 
     def __init__(self, event, selections):
         cls = self.__class__
-        if cls.network_model == None:
-            self.discriminant = 0
+        if cls.network_model == None: cls.load_model()
+        elif cls.network_model == -1: self.discriminant = 0
         else:
             prepared_datum = cls.prepare_events( [(event,selections)], None )
             predictions = cls.network_model.predict(prepared_datum)[0]

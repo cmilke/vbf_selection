@@ -15,7 +15,7 @@ _category_key = 'JVT'
 _data_title = sys.argv[1]
 
 _hist_bins = 200
-_hist_range = (-5,5)
+_hist_range = (0,1)
 #_hist_range = (0,4)
 
 #_hist_range = (1-4,1+4)
@@ -97,7 +97,7 @@ def extract_input(input_type, method):
         #centrality = 2*extra_Deta / primary_Deta - 1
         #flip = -1 if primary_jets[0].vector.pt > primary_jets[1].vector.pt else 1
         primary_mjj = (primary_jets[1].vector + primary_jets[0].vector).mass
-        parameter_list.append( (primary_Deta, extra_Deta0, extra_Deta1, primary_mjj) )
+        parameter_list.append( ( 2*abs(primary_Deta/extra_Deta0-1), primary_mjj) ) 
 
     print(num_total)
     return(parameter_list)
@@ -121,26 +121,23 @@ def extract_data():
 def draw_distribution(retrieved_data_dictionary, mjj_cut):
     plot_values = {'x':[], 'weights':[], 'label':[]}
     titles = {
-        'sigC':  'Sig - Quarks'
-      #, 'sigpt': 'Sig - $p_T$'
+      #  'sigC':  'Sig - Quarks'
+        'sigpt': 'Sig - $p_T$'
       #, 'sigR':  'Sig - Random'
-      , 'sigF':  'Sig - Forward'
+      #, 'sigF':  'Sig - Forward'
       #, 'sigM':  'Sig - $M_{jj}$'
-      #, 'bgdpt': 'Bgd - $p_T$'
+      , 'bgdpt': 'Bgd - $p_T$'
       #, 'bgdR':  'Bgd - Random'
-      , 'bgdF':  'Bgd - Forward'
+      #, 'bgdF':  'Bgd - Forward'
       #, 'bgdM':  'Bgd - $M_{jj}$'
     }
 
     for key, retrieved_data in retrieved_data_dictionary.items():
         if key not in titles: continue
-        #parameter_list = [ 2*(extra/primary-0.5) for primary,extra,mjj in retrieved_data if mjj > mjj_cut]
-        #parameter_list = [ max( _hist_range[0], min(centrality,_hist_range[1]) ) for centrality,flip,mjj in retrieved_data if mjj > mjj_cut]
-        #parameter_list = [ centrality for centrality,flip,mjj in retrieved_data if mjj > mjj_cut]
-        #parameter_list = [ min(abs(extra0),abs(extra1))/prim for prim, extra0, extra1, mjj in retrieved_data if mjj > mjj_cut]
-        parameter_list = [ 2*extra0/prim-1 for prim, extra0, extra1, mjj in retrieved_data if mjj > mjj_cut]
-        #parameter_list = [ math.log(abs(centrality)) for centrality,flip,mjj in retrieved_data if mjj > mjj_cut]
-        #parameter_list = [ math.exp(-centrality**2) for centrality,flip,mjj in retrieved_data if mjj > mjj_cut]
+
+        parameter_list = [ ( cent if cent < 1 else 1/cent ) for cent, mjj in retrieved_data if mjj > mjj_cut]
+        #parameter_list = [ cent for cent, mjj in retrieved_data if mjj > mjj_cut]
+
         counts, bins = numpy.histogram(parameter_list, bins=_hist_bins, range=_hist_range)
         print(key, counts.sum())
         norms = counts / counts.sum()
@@ -159,9 +156,10 @@ def draw_distribution(retrieved_data_dictionary, mjj_cut):
     ax.legend(prop={'size':8})
     plt.grid()
 
+    #plt.yscale('log')
     #plt.ylim(0, 0.06)
     #plt.ylim(0, 1)
-    plt.xlim(-3, 3)
+    #plt.xlim(0, 10)
     #plt.xlim(.5-2.5, .5+2.5)
 
     plt.xlabel(r'$2 \times (\frac{\eta_3 - \eta_{q-}}{\eta_{q+} - \eta_{q-}} - 0.5)$')

@@ -6,11 +6,9 @@ import itertools
 # Import Deep Filters
 from acorn_backend import deep_filter_base
 
-# Import all taggers I use
+# Import simple and ML-based taggers
 from acorn_backend import simple_event_taggers
-from acorn_backend.machine_learning.simple_2_jet_tagger import basic_nn_tagger
-from acorn_backend.machine_learning.direct_3_jet_tagger import direct_3_jet_tagger
-
+from acorn_backend.machine_learning import MLtaggers
 
 # Return the first two jets.
 # Should only be used for 2 jet events
@@ -18,13 +16,12 @@ class base_selector():
     key = 'null'
     tagger_class_list = [
         simple_event_taggers.mjj_tagger
-      , simple_event_taggers.delta_eta_tagger
-      #, basic_nn_tagger
+      #, simple_event_taggers.delta_eta_tagger
     ]
 
     deep_filter_class_list = [
         deep_filter_base.default_deep_filter
-      , deep_filter_base.mjj500_filter
+      #, deep_filter_base.mjj500_filter
     ]
 
     def select(self, event):
@@ -64,9 +61,10 @@ class base_3jet_selector(base_selector):
         simple_event_taggers.centrality_tagger
     ]
 
-    deep_filter_class_list = base_selector.deep_filter_class_list + [
-        deep_filter_base.centrality_filter
-    ]
+    #deep_filter_class_list = base_selector.deep_filter_class_list + [
+    #    deep_filter_base.centrality_gt1_filter
+    #  , deep_filter_base.centrality_lt1_filter
+    #]
 
 
 # Just a copy of the base_selector, but for taggers I don't want
@@ -84,8 +82,10 @@ class dummy_3_jet_selector(base_selector):
     tagger_class_list = [
         simple_event_taggers.mjjj_tagger 
       , simple_event_taggers.forward_centrality_tagger
+      , MLtaggers.direct_3_jet_tagger
+      , MLtaggers.direct_3_jet_taggerV2
+      , MLtaggers.direct_3_jet_taggerV3
     ]
-    #tagger_class_list = [ direct_3_jet_tagger ]
     deep_filter_class_list = [ deep_filter_base.default_deep_filter ]
 
 

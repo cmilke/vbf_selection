@@ -17,11 +17,12 @@ class template_NN():
     # so we have to be able to load models even in training mode.
     # But since we can't load a model we haven't trained,
     # I allow this loading model to fail in 'train' mode
-    def load_model(cls, mode):
+    def load_model(cls):
         try: cls.network_model = tb.keras.models.load_model(cls.model_file)
         except OSError:
-            if mode == 'train':
+            if tb.run_mode == 'train':
                 print('Note: Model ' + cls.model_file + ' does not exist; ignoring for training mode.')
+                network_model = -1
             else:
                 raise
             
@@ -48,13 +49,13 @@ class template_NN():
 
         # Evaluate Trained Model
         test_loss, test_accuracy = model.evaluate(test_data, test_labels)
-        print('Test accuracy: ', test_accuracy)
-
         predictions = model.predict(test_data)
-        for label, prediction in zip(test_labels[:10], predictions[:10]):
+        for label, prediction in zip(test_labels[:20], predictions[:20]):
             result = str(label) + ': '
             result += str(prediction)
             print(result)
+
+        print('Test accuracy: ', test_accuracy)
 
         plot_model = tb.keras.utils.vis_utils.plot_model
         plot_model(model, to_file=cls.model_file[:-2]+'pdf', show_shapes=True, show_layer_names=True)

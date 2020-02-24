@@ -64,6 +64,8 @@ _selector_titles = {
 _deep_filter_titles = {
     'any': ''
   , 'mjj500': ', $M_{jj} > 500$ GeV'
+  , 'central>1': ', C > 1' 
+  , 'central<1': ', C < 1' 
 }
 
 _tagger_titles = {
@@ -72,6 +74,9 @@ _tagger_titles = {
   , 'centrality': ' - Centrality'
   , 'Fcentrality': ' - Forward Centrality'
   , 'mjjj': ' - $M_{jjj}$'
+  , '3jNNtagger': ' - 3 Jet Direct NNv1'
+  , '3jNNtaggerV2': ' - 3 Jet Direct NNv2'
+  , '3jNNtaggerV3': ' - 3 Jet Direct NNv3'
 }
 
 

@@ -3,8 +3,8 @@ import argparse
 import pickle
 from acorn_backend import analysis_utils as autils
 from acorn_backend import categorization_classes
-from acorn_backend.tagger_loader import load_network_models
 from acorn_backend import ntuple_recording
+from acorn_backend.machine_learning import tensorflow_buffer
 
 #Define all the high level root stuff: ntuple files, branches to be used, etc.
 # samples = [ signal, background ] - recorders = [ reco jets, truth jets ]
@@ -111,7 +111,7 @@ def run():
     ) 
     args = parser.parse_args()
 
-    if args.mode != 'record': load_network_models(args.mode)
+    if args.mode != 'record': tensorflow_buffer.load_tensorflow(args.mode)
     if args.s: record_events('sig', args)
     if args.b: record_events('bgd', args)
     if not (args.b or args.s):

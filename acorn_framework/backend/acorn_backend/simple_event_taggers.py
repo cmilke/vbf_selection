@@ -73,7 +73,7 @@ class mjjj_tagger(base_tagger):
 # REQUIRES at least 3 jets!
 class centrality_tagger(base_tagger):
     key = 'centrality'
-    value_range = (0,10)
+    value_range = (0,100)
 
     def __init__(self, event, selections):
         primary_jets = [ event.jets[selections[0]], event.jets[selections[1]] ]
@@ -84,6 +84,7 @@ class centrality_tagger(base_tagger):
         primary_Deta = primary_jets[1].vector.eta - primary_jets[0].vector.eta
         extra_Deta = extra_jet.vector.eta - primary_jets[0].vector.eta
         centrality = abs(2*extra_Deta / primary_Deta - 1)
+        #if centrality > 1: centrality = 1.0 / centrality
         self.discriminant = centrality
 
 

@@ -3,9 +3,9 @@ import math
 from uproot_methods import TLorentzVector
 
 import acorn_backend.machine_learning.tensorflow_buffer as tb
-from acorn_backend.machine_learning.simple_2_jet_tagger import basic_nn_tagger
+from acorn_backend.machine_learning.simple_2_jet_tagger import simple_2_jet_tagger
 
-class direct_3_jet_tagger(basic_nn_tagger):
+class direct_3_jet_tagger(simple_2_jet_tagger):
     #############################################
     ### Neural Network specific class members ###
     #############################################

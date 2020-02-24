@@ -1,5 +1,5 @@
 import acorn_backend.machine_learning.tensorflow_buffer as tb
-from acorn_backend.machine_learning.basic_selector import basic_neural_net_selector
+from acorn_backend.machine_learning.basic_neural_net_selector import basic_neural_net_selector
 
 #Helper libraries
 import numpy

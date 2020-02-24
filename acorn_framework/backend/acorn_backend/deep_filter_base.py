@@ -30,18 +30,30 @@ class mjj500_filter(default_deep_filter):
         return mjj > 500 # GeV
 
 
+def _get_centrality(event, selections):
+    primary_jets = [ event.jets[selections[0]], event.jets[selections[1]] ]
+    primary_jets.sort(key=lambda j: j.vector.eta)
+    extra_index = ({0,1,2} - set(selections[:2])).pop()
+    extra_jet = event.jets[extra_index]
+
+    primary_Deta = primary_jets[1].vector.eta - primary_jets[0].vector.eta
+    extra_Deta = extra_jet.vector.eta - primary_jets[0].vector.eta
+    centrality = abs(2*extra_Deta / primary_Deta - 1)
+    return centrality
+
+
 # REQUIRES at least 3 jets!
-class centrality_filter(default_deep_filter):
-    key = 'central0.1'
+class centrality_gt1_filter(default_deep_filter):
+    key = 'central>1'
 
     @classmethod
     def passes_filter(cls, event, selections):
-        primary_jets = [ event.jets[selections[0]], event.jets[selections[1]] ]
-        primary_jets.sort(key=lambda j: j.vector.eta)
-        extra_index = ({0,1,2} - set(selections[:2])).pop()
-        extra_jet = event.jets[extra_index]
+        return _get_centrality(event,selections) > 1
 
-        primary_Deta = primary_jets[1].vector.eta - primary_jets[0].vector.eta
-        extra_Deta = extra_jet.vector.eta - primary_jets[0].vector.eta
-        centrality = abs(2*extra_Deta / primary_Deta - 1)
-        return centrality > 0.1
+
+class centrality_lt1_filter(default_deep_filter):
+    key = 'central<1'
+
+    @classmethod
+    def passes_filter(cls, event, selections):
+        return _get_centrality(event,selections) < 1

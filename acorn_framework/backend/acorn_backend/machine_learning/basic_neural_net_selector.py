@@ -1,11 +1,11 @@
 import numpy
 import math
-import acorn_backend.base_jet_selectors
+import acorn_backend.base_jet_selectors as base_selectors
 import acorn_backend.machine_learning.tensorflow_buffer as tb
 from uproot_methods import TLorentzVector
 from acorn_backend.machine_learning.neural_network_template import template_NN
 
-class basic_neural_net_selector(acorn_backend.base_jet_selectors.base_selector, template_NN):
+class basic_neural_net_selector(base_selectors.base_selector, template_NN):
     #############################################
     ### Neural Network specific class members ###
     #############################################

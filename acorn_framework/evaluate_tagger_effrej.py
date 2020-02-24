@@ -16,6 +16,11 @@ _whitelist = {
   , (3,'JVT','mjjSL', 'any','mjj')
   , (3,'JVT','mjjSSL', 'any','mjj')
   , (3,'JVT','2maxpt', 'any','mjj')
+  , (3,'JVT','dummy3jet', 'any','mjjj')
+  , (3,'JVT','dummy3jet', 'any','Fcentrality')
+  , (3,'JVT','mjjmax', 'any','centrality')
+  , (3,'JVT','mjjSL', 'any','centrality')
+  , (3,'JVT','2maxpt', 'any','centrality')
 }
 
 
@@ -26,6 +31,7 @@ _discriminator_titles = {
   , 'centrality' : 'Centrality'
   , '2jetNNtagger' : '2-Jet NN LLR Value'
   , '3jNNtagger' : '3-Jet NN LLR Value'
+  , 'Fcentrality' : 'Forward-Based Centrality'
 }
 
 _filter_titles = {
@@ -88,7 +94,7 @@ def extract_tagger_information(event_map):
     for event_key, (value_range, data_lists) in sorted( event_map.items() ):
         tagger_key = event_key[4]
         #if event_key in _blacklist: continue
-        if event_key not in _whitelist: continue
+        #if event_key not in _whitelist: continue
         if tagger_key not in tagger_map: tagger_map[tagger_key] = (value_range, {})
         tagger_map[tagger_key][1][event_key] = data_lists
 
