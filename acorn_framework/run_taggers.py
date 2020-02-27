@@ -21,8 +21,10 @@ _ntuples_configuration = {
 }
 
 _categories_to_dump = [
-    #categorization_classes.filter_with_JVTmin20,
     categorization_classes.filter_with_JVT
+  , categorization_classes.filter_with_JVT_50_30
+  , categorization_classes.filter_with_JVT_70_50_30
+  , categorization_classes.filter_with_JVT20
 ]
 
 _Nevents_debug_default = 10

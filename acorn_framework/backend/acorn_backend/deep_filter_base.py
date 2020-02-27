@@ -57,3 +57,11 @@ class centrality_lt1_filter(default_deep_filter):
     @classmethod
     def passes_filter(cls, event, selections):
         return _get_centrality(event,selections) < 1
+
+
+class centrality_lt06_filter(default_deep_filter):
+    key = 'central<0.6'
+
+    @classmethod
+    def passes_filter(cls, event, selections):
+        return _get_centrality(event,selections) < 0.6

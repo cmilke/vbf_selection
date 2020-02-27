@@ -13,7 +13,9 @@ _passesJVT = lambda jet: jet.passes_JVT
 # Common Event Filters
 _min2jets = lambda event: len(event.jets) >= 2
 _maxjets = lambda event: len(event.jets) <= Max_jets
-_leadingPt50 = lambda event: max(event.jets, key=lambda j:j.vector.pt).vector.pt > 50
+_leadingPt70 = lambda event: event.jets[0].vector.pt > 70
+_leadingPt50 = lambda event: event.jets[0].vector.pt > 50
+_subleadingPt50 = lambda event: event.jets[1].vector.pt > 50
 _exactQuarks2 = lambda event: not event.signal or event.num_quark_jets == 2
 _minQuarks2 = lambda event: not event.signal or event.num_quark_jets >= 2
 # Demand at most 2 jets which are not pileup
@@ -28,13 +30,7 @@ def _demandPU(event):
 class bare_minumum(base_categorizer):
     key = 'minimal'
     jet_filter_list = [ _notphoton, _minpt30, _maxeta4 ] 
-    event_filter_list = [ _min2jets, _maxjets, _leadingPt50, _exactQuarks2 ]
-
-
-class barer_minumum(base_categorizer):
-    key = 'minimaler'
-    jet_filter_list = [ _notphoton, _minpt20, _maxeta4 ] 
-    event_filter_list = [ _min2jets, _maxjets, _leadingPt50, _exactQuarks2 ]
+    event_filter_list = [ _min2jets, _maxjets, _exactQuarks2 ]
 
 
 # Do not allow any truth pileup jets in event
@@ -55,10 +51,21 @@ class filter_with_JVT(bare_minumum):
     jet_filter_list = bare_minumum.jet_filter_list + [ _passesJVT ]
 
 
-# Do not allow any jets marked by JVT or fJVT
-class filter_with_JVTmin20(barer_minumum):
+# Do not allow any jets marked by JVT or fJVT, but allow Jet pt down to 20 GeV
+class filter_with_JVT20(base_categorizer):
     key = 'JVT20'
-    jet_filter_list = barer_minumum.jet_filter_list + [ _passesJVT ]
+    jet_filter_list = [ _notphoton, _minpt20, _maxeta4, _passesJVT ] 
+    event_filter_list = [ _min2jets, _maxjets, _exactQuarks2 ]
+
+
+class filter_with_JVT_50_30(filter_with_JVT):
+    key = 'JVT_50-30'
+    event_filter_list = filter_with_JVT.event_filter_list + [ _leadingPt50 ]
+
+
+class filter_with_JVT_70_50_30(filter_with_JVT):
+    key = 'JVT_70-50-30'
+    event_filter_list = filter_with_JVT.event_filter_list + [ _leadingPt70, _subleadingPt50 ]
 
 
 # Do not allow any jets marked by JVT or fJVT,

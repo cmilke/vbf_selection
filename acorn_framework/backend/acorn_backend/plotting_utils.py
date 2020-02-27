@@ -1,5 +1,9 @@
 import pickle
 
+import numpy
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 
 Hist_bins = 200
 
@@ -47,7 +51,8 @@ def accumulate_performance(distro, is_bgd):
 _category_titles = {
     'minimal': ' w/o JVT'
   , 'JVT': ''
-  , 'JVT20': ' >20GeV'
+  , 'JVT_50-30': ' 50,30,30'
+  , 'JVT_70-50-30': ' 70,50,30'
 }
 
 _selector_titles = {
@@ -91,3 +96,54 @@ def make_title(event_key):
     title += selector_title+deep_filter_title+tagger_title
 
     return title
+
+
+
+class hist1():
+    def __init__(self, plot_name, plot_title, overlay_list, bin_count, bin_range, **kwargs):
+        arg_vals = {
+            'normalize': True, 'legend_args':{}, 'xlabel':'', 'ylabel':''
+        }
+        self.plot_name = plot_name
+        self.plot_title = plot_title
+        self.data = { label:[] for label in overlay_list }
+        self.bins = bin_count
+        self.range = bin_range
+
+        arg_vals.update(kwargs)
+        for kw,arg in arg_vals.iteritems(): setattr(self, kw, arg)
+
+
+    def add(self, value, *label):
+        if len(label) > 0:
+            self.data[label[0]].append(value)
+        else
+            key0 = list(self.data)[0]
+            self.data[key0].append(value)
+
+
+    def generate_plot():
+        plot_values = {'x':[],'weights':[],'label':[]}
+        for label, values in self.data.items():
+            counts, bins = numpy.histogram(parameter_list, bins=self.bins, range=self.range)
+            vals = counts / counts.sum() if self.normalize else counts
+            plot_values['x'].append( bins[:-1] )
+            plot_values['weights'].append(vals)
+            plot_values['label'].append(label)
+        plot_values['range'] = self.range
+        plot_values['bins'] = self.bins
+            
+        fig,ax = plt.subplots()
+        counts, bins, hist = plt.hist( **plot_values, linewidth=2, histtype='step')
+
+        ax.legend(**self.legend_args)
+        plt.grid()
+        #plt.yscale('log')
+        #plt.ylim(10e-6, 1)
+        #plt.ylim(0, 0.2)
+        #plt.xlim(0, 2000)
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        plt.title(self.plot_title)
+        fig.savefig('plots/figures/'+self.plot_name+'.pdf')
+        plt.close()

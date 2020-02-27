@@ -61,10 +61,9 @@ class base_3jet_selector(base_selector):
         simple_event_taggers.centrality_tagger
     ]
 
-    #deep_filter_class_list = base_selector.deep_filter_class_list + [
-    #    deep_filter_base.centrality_gt1_filter
-    #  , deep_filter_base.centrality_lt1_filter
-    #]
+    deep_filter_class_list = base_selector.deep_filter_class_list + [
+        deep_filter_base.centrality_lt06_filter
+    ]
 
 
 # Just a copy of the base_selector, but for taggers I don't want

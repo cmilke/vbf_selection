@@ -184,8 +184,8 @@ def record_cmilke_reco_jets(is_signal, input_list, events_to_read, event_data_du
         ('reco_jets', [
             'JetPt_calib', 'JetEta_calib', 'JetPhi_calib', 'JetM_calib',
             'JetFlavor', 'JetScatterType', 'JetIsTightPhoton', 'JetJVT', 'JetfJVT_tight',
-            'JetPullMagnitude', 'JetPullAngle',
-            ('reco_tracks', ['JetTrkPt', 'JetTrkEta', 'JetTrkPhi', 'JetTrkM'])
+            'JetPullMagnitude', 'JetPullAngle'
+            #('reco_tracks', ['JetTrkPt', 'JetTrkEta', 'JetTrkPhi', 'JetTrkM'])
         ])
     ]
 
@@ -201,19 +201,19 @@ def record_cmilke_reco_jets(is_signal, input_list, events_to_read, event_data_du
             is_pileup = reco_jet['JetScatterType'] != 2
             jet_pull = (reco_jet['JetPullMagnitude'], reco_jet['JetPullAngle'])
 
-            track_list = []
-            for reco_track in reco_jet['reco_tracks']:
-                track_vector = TLorentzVector.from_ptetaphim(
-                        reco_track['JetTrkPt'], reco_track['JetTrkEta'],
-                        reco_track['JetTrkPhi'], reco_track['JetTrkM']
-                )
-                new_track = acorn_track(track_vector)
-                track_list.append(new_track)
+            #track_list = []
+            #for reco_track in reco_jet['reco_tracks']:
+            #    track_vector = TLorentzVector.from_ptetaphim(
+            #            reco_track['JetTrkPt'], reco_track['JetTrkEta'],
+            #            reco_track['JetTrkPhi'], reco_track['JetTrkM']
+            #    )
+            #    new_track = acorn_track(track_vector)
+            #    track_list.append(new_track)
 
             # Create jet object storing the essential aspects of the ntuple reco jet,
             new_jet = acorn_jet(jet_vector, pdgid, is_pileup,
                     reco_jet['JetJVT'], reco_jet['JetfJVT_tight'], -1,
-                    jet_pull, track_list
+                    jet_pull, []
             )
             recorded_jets.append(new_jet)
 

@@ -9,15 +9,15 @@ selector_options = [
       #, base_selectors.dummy_2_jet_selector
     ],
     [ #3
-      #  base_selectors.truth_selector
-        base_selectors.maximal_mjj_selector
+        base_selectors.truth_selector
+      , base_selectors.maximal_mjj_selector
       , base_selectors.subleading_mjj_selector
       #, base_selectors.subsubleading_mjj_selector
       , base_selectors.highest_pt_selector
       #, base_selectors.fantasy_optimal_mjj_selector
       , base_selectors.dummy_3_jet_selector
       #, base_selectors.random_selector
-      #, base_selectors.maximal_Delta_eta_selector
+      , base_selectors.maximal_Delta_eta_selector
       #, base_selectors.quark_gluon_tag_selector
       #, base_selectors.coLinearity_merger
       #, basic_neural_net_selector 
