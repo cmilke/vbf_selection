@@ -6,6 +6,33 @@ class acorn_track:
     def __init__(self, track_vector):
         self.vector = track_vector
 
+class acorn_neojet:
+    def __init__(self, pdgid, pu, JVT, fJVT, qgTagger, pt, eta, phi, m, jet_pull_mag, jet_pull_angle, track_list):
+        self.data = (pdgid, pu, JVT and fJVT, pt, eta, phi, m, jet_pull_mag, jet_pull_angle)
+
+    def is_truth_quark(self):
+        return (self.truth_id in autils.PDGID['quarks'])
+    def truth_id():
+        return self.data[0]
+    def is_pileup():
+        return self.data[1]
+    def passes_JVT():
+        return self.data[2]
+    def pt():
+        return self.data[3]
+    def eta():
+        return self.data[4]
+    def phi():
+        return self.data[5]
+    def m():
+        return self.data[6]
+    def vector():
+        return TLorentzVector.from_ptetaphim(*self.data[3:7])
+    def jet_pull_mag():
+        return self.data[7]
+    def jet_pull_angle():
+        return self.data[8]
+
 
 class acorn_jet:
     def __init__(self, v, pdgid, pu, JVT, fJVT, qgTagger, jet_pull, track_list):
@@ -47,9 +74,5 @@ class acorn_event:
         for selector_class in selector_class_list:
             self.selectors[selector_class.key] = selector_class(self)
 
+
     def __repr__(self):
-        rep = '|---|---'+str(len(self.jets))+' Jets:\n'
-        for jet in self.jets: rep += str(jet)+'\n'
-        rep += '|---|\n|---|---Selectors:\n'
-        for selector in self.selectors.values(): rep += str(selector) + '\n'
-        return rep
