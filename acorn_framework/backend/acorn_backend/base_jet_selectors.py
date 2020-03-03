@@ -62,7 +62,7 @@ class base_3jet_selector(base_selector):
     ]
 
     deep_filter_class_list = base_selector.deep_filter_class_list + [
-        deep_filter_base.centrality_lt06_filter
+        deep_filter_base.centrality_gt06_filter
     ]
 
 

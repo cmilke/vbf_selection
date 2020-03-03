@@ -67,7 +67,8 @@ class simple_2_jet_tagger(acorn_backend.simple_event_taggers.base_tagger, templa
     def __init__(self, event, selections):
         cls = self.__class__
         if cls.network_model == None: cls.load_model()
-        elif cls.network_model == -1: self.discriminant = 0
+
+        if cls.network_model == -1: self.discriminant = 0
         else:
             prepared_datum = cls.prepare_events( [(event,selections)], None )
             predictions = cls.network_model.predict(prepared_datum)[0]

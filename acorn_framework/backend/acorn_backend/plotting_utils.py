@@ -71,6 +71,8 @@ _deep_filter_titles = {
   , 'mjj500': ', $M_{jj} > 500$ GeV'
   , 'central>1': ', C > 1' 
   , 'central<1': ', C < 1' 
+  , 'central<0.6': ', C < 0.6' 
+  , 'central>0.6': ', C > 0.6' 
 }
 
 _tagger_titles = {
@@ -101,8 +103,9 @@ def make_title(event_key):
 
 class hist1():
     def __init__(self, plot_name, plot_title, overlay_list, bin_count, bin_range, **kwargs):
-        arg_vals = {
-            'normalize': True, 'legend_args':{}, 'xlabel':'', 'ylabel':''
+        arg_vals = { 
+            'normalize': True, 'legend_args':{}, 'xlabel':'', 'ylabel':'',
+            'xlim':None, 'ylim':None
         }
         self.plot_name = plot_name
         self.plot_title = plot_title
@@ -111,24 +114,35 @@ class hist1():
         self.range = bin_range
 
         arg_vals.update(kwargs)
-        for kw,arg in arg_vals.iteritems(): setattr(self, kw, arg)
+        for kw,arg in arg_vals.items(): setattr(self, kw, arg)
 
 
     def add(self, value, *label):
         if len(label) > 0:
             self.data[label[0]].append(value)
-        else
+        else:
             key0 = list(self.data)[0]
             self.data[key0].append(value)
 
 
-    def generate_plot():
+    def generate_plot(self, refresh, cache):
+        print('Plotting '+self.plot_name)
+        if refresh: cache[self.plot_name] = self.data
+        else: self.data = cache[self.plot_name]
+
         plot_values = {'x':[],'weights':[],'label':[]}
         for label, values in self.data.items():
-            counts, bins = numpy.histogram(parameter_list, bins=self.bins, range=self.range)
-            vals = counts / counts.sum() if self.normalize else counts
+            counts, bins = numpy.histogram(values, bins=self.bins, range=self.range)
+            if counts.sum() == 0: 
+                print('WARNING: '+self.plot_name + ' has no data for label ' + label)
+                if len(values) == 0:
+                    print('Label list is empty')
+                else:
+                    print( 'Label list contains {} values between {} and {}'.format(len(values), min(values), max(values)) )
+                return
+            binned_vals = counts / counts.sum() if self.normalize else counts
             plot_values['x'].append( bins[:-1] )
-            plot_values['weights'].append(vals)
+            plot_values['weights'].append(binned_vals)
             plot_values['label'].append(label)
         plot_values['range'] = self.range
         plot_values['bins'] = self.bins
@@ -136,12 +150,60 @@ class hist1():
         fig,ax = plt.subplots()
         counts, bins, hist = plt.hist( **plot_values, linewidth=2, histtype='step')
 
-        ax.legend(**self.legend_args)
+        if len(plot_values['label']) > 1: ax.legend(**self.legend_args)
         plt.grid()
         #plt.yscale('log')
+        if self.xlim != None: plt.xlim(*self.xlim)
+        if self.ylim != None: plt.ylim(*self.ylim)
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        plt.title(self.plot_title)
+        fig.savefig('plots/figures/'+self.plot_name+'.pdf')
+        plt.close()
+
+
+
+class hist2():
+    def __init__(self, plot_name, plot_title, bin_count, bin_range, **kwargs):
+        arg_vals = { 'normalize': True, 'xlabel':'', 'ylabel':'', 'zlim':None }
+        self.plot_name = plot_name
+        self.plot_title = plot_title
+        self.data = ([],[])
+        self.bins = bin_count
+        self.range = bin_range
+
+        arg_vals.update(kwargs)
+        for kw,arg in arg_vals.items(): setattr(self, kw, arg)
+
+
+    def add(self, value0, value1):
+        self.data[0].append(value0)
+        self.data[1].append(value1)
+
+
+    def generate_plot(self, refresh, cache):
+        print('Plotting '+self.plot_name)
+        if refresh: cache[self.plot_name] = self.data
+        else: self.data = cache[self.plot_name]
+
+        hist_counts, xedges, yedges = numpy.histogram2d(*self.data, bins=self.bins, range=self.range)
+        flat_counts = hist_counts.flatten()
+        if flat_counts.sum() == 0: 
+            print('WARNING: '+self.plot_name + ' has no data')
+            print(*self.data)
+            return
+        if self.normalize: flat_counts /= hist_counts.sum()
+        bin_edges = numpy.array([ (x,y) for x in xedges[:-1] for y in yedges[:-1] ]).transpose()
+
+        fig,ax = plt.subplots()
+        counts, xbins, ybins, hist = plt.hist2d( *bin_edges, weights=flat_counts, bins=self.bins, range=self.range)
+
+        cbar = plt.colorbar()
+        if self.zlim != None: plt.clim(self.zlim)
+
+        #plt.grid()
+        #plt.yscale('log')
         #plt.ylim(10e-6, 1)
-        #plt.ylim(0, 0.2)
-        #plt.xlim(0, 2000)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         plt.title(self.plot_title)

@@ -15,72 +15,75 @@ _input_type_options = {
         'bgd': autils.Flavntuple_list_ggH125_gamgam[:3]
     }
 
-  , 'cmilkeV1': {
-        'sig': ['/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/signal/data-ANALYSIS/sample.root'],
-        'bgd': ['/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/background/data-ANALYSIS/sample.root']
+  , 'cmilke': {
+        'sig': autils.Flavntuple_list_VBFH125_gamgam_cmilke[:1],
+        'bgd': autils.Flavntuple_list_ggH125_gamgam_cmilke[:1]
     }
 }
 
 _tree_options = {
     'aviv': 'Nominal'
-  , 'cmilkeV1': 'ntuple'
+  , 'cmilke': 'ntuple'
 }
 
 _branch_options = {
     'aviv': [
         'eventWeight'
       , ('truth_particles', ['tpartpdgID', 'tpartstatus', 'tpartpT', 'tparteta', 'tpartphi', 'tpartm'])
-      , ('truth_jets', ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm'])
-      #, ('reco_jets',  ['j0truthid',  'j0pT', 'j0eta', 'j0phi', 'j0m'])
+      #, ('truth_jets', ['truthjpT', 'truthjeta', 'truthjphi', 'truthjm'])
+      , ('reco_jets',  ['j0truthid',  'j0pT', 'j0eta', 'j0phi', 'j0m'])
     ]
 
-  , 'cmilkeV1': [
+  , 'cmilke': [
         'EventWeight'
-      , ('truth_jets', [ 'TruthJetPt', 'TruthJetEta', 'TruthJetPhi', 'TruthJetM'] )
-      #, ('reco_jets', [ 'JetFlavor', 'JetPt_calib', 'JetEta_calib', 'JetPhi_calib', 'JetM_calib'] )
+      #, ('truth_jets', [ 'TruthJetPt', 'TruthJetEta', 'TruthJetPhi', 'TruthJetM'] )
+      , ('reco_jets', [ 'JetFlavor', 'JetPt_calib', 'JetEta_calib', 'JetPhi_calib', 'JetM_calib',
+                        'JetJVT', 'JetfJVT_tight'] )
     ]
 }
 
 
 def load_aviv(event_generator):
     counts = {}
-    for index, event in enumerate(event_generator):
-        #maybe_sorted = [ (p['tpartpdgID'], p['tpartpT']) for p in event['truth_particles'] if p['tpartpdgID'] != 25 ]
-        #def_sorted = sorted(maybe_sorted, reverse=True)
-        #print(maybe_sorted)#, def_sorted)
-        #if maybe_sorted != def_sorted: count += 1
-        #if index % 1000 == 0: print(index)
+    for index, event in enumerate(event_generator): pass
+        #for p in event['truth_particles']:
+        #    #print( '{:.02}, {:.02}, {:.02}, {:.02}'.format(p['tpartpT'], p['tparteta'], p['tpartphi'], p['tpartm']) )
+        #    tag = (p['tpartpdgID'], p['tpartstatus'])
+        #    if tag not in counts: counts[tag] = 0
+        #    counts[tag] += 1
 
 
-        #    if p['tpartpdgID'] == autils.PDGID['photon']:
-        #        status = p['tpartstatus']
-        #        if status not in counts: counts[status] = 0
-        #        counts[status] += 1
-        for p in event['truth_particles']:
-            #print( '{:.02}, {:.02}, {:.02}, {:.02}'.format(p['tpartpT'], p['tparteta'], p['tpartphi'], p['tpartm']) )
-            tag = (p['tpartpdgID'], p['tpartstatus'])
-            if tag not in counts: counts[tag] = 0
-            counts[tag] += 1
-    #print('FINAL TALLY: '+str(count) )
-    keys = sorted(list(counts), key=lambda t:t[0])
-    for key in keys: print( str(key) + ': '+str(counts[key]))
-
-        #print('\n'+str(event['eventWeight']))
+def load_cmilke(event_generator):
+    num_2_jets = 0
+    num_3_jets = 0
+    for event in event_generator:
+        #print('\n'+str(event['EventWeight']))
 
         #for truth_jet in event['truth_jets']:
-        #    print( '{:.02}, {:.02}, {:.02}, {:.02}'.format(truth_jet['truthjpT'], truth_jet['truthjeta'], truth_jet['truthjphi'], truth_jet['truthjm']) )
+        #    print( '{:.02}, {:.02}, {:.02}, {:.02}'.format(truth_jet['TruthJetPt'], truth_jet['TruthJetEta'], truth_jet['TruthJetPhi'], truth_jet['TruthJetM']) )
+        num_jets = 0
+        num_quarks = 0
+        pt_list = []
+        for jet in event['reco_jets']:
+            if jet['JetFlavor'] == autils.PDGID['photon']: continue
+            if abs(jet['JetEta_calib']) > 4: continue
+            if jet['JetPt_calib'] < 30: continue
+            if not (jet['JetJVT'] and jet['JetfJVT_tight']): continue
+            if jet['JetFlavor'] in autils.PDGID['quarks']: num_quarks += 1
+            pt_list.append(jet['JetPt_calib'])
+            num_jets += 1
+        if num_jets > 1:
+            if num_quarks < 2: continue
+            if pt_list[0] < 70: continue
+            if pt_list[1] < 50: continue
+            if num_jets == 2: num_2_jets += 1
+            if num_jets == 3: num_3_jets += 1
+    all_jets = num_2_jets + num_3_jets
+    print( '{}, {}, {}, {:.02f}, {:.02f}'.format(all_jets, num_2_jets, num_3_jets, num_2_jets/all_jets, num_3_jets/all_jets) )
 
 
-def load_cmilkeV1(event_generator):
-    for event in event_generator:
-        print('\n'+str(event['EventWeight']))
 
-        for truth_jet in event['truth_jets']:
-            print( '{:.02}, {:.02}, {:.02}, {:.02}'.format(truth_jet['TruthJetPt'], truth_jet['TruthJetEta'], truth_jet['TruthJetPhi'], truth_jet['TruthJetM']) )
-
-
-
-_loaders = {'aviv':load_aviv, 'cmilkeV1':load_cmilkeV1}
+_loaders = {'aviv':load_aviv, 'cmilke':load_cmilke}
 
 
 def validate():
