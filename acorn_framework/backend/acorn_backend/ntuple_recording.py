@@ -193,32 +193,18 @@ def record_cmilke_reco_jets(is_signal, input_list, events_to_read, event_data_du
         # Loop over reco jets and convert them into generic acorn_jet objects
         recorded_jets = []
         for reco_jet in event['reco_jets']:
-            jet_vector = TLorentzVector.from_ptetaphim(
-                    reco_jet['JetPt_calib'], reco_jet['JetEta_calib'],
-                    reco_jet['JetPhi_calib'], reco_jet['JetM_calib']
-            )
             pdgid = reco_jet['JetFlavor']
             is_pileup = reco_jet['JetScatterType'] != 2
-            jet_pull = (reco_jet['JetPullMagnitude'], reco_jet['JetPullAngle'])
-
-            #track_list = []
-            #for reco_track in reco_jet['reco_tracks']:
-            #    track_vector = TLorentzVector.from_ptetaphim(
-            #            reco_track['JetTrkPt'], reco_track['JetTrkEta'],
-            #            reco_track['JetTrkPhi'], reco_track['JetTrkM']
-            #    )
-            #    new_track = acorn_track(track_vector)
-            #    track_list.append(new_track)
 
             # Create jet object storing the essential aspects of the ntuple reco jet,
-            new_jet = acorn_jet(jet_vector, pdgid, is_pileup,
-                    reco_jet['JetJVT'], reco_jet['JetfJVT_tight'], -1,
-                    jet_pull, []
+            new_jet = acorn_jet(pdgid, is_pileup, reco_jet['JetJVT'],
+                reco_jet['JetfJVT_tight'], -1,
+                reco_jet['JetPt_calib'], reco_jet['JetEta_calib'],
+                reco_jet['JetPhi_calib'], reco_jet['JetM_calib'],
+                reco_jet['JetPullMagnitude'], reco_jet['JetPullAngle']
             )
             recorded_jets.append(new_jet)
 
         # Categorize event, and then either discard the event or perform tagging on it
         for category in event_data_dump.values():
             category.add_event(recorded_jets, is_signal, event['EventWeight'])
-
-

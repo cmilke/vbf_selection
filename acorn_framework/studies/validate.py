@@ -8,9 +8,9 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 #Define all the high level root stuff: ntuple files, branches to be used
-_Nevents = 100
+_Nevents = 30000
 _hist_bins = 32
-_category_key = 'JVT'
+_category_key = 'JVT_50-30'
 
 
 _xlimits = {
@@ -27,18 +27,18 @@ def load_data(record_name, input_type, validation_data):
         if len(event.jets) < 3: continue
         validation_data['Event Count'][input_type].append( int(event.signal) )
         for jet in event.jets:
-            validation_data['PDGID'][input_type].append( jet.truth_id )
-            validation_data['$p_T$'][input_type].append( jet.vector.pt )
-            validation_data['$\eta$'][input_type].append( jet.vector.eta )
-            validation_data['$\phi$'][input_type].append( jet.vector.phi )
-            validation_data['Mass'][input_type].append( jet.vector.mass )
+            validation_data['PDGID'][input_type].append( jet.truth_id() )
+            validation_data['$p_T$'][input_type].append( jet.pt() )
+            validation_data['$\eta$'][input_type].append( jet.eta() )
+            validation_data['$\phi$'][input_type].append( jet.phi() )
+            validation_data['Mass'][input_type].append( jet.m() )
 
-        event.jets.sort(key=lambda j: j.vector.pt, reverse=True)
-        leading_pt_mass = (event.jets[0].vector + event.jets[1].vector).mass
+        event.jets.sort(key=lambda j: j.pt(), reverse=True)
+        leading_pt_mass = (event.jets[0].vector() + event.jets[1].vector()).mass
         validation_data['Leading $p_T$ Mass'][input_type].append(leading_pt_mass)
 
-        event.jets.sort(key=lambda j: j.vector.eta)
-        max_delta_eta = abs(event.jets[0].vector.eta - event.jets[2].vector.eta)
+        event.jets.sort(key=lambda j: j.eta())
+        max_delta_eta = abs(event.jets[0].eta() - event.jets[2].eta())
         validation_data['$\Delta \eta_{max}$'][input_type].append(max_delta_eta)
 
 

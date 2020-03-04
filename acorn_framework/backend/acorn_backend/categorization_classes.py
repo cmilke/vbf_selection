@@ -2,20 +2,20 @@ from acorn_backend.categorization_base import base_categorizer, Max_jets
 from acorn_backend import analysis_utils as autils
 
 # Common Jet Filters
-_minpt20 = lambda jet: jet.vector.pt > 20 # GeV
-_minpt30 = lambda jet: jet.vector.pt > 30 # GeV
-_minpt40 = lambda jet: jet.vector.pt > 40 # GeV
-_maxeta4 = lambda jet: abs(jet.vector.eta) < 4
-_notphoton = lambda jet: jet.truth_id != autils.PDGID['photon']
-_noPileup = lambda jet: not jet.is_pileup
-_passesJVT = lambda jet: jet.passes_JVT
+_minpt20 = lambda jet: jet.pt() > 20 # GeV
+_minpt30 = lambda jet: jet.pt() > 30 # GeV
+_minpt40 = lambda jet: jet.pt() > 40 # GeV
+_maxeta4 = lambda jet: abs(jet.eta()) < 4
+_notphoton = lambda jet: jet.truth_id() != autils.PDGID['photon']
+_noPileup = lambda jet: not jet.is_pileup()
+_passesJVT = lambda jet: jet.passes_JVT()
 
 # Common Event Filters
 _min2jets = lambda event: len(event.jets) >= 2
 _maxjets = lambda event: len(event.jets) <= Max_jets
-_leadingPt70 = lambda event: event.jets[0].vector.pt > 70
-_leadingPt50 = lambda event: event.jets[0].vector.pt > 50
-_subleadingPt50 = lambda event: event.jets[1].vector.pt > 50
+_leadingPt70 = lambda event: event.jets[0].pt() > 70
+_leadingPt50 = lambda event: event.jets[0].pt() > 50
+_subleadingPt50 = lambda event: event.jets[1].pt() > 50
 _exactQuarks2 = lambda event: not event.signal or event.num_quark_jets == 2
 _minQuarks2 = lambda event: not event.signal or event.num_quark_jets >= 2
 # Demand at most 2 jets which are not pileup
@@ -23,7 +23,7 @@ _minQuarks2 = lambda event: not event.signal or event.num_quark_jets >= 2
 def _demandPU(event):
     number_of_nonPileup_jets = 0
     for jet in event.jets:
-        if not jet.is_pileup: number_of_nonPileup_jets += 1
+        if not jet.is_pileup(): number_of_nonPileup_jets += 1
     return number_of_nonPileup_jets <= 2
 
 

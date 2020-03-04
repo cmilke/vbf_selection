@@ -47,7 +47,7 @@ def record_events(input_type, args):
         record_jets(input_type == 'sig', input_list, events_to_read, event_data_dump)
     else:
         print('Opening recorded categories...')
-        record_name = 'data/output_'+args.ntuple+reco_level+'_record_'+input_type+'.p'
+        record_name = 'data/output_EXP_'+args.ntuple+reco_level+'_record_'+input_type+'.p'
         event_data_dump = pickle.load( open(record_name, 'rb') )
         for key, category in event_data_dump.items():
             print( 'Processing ' + key + '...' )
@@ -64,7 +64,7 @@ def record_events(input_type, args):
 
     # Output the event categories for use by later scripts
     print('\nEvents recorded, pickling now...')
-    data_dump_file_name = 'data/output_'+args.ntuple+reco_level+'_'+args.mode+'_'+input_type+'.p'
+    data_dump_file_name = 'data/output_EXP_'+args.ntuple+reco_level+'_'+args.mode+'_'+input_type+'.p'
     pickle.dump( event_data_dump, open(data_dump_file_name, 'wb') )
     print('Finished '+input_type+'!\n')
 

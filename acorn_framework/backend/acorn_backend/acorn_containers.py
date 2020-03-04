@@ -1,59 +1,41 @@
+import array
 from acorn_backend import analysis_utils as autils
-from acorn_backend.tagger_loader import selector_options
+from acorn_backend.tagger_methods import tagging_options
 from uproot_methods import TLorentzVector
 
 class acorn_track:
     def __init__(self, track_vector):
         self.vector = track_vector
 
-class acorn_neojet:
-    def __init__(self, pdgid, pu, JVT, fJVT, qgTagger, pt, eta, phi, m, jet_pull_mag, jet_pull_angle, track_list):
-        self.data = (pdgid, pu, JVT and fJVT, pt, eta, phi, m, jet_pull_mag, jet_pull_angle)
-
-    def is_truth_quark(self):
-        return (self.truth_id in autils.PDGID['quarks'])
-    def truth_id():
-        return self.data[0]
-    def is_pileup():
-        return self.data[1]
-    def passes_JVT():
-        return self.data[2]
-    def pt():
-        return self.data[3]
-    def eta():
-        return self.data[4]
-    def phi():
-        return self.data[5]
-    def m():
-        return self.data[6]
-    def vector():
-        return TLorentzVector.from_ptetaphim(*self.data[3:7])
-    def jet_pull_mag():
-        return self.data[7]
-    def jet_pull_angle():
-        return self.data[8]
-
-
 class acorn_jet:
-    def __init__(self, v, pdgid, pu, JVT, fJVT, qgTagger, jet_pull, track_list):
-        self.vector = v
-        self.truth_id = pdgid
-        self.is_pileup = pu
-        self.passes_JVT = (JVT and fJVT)
-        self.quark_gluon_tagger_value = qgTagger
-        self.pull = jet_pull
-        self.tracks = track_list
-
-    def __repr__(self):
-        representation = '|---|---|---'
-        representation += '(pt:{: 4.0f}, eta:{: 1.2f}, phi:{: 2.2f}, m:{: 2.1f}, id:{})'.format(
-            self.vector.pt, self.vector.eta, self.vector.phi, self.vector.mass, self.truth_id
-        )
-        return representation
+    def __init__(self, pdgid, pu, JVT, fJVT, qgTagger, pt, eta, phi, m, jet_pull_mag, jet_pull_angle):
+        self.ints = array.array('i', [pdgid, pu, JVT and fJVT])
+        self.floats = array.array('f', [pt, eta, phi, m, jet_pull_mag, jet_pull_angle])
 
     def is_truth_quark(self):
-        return (self.truth_id in autils.PDGID['quarks'])
-        
+        return (self.truth_id() in autils.PDGID['quarks'])
+    def truth_id(self):
+        return self.ints[0]
+    def is_pileup(self):
+        return self.ints[1]
+    def passes_JVT(self):
+        return self.ints[2]
+    def pt(self):
+        return self.floats[0]
+    def eta(self):
+        return self.floats[1]
+    def phi(self):
+        return self.floats[2]
+    def m(self):
+        return self.floats[3]
+    def vector(self):
+        return TLorentzVector.from_ptetaphim(*self.floats[:4])
+
+    def jet_pull_mag(self):
+        return self.floats[4]
+    def jet_pull_angle(self):
+        return self.floats[5]
+
 
 class acorn_event:
     def __init__(self, jet_list, event_weight, is_sig):
@@ -65,14 +47,11 @@ class acorn_event:
             if jet.is_truth_quark(): self.num_quark_jets += 1
 
     def tag_event(self):
-        # Use all available jet selectors to try and identify
-        # which jets are the VBF signature jets.
-        # The selectors will then pass themselves and the event
-        # to the tagger classes for event tagging
-        self.selectors = {}
-        selector_class_list = selector_options[ len(self.jets) ]
-        for selector_class in selector_class_list:
-            self.selectors[selector_class.key] = selector_class(self)
+        if len(self.jets) == 2:
+            available_taggers = tagging_options['2jet']
+        else:
+            available_taggers = tagging_options['>=3jet']
 
-
-    def __repr__(self):
+        self.discriminants = {}
+        for key, tagger in available_taggers.items():
+            self.discriminants[key] = tagger(self)
