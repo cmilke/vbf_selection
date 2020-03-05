@@ -1,4 +1,4 @@
-from acorn_backend.categorization_base import base_categorizer, Max_jets
+from acorn_backend.categorization_base import base_categorizer
 from acorn_backend import analysis_utils as autils
 
 # Common Jet Filters
@@ -12,7 +12,7 @@ _passesJVT = lambda jet: jet.passes_JVT()
 
 # Common Event Filters
 _min2jets = lambda event: len(event.jets) >= 2
-_maxjets = lambda event: len(event.jets) <= Max_jets
+_maxjets = lambda event: len(event.jets) <= 3
 _leadingPt70 = lambda event: event.jets[0].pt() > 70
 _leadingPt50 = lambda event: event.jets[0].pt() > 50
 _subleadingPt50 = lambda event: event.jets[1].pt() > 50

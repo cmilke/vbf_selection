@@ -63,28 +63,26 @@ def accumulate_performance(distro, is_bgd):
 
 
 _category_titles = {
-    'minimal': ' w/o JVT'
-  , 'JVT': ''
-  , 'JVT_50-30': ' 50,30,30'
-  , 'JVT_70-50-30': ' 70,50,30'
+    'minimal': 'w/o JVT'
+  , 'JVT': '30^'
+  , 'JVT20': '20^'
+  , 'JVT_50-30': '50,30^'
+  , 'JVT_70-50-30': '70,50,30'
 }
 
 _tagger_titles = {
-    'mjj': ' - $M_{jj}$'
-  , 'Deta': ' - $\Delta \eta$'
-  , 'centrality': ' - Centrality'
-  , 'Fcentrality': ' - Forward Centrality'
-  , 'mjjj': ' - $M_{jjj}$'
-  , '3jNNtagger': ' - 3 Jet Direct NNv1'
-  , '3jNNtaggerV2': ' - 3 Jet Direct NNv2'
-  , '3jNNtaggerV3': ' - 3 Jet Direct NNv3'
+    'mjj': '$M_{jj}$'
+  , 'Deta': '$\Delta \eta$'
+  , 'centrality': 'Centrality'
+  , 'Fcentrality': 'Forward Centrality'
+  , 'mjjj': '$M_{jjj}$'
 }
 
 
 def make_title(event_key):
     num_title = str(event_key[0])
     category_title = _category_titles[ event_key[1] ]
-    title = num_title+category_title+' : ' + event_key[2]
+    title = num_title+' - '+category_title+' : ' + event_key[2]
     return title
 
 

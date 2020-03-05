@@ -45,8 +45,11 @@ def stdTag(selector, discriminator, event):
         return discriminator(jets)
 
 selector_options = {
-
-
+    'maxpt': leading_pt_jets,
+    'mjjmax': partial(mjj_rank, 0),
+    'mjjSL': partial(mjj_rank, 1),
+    'Deta_max': partial(delta_eta_rank, 0),
+    'random': random_jets
 }
 
 

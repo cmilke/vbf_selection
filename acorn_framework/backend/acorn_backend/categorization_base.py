@@ -1,4 +1,3 @@
-from acorn_backend.tagger_loader import selector_options
 from acorn_backend.acorn_containers import acorn_event
 
 
@@ -21,8 +20,6 @@ jet-level filter, which strips jets out of an event; and an event-level filter, 
 excludes an event from existing at all. However, most of the categories do not implement both filters,
 and instead allow one of them to default to the minimal version.
 '''
-
-Max_jets = len(selector_options)-1
 
 
 # The base categorizer only filters out the bare minimum of jets
