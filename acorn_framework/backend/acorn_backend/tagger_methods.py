@@ -43,7 +43,12 @@ def total_invariant_mass(event):
 def stdTag(selector, discriminator, event):
         jets = selector(event)
         return discriminator(jets)
-    
+
+selector_options = {
+
+
+}
+
 
 tagging_options = {
     '2jet': {

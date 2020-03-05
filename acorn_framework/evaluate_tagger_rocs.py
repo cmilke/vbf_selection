@@ -13,23 +13,10 @@ from acorn_backend import plotting_utils
 _filename_suffix = ''
 
 _plots_to_make = [
-    (2,'JVT','null', 'any','mjj')
-  #, (2,'JVT_70-50-30','null', 'any','mjj')
-  #, (3,'JVT','truth', 'any','mjj')
-  #, (3,'JVT','mjjSL', 'any','mjj')
-  , (3,'JVT','mjjmax', 'any','mjj')
-  , (3,'JVT','mjjmax', 'central>0.6','mjj')
-  #, (3,'JVT','dummy3jet', 'any','mjjj')
-  #, (3,'JVT','2maxpt', 'any','mjj')
-  #, (3,'JVT','2maxpt', 'central>0.6','mjj')
-  #, (3,'JVT','mjjFantasy', 'any','mjj')
-  #, (3,'JVT','mjjSSL', 'any','mjj')
-  #, (3,'JVT','truth', 'any','mjj')
-  #, (3,'JVT','truth','Deta')
-  #, (3,'JVT','pairMLP','mjj')
-  #, (2,'JVT','null', 'mjj500','mjj')
-  #, (3,'JVT','mjjmax', 'mjj500','mjj')
-  #, (3,'JVT','random', 'mjj500','mjj')
+    (2,'JVT','mjj')
+  , (3,'JVT','mjjmax')
+  , (3,'JVT','mjj_from_leading_pt')
+  , (3,'JVT','mjj_of_random_jets')
 ]
 
 _plot_specifications = { key:plotting_utils.make_title(key) for key in _plots_to_make }
