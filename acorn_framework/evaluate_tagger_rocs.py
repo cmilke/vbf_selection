@@ -17,6 +17,7 @@ _plots_to_make = [
   , (3,'JVT','mjjmax')
   , (3,'JVT','mjj_from_leading_pt')
   , (3,'JVT','mjj_of_random_jets')
+  , (2,'JVT','NN')
 ]
 
 _plot_specifications = { key:plotting_utils.make_title(key) for key in _plots_to_make }

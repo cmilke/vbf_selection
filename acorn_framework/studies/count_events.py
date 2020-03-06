@@ -18,15 +18,6 @@ def print_event(input_type):
         print( category_key+': {}, {}, {}, {:.02f}, {:.02f}'.format(all_jets, num_2_jets, num_3_jets, num_2_jets/all_jets, num_3_jets/all_jets) )
 
 
-    #num_same = 0
-    #for index, event in enumerate(events_with_3_jets):
-    #    maxpt_selection = event.selectors['2maxpt'].selections
-    #    mjjmax_selection = event.selectors['mjjmax'].selections
-    #    if maxpt_selection == mjjmax_selection: num_same += 1
-
-    #print(num_same, index, num_same/index)
-
-
 
 print_event('sig')
 print()

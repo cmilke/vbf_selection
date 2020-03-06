@@ -2,20 +2,14 @@
 import argparse
 import pickle
 from acorn_backend.tagger_methods import tagger_options
-
-
-MLtagger_class_list = []
-
-for MLtagger_class in MLtagger_class_list:
-    MLtagger = MLtagger_class()
-    tagger_options[MLtagger.key] = MLtagger.tag_event
-
+from acorn_backend.tagger_methods import selector_options
+from acorn_backend.machine_learning.ML_tagger_base import ML_tagger_base
 
 _Nevents_debug_default = 10
 _tag_fraction = 0.5
 
 
-def tag_events(input_type, args):
+def tag_events(input_type, args, tagger_dict):
     reco_level = '_truth' if args.t else ''
     events_to_read = _Nevents_debug_default if (args.debug and args.Nevents == None) else args.Nevents
 
@@ -29,7 +23,7 @@ def tag_events(input_type, args):
         del(category.events[deletion_slice])
         if events_to_read != None: del(category.events[events_to_read:])
         print( 'Tagging...' )
-        category.tag_events(tagger_options)
+        category.tag_events(tagger_dict)
 
     # Print out either the full debug information, or just a summary
     for category in event_data_dump.values():
@@ -60,10 +54,23 @@ def run():
     parser.add_argument( "--debug", required = False, default = False, action = 'store_true', help = "Prints debug information",) 
     args = parser.parse_args()
 
-    if args.s: tag_events('sig', args)
-    if args.b: tag_events('bgd', args)
+    tagger_dict = tagger_options
+    ML_tagger_options = {'2jet':{}, '>=3jet':{}}
+    if not args.T:
+        # Load available NN taggers
+        ML_tagger_options['2jet']['NN'] = ML_tagger_base(selector_options['all'])
+        #ML_tagger_options['>=3jet']['maxpt_NN'] = ML_tagger_base(selector_options['maxpt'])
+        
+        # Add NN-based taggers to the tagger options
+        for jet_count, available_ML_taggers in ML_tagger_options.items():
+            for tagger_key, ML_tagger in available_ML_taggers.items():
+                tagger_dict[jet_count][tagger_key] = ML_tagger.tag_event
+
+
+    if args.s: tag_events('sig', args, tagger_dict)
+    if args.b: tag_events('bgd', args, tagger_dict)
     if not (args.b or args.s):
-        tag_events('sig', args)
-        tag_events('bgd', args)
+        tag_events('sig', args, tagger_dict)
+        tag_events('bgd', args, tagger_dict)
 
 run()

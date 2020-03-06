@@ -1,55 +1,18 @@
-# TensorFlow and tf.keras
-# I don't want these to be loaded when unpickeling
-# this object, so I import them indirectly through this buffer file
-import acorn_backend.machine_learning.tensorflow_buffer as tb
+import keras
 
 class template_NN():
-    #############################################
-    ### Neural Network specific class members ###
-    #############################################
-    model_file = None
-    jet_count_range = range(0,0) # This class should NEVER be used for anything but inheritance!
-    network_model = None
+    def __init__(self, tag=True):
+        self.model_file = 'data/'+self.__class__.__name__+'.h5'
+        if tag: self.network_model = keras.models.load_model(self.model_file)
 
 
-    @classmethod
-    # We need selector models to be loaded in order to train tagger models
-    # so we have to be able to load models even in training mode.
-    # But since we can't load a model we haven't trained,
-    # I allow this loading model to fail in 'train' mode
-    def load_model(cls):
-        try: cls.network_model = tb.keras.models.load_model(cls.model_file)
-        except OSError:
-            if tb.run_mode == 'train':
-                print('Note: Model ' + cls.model_file + ' does not exist; ignoring for training mode.')
-                network_model = -1
-            else:
-                raise
-            
-
-    @classmethod
-    def get_label(cls, event):
-        return None
-
-
-    @classmethod
-    def prepare_events(cls, event_list, label_list):
-        return None
-
-
-    @classmethod
-    def train_model(cls, training_data, training_labels):
-        return None
-
-
-    @classmethod
-    def test_model(cls, test_data, test_labels):
+    def test_model(self, test_data, test_labels):
         print('TESTING MODEL')
-        model = tb.keras.models.load_model(cls.model_file) # Load Model
+        network_model = keras.models.load_model(self.model_file) # Load Model
 
         # Evaluate Trained Model
-        test_loss, test_accuracy = model.evaluate(test_data, test_labels)
-        predictions = model.predict(test_data)
+        test_loss, test_accuracy = network_model.evaluate(test_data, test_labels)
+        predictions = network_model.predict(test_data)
         for label, prediction in zip(test_labels[:20], predictions[:20]):
             result = str(label) + ': '
             result += str(prediction)
@@ -57,5 +20,5 @@ class template_NN():
 
         print('Test accuracy: ', test_accuracy)
 
-        plot_model = tb.keras.utils.vis_utils.plot_model
-        plot_model(model, to_file=cls.model_file[:-2]+'pdf', show_shapes=True, show_layer_names=True)
+        plot_model = keras.utils.vis_utils.plot_model
+        plot_model(network_model, to_file=self.model_file[:-2]+'pdf', show_shapes=True, show_layer_names=True)

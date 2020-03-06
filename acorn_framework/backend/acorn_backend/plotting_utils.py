@@ -11,7 +11,8 @@ _discriminant_ranges = {
     'mjj': (0,3000),
     'Deta': (0,10),
     'centrality': (0,100),
-    'Fcentrality': (0,1)
+    'Fcentrality': (0,1),
+    'NN': (-20,20)
 }
 
 _tagger_idents = {
@@ -21,6 +22,7 @@ _tagger_idents = {
     'mjjmax': 'mjj',
     'mjjSL': 'mjj',
     'mjj_of_random_jets': 'mjj',
+    'NN': 'NN',
 }
 
 
