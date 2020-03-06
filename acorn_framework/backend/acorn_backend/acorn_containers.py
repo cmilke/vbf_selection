@@ -1,6 +1,5 @@
 import array
 from acorn_backend import analysis_utils as autils
-from acorn_backend.tagger_methods import tagging_options
 from uproot_methods import TLorentzVector
 
 class acorn_track:
@@ -46,11 +45,11 @@ class acorn_event:
         for jet in jet_list:
             if jet.is_truth_quark(): self.num_quark_jets += 1
 
-    def tag_event(self):
+    def tag_event(self, tagger_options):
         if len(self.jets) == 2:
-            available_taggers = tagging_options['2jet']
+            available_taggers = tagger_options['2jet']
         else:
-            available_taggers = tagging_options['>=3jet']
+            available_taggers = tagger_options['>=3jet']
 
         self.discriminants = {}
         for key, tagger in available_taggers.items():

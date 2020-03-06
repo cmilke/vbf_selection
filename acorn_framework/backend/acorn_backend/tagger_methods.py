@@ -53,7 +53,7 @@ selector_options = {
 }
 
 
-tagging_options = {
+tagger_options = {
     '2jet': {
         'mjj': partial(stdTag, all_jets, mjj)
     },

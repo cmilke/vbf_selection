@@ -44,11 +44,10 @@ class base_categorizer():
         self.events.append(new_event)
         return True
 
-    def tag_events(self):
+    def tag_events(self, tagger_options):
         for index, event in enumerate(self.events):
-            event.tag_event()
-            if index % 2000 == 0:
-                print('...Tagged ' + str(index))
+            event.tag_event(tagger_options)
+            if index % 5000 == 0: print('...Tagged ' + str(index))
 
     def summary(self):
         summary  = 'Category ' + self.__class__.__name__ + ': '
