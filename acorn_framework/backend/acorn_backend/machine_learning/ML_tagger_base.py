@@ -52,13 +52,29 @@ class ML_tagger_base(template_NN):
         model.save(self.model_file) # Save Model
 
 
-    def tag_event(self, event):
-        prepared_datum = self.prepare_events( [event], None )
-        predictions = self.network_model.predict(prepared_datum)[0]
-        if predictions[0] == 0:
+    def generate_llr(self, prediction):
+        if prediction[0] == 0:
             llr = 100
-        elif predictions[1] == 0:
+        elif prediction[1] == 0:
             llr = -100
         else:
             llr = math.log(predictions[1] / predictions[0])
         return llr
+
+
+    def tag_event(self, event):
+        prepared_datum = self.prepare_events( [event], None )
+        prediction = self.network_model.predict(prepared_datum)[0]
+        llr = generate_llr(prediction)
+        return llr
+
+
+    def mass_process(tagger_key, event_list):
+        prepared_data = self.prepare_events( event_list, None )
+        predictions = self.network_model.predict(prepared_data)
+        for index, event in enumerate(input_list):
+            discriminant = generate_llr(predictions[index])
+            event.set_discriminant(discriminant)
+
+
+

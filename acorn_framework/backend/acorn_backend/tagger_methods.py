@@ -53,7 +53,6 @@ selector_options = {
     'random': random_jets
 }
 
-
 tagger_options = {
     '2jet': {
         'mjj': partial(stdTag, all_jets, mjj)
@@ -65,4 +64,9 @@ tagger_options = {
         'mjjSL': partial( stdTag, partial(mjj_rank,1), mjj),
         'mjj_of_random_jets': partial( stdTag, random_jets, mjj)
     }
+}
+
+jet_ident_counter = {
+    '2jet': lambda event : len(event.jets) == 2,
+    '>=3jet': lambda event : len(event.jets) >= 3
 }

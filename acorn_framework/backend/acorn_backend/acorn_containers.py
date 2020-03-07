@@ -54,3 +54,7 @@ class acorn_event:
         self.discriminants = {}
         for key, tagger in available_taggers.items():
             self.discriminants[key] = tagger(self)
+
+
+    def set_discriminant(self, key, discriminant):
+        self.discriminants[key] = discriminant
