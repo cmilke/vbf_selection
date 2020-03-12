@@ -1,4 +1,5 @@
 import array
+import math
 from acorn_backend import analysis_utils as autils
 from uproot_methods import TLorentzVector
 
@@ -7,9 +8,12 @@ class acorn_track:
         self.vector = track_vector
 
 class acorn_jet:
-    def __init__(self, pdgid, pu, JVT, fJVT, qgTagger, pt, eta, phi, m, jet_pull_mag, jet_pull_angle):
+    def __init__(self, pdgid, pu, JVT, fJVT, qgTagger,
+            pt, eta, phi, m,
+            jet_pull_mag, jet_pull_angle, track_array):
         self.ints = array.array('i', [pdgid, pu, JVT and fJVT])
         self.floats = array.array('f', [pt, eta, phi, m, jet_pull_mag, jet_pull_angle])
+        self.track_array = track_array
 
     def is_truth_quark(self):
         return (self.truth_id() in autils.PDGID['quarks'])
@@ -34,6 +38,22 @@ class acorn_jet:
         return self.floats[4]
     def jet_pull_angle(self):
         return self.floats[5]
+    def jet_pull_vec(self):
+        pull_eta = self.jet_pull_mag() * math.cos( self.jet_pull_angle() )
+        pull_phi = self.jet_pull_mag() * math.sin( self.jet_pull_angle() )
+        return (pull_eta, pull_phi)
+
+
+    def num_tracks(self):
+        return len(self.track_array)
+    def track_pt(self, index):
+        return self.track_array[index][0]
+    def track_eta(self, index):
+        return self.track_array[index][1]
+    def track_phi(self, index):
+        return self.track_array[index][2]
+    def track_mass(self, index):
+        return self.track_array[index][3]
 
 
 class acorn_event:

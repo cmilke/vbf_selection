@@ -22,7 +22,9 @@ _tagger_idents = {
     'mjjmax': 'mjj',
     'mjjSL': 'mjj',
     'mjj_of_random_jets': 'mjj',
+    'centrality_of_maxpt': 'centrality',
     'NN': 'NN',
+    '3Jdirect': 'NN'
 }
 
 
@@ -92,7 +94,7 @@ class hist1():
     def __init__(self, plot_name, plot_title, overlay_list, bin_count, bin_range, **kwargs):
         arg_vals = { 
             'normalize': True, 'legend_args':{}, 'xlabel':'', 'ylabel':'',
-            'xlim':None, 'ylim':None
+            'xlim':None, 'ylim':None, 'ylog':False
         }
         self.plot_name = plot_name
         self.plot_title = plot_title
@@ -139,7 +141,7 @@ class hist1():
 
         if len(plot_values['label']) > 1: ax.legend(**self.legend_args)
         plt.grid()
-        #plt.yscale('log')
+        if self.ylog: plt.yscale('log')
         if self.xlim != None: plt.xlim(*self.xlim)
         if self.ylim != None: plt.ylim(*self.ylim)
         plt.xlabel(self.xlabel)

@@ -13,11 +13,13 @@ from acorn_backend import plotting_utils
 _filename_suffix = ''
 
 _plots_to_make = [
-    (2,'JVT','mjj')
-  , (3,'JVT','mjjmax')
-  , (3,'JVT','mjj_from_leading_pt')
-  , (3,'JVT','mjj_of_random_jets')
-  , (2,'JVT','NN')
+    (2,'JVT_50-30','mjj')
+  , (3,'JVT_50-30','mjjmax')
+  , (3,'JVT_50-30','mjj_from_leading_pt')
+  , (3,'JVT_50-30','mjj_of_random_jets')
+  , (3,'JVT_50-30','centrality_of_maxpt')
+  , (2,'JVT_50-30','NN')
+  , (3,'JVT_50-30','3Jdirect')
 ]
 
 _plot_specifications = { key:plotting_utils.make_title(key) for key in _plots_to_make }

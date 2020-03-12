@@ -1,5 +1,6 @@
 import pickle
 import sys
+from math import pi
 
 Flavntuple_list_VBFH125_gamgam = [
         "/nfs/slac/g/atlas/u02/cmilke/datasets/VBFH125_gamgam/data-CxAOD-0.root",
@@ -43,6 +44,15 @@ Flavntuple_list_ggH125_gamgam_cmilke = [
   , '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/output_bgd_V4_03/data-ANALYSIS/sample.root'
 ]
 
+Flavntuple_list_VBFH125_gamgam_experimental = [
+    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/sig_test/data-ANALYSIS/sample.root'
+]
+
+Flavntuple_list_ggH125_gamgam_experimental = [
+    '/nfs/slac/g/atlas/u02/cmilke/mc16-xAOD-ntuple-maker/run/bgd_test/data-ANALYSIS/sample.root'
+]
+
+
 PDGID = {
     'down' : 1,
     'up' : 2,
@@ -69,6 +79,14 @@ def is_outgoing_quark(pdg, status): return (pdg in PDG['quarks'] and status == S
 
 
 def passes_std_jet_cuts(pt, eta): return ( pt > Pt_min and abs(eta) < Eta_max )
+
+
+def etaphi_difference(eta1, phi1, eta2, phi2):
+    Deta = eta1 - eta2
+    Dphi = phi1 - phi2
+    if Dphi > pi: Dphi -= 2*pi
+    elif Dphi < -pi: Dphi += 2*pi
+    return (Deta,Dphi)
 
 
 def reload_data(regen, data_extraction_function, cache_dir='studies/cache/', suffix=''):

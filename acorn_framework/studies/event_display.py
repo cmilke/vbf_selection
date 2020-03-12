@@ -1,4 +1,5 @@
 #!/nfs/slac/g/atlas/u02/cmilke/Anaconda3/bin/python
+import sys
 import pickle
 import numpy
 import matplotlib
@@ -28,7 +29,7 @@ _philabels=[
   , r''
 ]
 _jet_radius=0.4
-_category_key = 'JVT'
+_category_key = 'JVT_50-30'
 _num_events_to_check = 100
 _display_pull = True
 _display_tracks = False
@@ -74,17 +75,35 @@ def process_jets(event, ax):
             #pull_angle = 2*pi * random.randint(0,99)/100
             #pull_magnitude = 0.5
             #pull_angle = (2*pi) * (7/8)
-            if jet.jet_pull_mag() != -999000.0:
-                arrow_dx = 100 * jet.jet_pull_mag() * math.cos(jet.jet_pull_angle())
-                arrow_dy = 100 * jet.jet_pull_mag() * math.sin(jet.jet_pull_angle())
+            if jet.jet_pull_mag() > 0:
+                arrow_dx = 200 * jet.jet_pull_mag() * math.cos(jet.jet_pull_angle())
+                arrow_dy = 200 * jet.jet_pull_mag() * math.sin(jet.jet_pull_angle())
                 plt.arrow(jet.eta(), jet.phi(), arrow_dx, arrow_dy, width=0.03, zorder=10)
+
+                #manual_Deta = 0.0
+                #manual_Dphi = 0.0
+                #forced_radius = 0.5
+                #for track_index in range(jet.num_tracks()):
+                #    Deta = jet.track_eta(track_index) - jet.eta()
+                #    Dphi = jet.track_phi(track_index) - jet.phi()
+                #    weight = jet.track_pt(track_index) * math.hypot(Deta,Dphi)
+                #    manual_Deta += weight * Deta
+                #    manual_Dphi += weight * Dphi
+                #manual_Deta *= 1 / jet.pt()
+                #manual_Dphi *= 1 / jet.pt()
+                #normalization = forced_radius / math.hypot(manual_Deta,manual_Dphi)
+                #print( jet.jet_pull_mag(), math.hypot(manual_Deta,manual_Dphi) )
+                #manual_Deta *= normalization
+                #manual_Dphi *= normalization
+                ##print(manual_Deta,manual_Dphi)
+                #plt.arrow(jet.eta(), jet.phi(), manual_Deta, manual_Dphi, width=0.03, zorder=10, color='red')
 
         if _display_tracks:
             #make_random_tracks(track_info, v)
-            for track in jet.tracks:
-                track_info['x'].append(track.vector.eta)
-                track_info['y'].append(track.vector.phi)
-                track_info['c'].append(track.vector.pt)
+            for track_index in range(jet.num_tracks()):
+                track_info['x'].append(jet.track_eta(track_index))
+                track_info['y'].append(jet.track_phi(track_index))
+                track_info['c'].append(jet.track_pt(track_index))
 
     #for key,val in jet_info.items(): print(key, val)
     #for key,val in track_info.items(): print(key, val)
@@ -95,6 +114,7 @@ def process_jets(event, ax):
 def display_event(event, output, plot_title):
     fig,ax = plt.subplots()
     ax.set_facecolor('0.4') # Make the background grey so you can see the lighter colors
+    print( plot_title + ' - TENSION: '+str(event.discriminants['pull_tension']) )
     jet_info, track_info = process_jets(event, ax)
     jet_scatter = plt.scatter(**jet_info, cmap='plasma', vmin=0, vmax=100, marker='P')
     track_scatter = plt.scatter(**track_info, cmap='plasma', vmin=0, vmax=100, marker='2')
@@ -115,7 +135,7 @@ def display_event(event, output, plot_title):
 
 def display(event_list, passes_event_test, type_name, type_title):
     print( 'Displaying ' + type_name )
-    output = PdfPages('plots/event_displays/fig_event_display_'+type_name+'.pdf')
+    output = PdfPages('plots/event_displays/fig_event_display_'+sys.argv[1]+'_'+type_name+'.pdf')
     for event_index, event in enumerate(event_list):
         if passes_event_test(event):
             plot_title = 'Event Display for ' + type_title + ' ' + str(event_index) 
@@ -139,9 +159,9 @@ def fails_mjjj(event):
 
 def event_display():
     #sig_data_dump = pickle.load( open('data/output_aviv_tag_sig.p', 'rb') )
-    sig_data_dump = pickle.load( open('data/output_cmilke_record_sig.p', 'rb') )
-    sig_event_list = [ event for event in sig_data_dump[_category_key].events if len(event.jets) > 2 ][:_num_events_to_check]
-    #sig_event_list = [ event for event in sig_data_dump[_category_key].events if len(event.jets) == 2 ][:_num_events_to_check]
+    sig_data_dump = pickle.load( open('data/output_'+sys.argv[1]+'_sig.p', 'rb') )
+    #sig_event_list = [ event for event in sig_data_dump[_category_key].events if len(event.jets) > 2 ][:_num_events_to_check]
+    sig_event_list = [ event for event in sig_data_dump[_category_key].events if len(event.jets) == 2 ][:_num_events_to_check]
 
     #bgd_data_dump = pickle.load( open('data/output_aviv_tag_bgd.p', 'rb') )
     #bgd_event_list = [ event for event in bgd_data_dump[_category_key].events if len(event.jets) > 2 ][:_num_events_to_check]

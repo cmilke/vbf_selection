@@ -1,3 +1,4 @@
+import numpy
 from uproot_methods import TLorentzVector
 from acorn_backend.uproot_wrapper import event_iterator
 from acorn_backend import analysis_utils as autils
@@ -184,10 +185,10 @@ def record_cmilke_reco_jets(is_signal, input_list, events_to_read, event_data_du
         ('reco_jets', [
             'JetPt_calib', 'JetEta_calib', 'JetPhi_calib', 'JetM_calib',
             'JetFlavor', 'JetScatterType', 'JetIsTightPhoton', 'JetJVT', 'JetfJVT_tight',
-            'JetPullMagnitude', 'JetPullAngle'
-            #('reco_tracks', ['JetTrkPt', 'JetTrkEta', 'JetTrkPhi', 'JetTrkM'])
+            'JetPullMagnitude', 'JetPullAngle',
         ])
     ]
+    #branches[1][1].extend(['JetTrkPt', 'JetTrkEta', 'JetTrkPhi', 'JetTrkM'])
 
     for event in event_iterator(input_list, tree_name, branches, events_to_read):
         # Loop over reco jets and convert them into generic acorn_jet objects
@@ -195,13 +196,21 @@ def record_cmilke_reco_jets(is_signal, input_list, events_to_read, event_data_du
         for reco_jet in event['reco_jets']:
             pdgid = reco_jet['JetFlavor']
             is_pileup = reco_jet['JetScatterType'] != 2
+            track_array = None
+            #track_array = numpy.array([ 
+            #    reco_jet['JetTrkPt'],
+            #    reco_jet['JetTrkEta'],
+            #    reco_jet['JetTrkPhi'],
+            #    reco_jet['JetTrkM']
+            #]).transpose()
 
             # Create jet object storing the essential aspects of the ntuple reco jet,
             new_jet = acorn_jet(pdgid, is_pileup, reco_jet['JetJVT'],
                 reco_jet['JetfJVT_tight'], -1,
                 reco_jet['JetPt_calib'], reco_jet['JetEta_calib'],
                 reco_jet['JetPhi_calib'], reco_jet['JetM_calib'],
-                reco_jet['JetPullMagnitude'], reco_jet['JetPullAngle']
+                reco_jet['JetPullMagnitude'], reco_jet['JetPullAngle'],
+                track_array
             )
             recorded_jets.append(new_jet)
 

@@ -8,6 +8,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 from acorn_backend.plotting_utils import hist1, hist2
+from acorn_backend import tagger_methods as Tag
 from acorn_backend.tagger_methods import selector_options
 
 _input_titles = {'sig':'Signal', 'bgd':'Background'}
@@ -18,6 +19,11 @@ _plots = {
 
   , 'leading_eta_delta': hist1( 'leading_eta_delta', '$\Delta \eta$ Distribution of Leading Two Jets',
         ['any'], 50, (0,8), xlabel='$\eta$')
+
+  , 'pull_tension': hist1( 'pull_tension', 'Distribution of Jet Pull Tension',
+        ['sig', 'bgd'], 100, (-.1,.1), xlabel='Pull Tension', ylim=(1e-5,1), ylog=True)
+        #['sig', 'bgd'], 100, (-.05,.05), xlabel='Pull Tension', ylog=False)
+
 }
 
 for key in ['mjjSL', 'maxpt', 'mjjmax']:
@@ -64,22 +70,27 @@ def extract_data():
         data_dump = pickle.load( open('data/output_cmilke_record_'+input_type+'.p', 'rb') )
 
         print('Iterating over JVT 2-Jet Events')
-        JVT_events_with_2_jets = [ event for event in data_dump['JVT'].events if len(event.jets) == 2 ]
+        JVT_events_with_2_jets = [ event for event in data_dump['JVT_50-30'].events if len(event.jets) == 2 ]
         for event in JVT_events_with_2_jets:
             jet0 = event.jets[0]
             jet1 = event.jets[1]
             mjj = ( jet0.vector() + jet1.vector() ).mass
             _plots['mjj_2jet_'+input_type].add(mjj)
 
+            pull_tension = Tag.jet_pull_tension(event)
+            if pull_tension > -100:
+                _plots['pull_tension'].add(pull_tension, input_type)
+
         print('Iterating over JVT 3-Jet Events')
-        JVT_events_with_3_jets = [ event for event in data_dump['JVT'].events if len(event.jets) > 2 ]
+        JVT_events_with_3_jets = [ event for event in data_dump['JVT_50-30'].events if len(event.jets) > 2 ]
         for event in JVT_events_with_3_jets:
             for jet in event.jets:
                 _plots['correlation_pt_eta_'+input_type].add(jet.eta(), jet.pt()) 
 
             Detas, ptsums, mjjs = {}, {}, {}
             for selector_key in ['mjjSL', 'maxpt', 'mjjmax']:
-                jet0, jet1 = selector_options[selector_key](event)
+                selections = selector_options[selector_key](event)
+                jet0, jet1 = [ event.jets[index] for index in selections[:2] ]
                 Deta = abs(jet0.eta() - jet1.eta())
                 mjj = ( jet0.vector() + jet1.vector() ).mass
                 Detas[selector_key] = Deta
@@ -114,7 +125,7 @@ def draw_distributions():
     else: cache = pickle.load( open(cache_file, 'rb') )
 
     blacklist = [
-        #'correlation'
+        'correlation'
       #, 'correlation_mjj' , 'correlation_eta' , 'correlation_sumpt'
     ]
     for key,plot in _plots.items():
