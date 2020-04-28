@@ -6,14 +6,14 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 
-_output_dir = 'output/'
+_output_dir = 'figures/'
 
 
 class hist1():
     def __init__(self, plot_name, plot_title, overlay_list, bin_count, bin_range, **kwargs):
         arg_vals = { 
             'normalize': True, 'legend_args':{}, 'xlabel':'', 'ylabel':'',
-            'xlim':None, 'ylim':None, 'ylog':False
+            'xlim':None, 'ylim':None, 'ylog':False, 'labelmaker':None
         }
         self.plot_name = plot_name
         self.plot_title = plot_title
@@ -51,7 +51,8 @@ class hist1():
             binned_vals = counts / counts.sum() if self.normalize else counts
             plot_values['x'].append( bins[:-1] )
             plot_values['weights'].append(binned_vals)
-            plot_values['label'].append(label)
+            label_text = label if self.labelmaker == None else self.labelmaker(label)
+            plot_values['label'].append(label_text)
         plot_values['range'] = self.range
         plot_values['bins'] = self.bins
             
@@ -66,7 +67,7 @@ class hist1():
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         plt.title(self.plot_title)
-        fig.savefig(_output_dir+self.plot_name+'.pdf')
+        fig.savefig(_output_dir+self.plot_name+'.png')
         plt.close()
 
 
@@ -115,7 +116,7 @@ class hist2():
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         plt.title(self.plot_title)
-        fig.savefig(_output_dir+self.plot_name+'.pdf')
+        fig.savefig(_output_dir+self.plot_name+'.png')
         plt.close()
 
 

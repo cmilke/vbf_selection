@@ -2,23 +2,22 @@ from math import pi
 import os
 
 
-input_dir = '/nfs/slac/g/atlas/u02/cmilke/dihiggs/input/'
-gen_file_list = lambda link: [ input_dir+link+'/'+ntuple for ntuple in os.listdir(input_dir+link) ]
-datasets = {
-     'MC16d_ggF-HH-bbbb'       : gen_file_list('ntuples_MC16d_ggF-HH-bbbb'),
-     'MC16d_VBF-HH-bbbb_cvv0'  : gen_file_list('ntuples_MC16d_VBF-HH-bbbb_cvv0'),
-     'MC16d_VBF-HH-bbbb_cvv0p5': gen_file_list('ntuples_MC16d_VBF-HH-bbbb_cvv0p5'),
-     'MC16d_VBF-HH-bbbb_cvv1'  : gen_file_list('ntuples_MC16d_VBF-HH-bbbb_cvv1'),
-     'MC16d_VBF-HH-bbbb_cvv1p5': gen_file_list('ntuples_MC16d_VBF-HH-bbbb_cvv1p5'),
-     'MC16d_VBF-HH-bbbb_cvv2'  : gen_file_list('ntuples_MC16d_VBF-HH-bbbb_cvv2'),
-     'MC16d_VBF-HH-bbbb_cvv4'  : gen_file_list('ntuples_MC16d_VBF-HH-bbbb_cvv4')
-}
-
-
-input_mc_standard = [
-    '/nfs/slac/g/atlas/u02/cmilke/dihiggs/input/user.jagrundy.HH4B.450000.SM_HH.MC16e-2018.AB21.2.91-MAR20-0.full_MiniNTuple.root/user.jagrundy.20736225._000001.MiniNTuple.root',
-    '/nfs/slac/g/atlas/u02/cmilke/dihiggs/input/user.jagrundy.HH4B.450000.SM_HH.MC16e-2018.AB21.2.91-MAR20-0.full_MiniNTuple.root/user.jagrundy.20736225._000002.MiniNTuple.root'
+sample_list = [
+    'MC16d_ggF-HH-bbbb',
+    'MC16d_VBF-HH-bbbb_cvv0',
+    'MC16d_VBF-HH-bbbb_cvv0p5',
+    'MC16d_VBF-HH-bbbb_cvv1',
+    'MC16d_VBF-HH-bbbb_cvv1p5',
+    'MC16d_VBF-HH-bbbb_cvv2',
+    'MC16d_VBF-HH-bbbb_cvv4'
 ]
+
+input_dir = '../input/'
+gen_file_list = lambda link: [ input_dir+link+'/'+ntuple for ntuple in os.listdir(input_dir+link) ]
+input_datasets = { sample:gen_file_list('ntuples_'+sample) for sample in sample_list }
+
+output_dir = '../output/V2/'
+output_datasets = { sample:[output_dir+'output_'+sample+'.root'] for sample in sample_list }
 
 
 PDGID = {
@@ -32,11 +31,6 @@ PDGID = {
     'gluon': 21,
     'photon': 22,
     'higgs': 25
-}
-
-Status = {
-    'outgoing': 23,
-    'photon_out': 1
 }
 
 
