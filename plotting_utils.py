@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 
 
 _output_dir = 'figures/'
+_output_ext = '.png'
 
 
 class hist1():
@@ -42,7 +43,7 @@ class hist1():
         for label, values in self.data.items():
             counts, bins = numpy.histogram(values, bins=self.bins, range=self.range)
             if counts.sum() == 0: 
-                print('WARNING: '+self.plot_name + ' has no data for label ' + label)
+                print('WARNING: '+self.plot_name + ' has no data for label ' + str(label))
                 if len(values) == 0:
                     print('Label list is empty')
                 else:
@@ -67,7 +68,7 @@ class hist1():
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         plt.title(self.plot_title)
-        fig.savefig(_output_dir+self.plot_name+'.png')
+        fig.savefig(_output_dir+self.plot_name+_output_ext)
         plt.close()
 
 
@@ -116,7 +117,55 @@ class hist2():
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         plt.title(self.plot_title)
-        fig.savefig(_output_dir+self.plot_name+'.png')
+        fig.savefig(_output_dir+self.plot_name+_output_ext)
+        plt.close()
+
+
+
+class roc():
+    def __init__(self, plot_name, plot_title, overlay_list, **kwargs):
+        arg_vals = { 
+            'legend_args':{}, 'labelmaker':None
+        }
+        self.plot_name = plot_name
+        self.plot_title = plot_title
+        self.data = { label:([],[]) for label in overlay_list }
+
+        arg_vals.update(kwargs)
+        for kw,arg in arg_vals.items(): setattr(self, kw, arg)
+
+
+    def fill(self, value, bgd, *label):
+        key = list(self.data)[0] if len(label) == 0 else label[0]
+        self.data[key][bgd].append(value)
+
+
+    def generate_plot(self, refresh, cache):
+        print('Plotting '+self.plot_name)
+        if refresh: cache[self.plot_name] = self.data
+        else: self.data = cache[self.plot_name]
+
+        roc_ax = plt.subplots()
+        for label, (signal,background) in self.data.items():
+            signal.sort()
+            background.sort()
+            num_signal = len(signal)
+            num_background = len(background)
+
+            efficiency = []
+            rejection = []
+            bgd_index = 0
+            for sig_index, sig_val in enumerate(signal):
+                efficiency.append( 1 - sig_index / num_signal )
+                while bgd_index < num_background and background[bgd_index] < sig_val: bgd_index+=1
+                rejection.append( bgd_index / num_background )
+            plt.plot(efficiency, rejection, label=label, linewidth=1)
+        plt.legend(prop={'size':6})
+        plt.xlabel('Signal Efficiency')
+        plt.ylabel('Background Rejection')
+        plt.title(self.plot_title)
+        plt.grid(True)
+        plt.savefig(_output_dir+self.plot_name+_output_ext)
         plt.close()
 
 
@@ -131,6 +180,9 @@ class plot_wrapper():
 
     def add_hist2(self, plot_name, *args, **kwargs):
         self.plot_dict[plot_name] = hist2(plot_name, *args, **kwargs)
+
+    def add_roc(self, plot_name, *args, **kwargs):
+        self.plot_dict[plot_name] = roc(plot_name, *args, **kwargs)
 
     def plot_all(self, refresh, cache):
         for key,plot in self.plot_dict.items():
