@@ -8,13 +8,15 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from uproot_methods import TLorentzVector as LV
 from uproot_wrapper import event_iterator
-from tagger_methods import Tagger
+from tagger_methods import Tagger_options as Tag
 from plotting_utils import plot_wrapper
 import analysis_utils as autils
 
 #_cvv_vals = [0, 0.5, 1, 1.5, 2, 4]
 _cvv_vals = [1]
-_plots = plot_wrapper(['Deta_of_VBF_mjjmax_mass'])
+_blacklist = ['Deta_of_VBF_mjjmax_mass']
+#_blacklist = []
+_plots = plot_wrapper(_blacklist)
 
 _plots.add_hist1('pt', '$p_T$ Distribution of VBF Candidate Jets',
         [''], 100, (0,200), xlabel='$p_T$ (GeV)', normalize=False)
@@ -24,11 +26,12 @@ _plots.add_hist1('eta', '$\eta$ Distribution of VBF Candidate Jets',
 for mass in [0, 1000]:
     _plots.add_hist1(f'Deta_of_VBF_mjjmax_mass{mass}', '$\Delta \eta$ Distribution of VBF Jets w/ $M_{jj}>$'f'{mass} GeV',
             [ cvv for cvv in _cvv_vals ],
-            40, (2,10), xlabel='$\Delta \eta$', normalize=False, 
+            40, (0,10), xlabel='$\Delta \eta$', normalize=False, 
             labelmaker=lambda cvv:'$\kappa_{2V} = '+str(cvv)+'$' )
 
-roc_curves = ['mjjmax']
-_plots.add_roc('rocs', 'Efficiency/Rejection Performance of Various Taggers', roc_curves)
+_taggers = ['mjjmax', 'Deta3_mjjmax']
+_plots.add_roc('rocs', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators', _taggers)
+#_plots.add_roc('rocs_bare', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators,\nWithout Normalization', roc_curves, normalize=False)
 
 
 _Nevents = 10000
@@ -49,16 +52,18 @@ make_nano_vector = lambda jet: LV.from_ptetaphie(jet['vbf_candidates_pT'], jet['
 def process_events(events, bgd=False, cvv_value=-1):
     num_jets = [0]*20
     for event in events:
+        weight = event['mc_sf'][0]
         vecs = [ make_nano_vector(jet) for jet in event['jets'] ]
         num_jets[len(vecs)] += 1
 
-        if len(vecs) > 1:
-            _plots['rocs'].fill( Tagger['mjjmax'](vecs), bgd, 'mjjmax' )
+        if len(vecs) > 1 and (cvv_value == 1 or bgd):
+            for tagger in _taggers: _plots['rocs'].fill( Tag[tagger](vecs), bgd, tagger)
+            #_plots['rocs_bare'].fill( Tagger[tag](vecs), bgd, tag, weight=weight)
 
         if not bgd and len(vecs) > 1:
             deta_mjj_list = [ ( (i+j).mass, abs(i.eta - j.eta) ) for i,j in itertools.combinations(vecs, 2) ]
             deta_mjj_list.sort() # Sort by mjj
-            Deta_filtered = [ (mass,Deta) for mass, Deta in deta_mjj_list if Deta > 3 ]
+            Deta_filtered = [ (mass,Deta) for mass, Deta in deta_mjj_list ] #if Deta > 3 ]
             for mass in [0,1000]:
                 mass_filtered = [ pair for pair in Deta_filtered if pair[0] > mass ]
                 if len(mass_filtered) > 0: 

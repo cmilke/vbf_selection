@@ -125,7 +125,7 @@ class hist2():
 class roc():
     def __init__(self, plot_name, plot_title, overlay_list, **kwargs):
         arg_vals = { 
-            'legend_args':{}, 'labelmaker':None
+            'legend_args':{}, 'labelmaker':None, 'normalize': True, 'scale_to_y': False
         }
         self.plot_name = plot_name
         self.plot_title = plot_title
@@ -135,9 +135,9 @@ class roc():
         for kw,arg in arg_vals.items(): setattr(self, kw, arg)
 
 
-    def fill(self, value, bgd, *label):
+    def fill(self, value, bgd, *label, weight=1):
         key = list(self.data)[0] if len(label) == 0 else label[0]
-        self.data[key][bgd].append(value)
+        self.data[key][bgd].append( (value,weight) )
 
 
     def generate_plot(self, refresh, cache):
@@ -147,19 +147,37 @@ class roc():
 
         roc_ax = plt.subplots()
         for label, (signal,background) in self.data.items():
-            signal.sort()
-            background.sort()
-            num_signal = len(signal)
-            num_background = len(background)
+            signal = numpy.array(signal)
+            background = numpy.array(background)
+            signal = signal[ signal[:,0].argsort() ]
+            background = background[ background[:,0].argsort() ]
+            total_signal = signal.sum(axis=0)[1]
+            total_background = background.sum(axis=0)[1]
 
-            efficiency = []
-            rejection = []
+            efficiency_list = []
+            rejection_list = []
+            #efficiency_list = [total_signal]
+            #rejection_list = [0]
+            #if self.normalize: efficiency_list[0] = 1
             bgd_index = 0
-            for sig_index, sig_val in enumerate(signal):
-                efficiency.append( 1 - sig_index / num_signal )
-                while bgd_index < num_background and background[bgd_index] < sig_val: bgd_index+=1
-                rejection.append( bgd_index / num_background )
-            plt.plot(efficiency, rejection, label=label, linewidth=1)
+            summed_rejection = 0
+            summed_efficiency = total_signal
+            for sig_val, sig_weight in signal:
+                summed_efficiency -= sig_weight
+                while bgd_index < len(background) and background[bgd_index][0] < sig_val:
+                    summed_rejection += background[bgd_index][1]
+                    bgd_index+=1
+
+                efficiency = summed_efficiency
+                rejection = summed_rejection
+                if self.normalize:
+                    efficiency /= total_signal
+                    rejection /= total_background
+
+                efficiency_list.append(efficiency)
+                rejection_list.append(rejection)
+
+            plt.plot(efficiency_list, rejection_list, label=label, linewidth=1)
         plt.legend(prop={'size':6})
         plt.xlabel('Signal Efficiency')
         plt.ylabel('Background Rejection')
@@ -184,11 +202,19 @@ class plot_wrapper():
     def add_roc(self, plot_name, *args, **kwargs):
         self.plot_dict[plot_name] = roc(plot_name, *args, **kwargs)
 
+    #def add_roc_group(self, plot_name, *args, **kwargs):
+    #    self.plot_dict[plot_name] = roc(plot_name, *args, **kwargs)
+    #    self.plot_dict[plot_name+'_Yscaled'] = roc(plot_name, *args, scale_to_y=True, **kwargs)
+    #    self.plot_dict[plot_name+'_bare'] = roc(plot_name, *args, normalize=False, **kwargs)
+
     def plot_all(self, refresh, cache):
         for key,plot in self.plot_dict.items():
+            blacklisted = False
             for substring in self.blacklist:
-                if substring in key: continue
-            plot.generate_plot(refresh, cache)
+                if substring in key:
+                    blacklisted = True
+                    break
+            if not blacklisted: plot.generate_plot(refresh, cache)
 
     def __getitem__(self, plot_name):
         return self.plot_dict[plot_name]

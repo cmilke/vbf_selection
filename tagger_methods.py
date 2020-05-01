@@ -4,60 +4,64 @@ import itertools
 import random
 
 
-# Selectors
+###########
+# Utility #
+###########
 
-def all_jets(vectors):
-    return vectors
-
-
-def leading_pt_jets(event): #TODO
-    return ( event.jets[0], event.jets[1] )
+make_pairs = lambda vectors: [ (vec_i, vec_j) for vec_i, vec_j in itertools.combinations(vectors, 2) ]
 
 
-def mjj_rank(rank, vectors):
-    invariant_mass_pairs = [ ( (vec_i+vec_j).mass, vec_i, vec_j) for vec_i, vec_j in itertools.combinations(vectors, 2) ]
-    invariant_mass_pairs.sort(reverse=True, key=lambda pair: pair[0]) #sort by invariant mass
-    return invariant_mass_pairs[rank][1:]
+###########
+# Filters #
+###########
+
+delta_eta_cut = lambda d_eta_cut, pairs: [ pair for pair in pairs if abs(pair[0].eta - pair[1].eta) > d_eta_cut ]
+all_pairs = lambda pairs: pairs
 
 
-def delta_eta_rank(rank, event): #TODO
-    delta_eta_pairs = [ ( abs(jet_i.eta()-jet_j.eta()), jet_i, jet_j) for jet_i, jet_j in itertools.combinations(event.jets, 2) ]
-    delta_eta_pairs.sort(reverse=True, key=lambda t: t[0]) #sort by delta eta
-    return delta_eta_pairs[rank][1:]
+#############
+# Selectors #
+#############
+
+mjj_rank = lambda rank, pairs: sorted(pairs, key=lambda pair: (pair[0]+pair[1]).mass, reverse=True)[rank]
+delta_eta_rank = lambda rank, pairs: sorted(pairs, key=lambda pair: abs(pair[0].eta-pair[1].eta), reverse=True)[rank]
+random_jets = lambda pairs: random.sample(pairs, 1)
 
 
-def random_jets(event): #TODO
-    return random.sample(event.jets, 2)
+##################
+# Discriminators #
+##################
+
+# Pair Taggers
+mjj = lambda pair: (pair[0] + pair[1]).mass
+
+def std_tagger( filter_func, selector, discriminator, vectors ):
+    viable_pairs = filter_func( make_pairs(vectors) )
+    if len(viable_pairs) == 0:
+        return -999
+    else:
+        return discriminator( selector(viable_pairs) )
 
 
-# Discriminators
-
-def mjj(vectors):
-    return (vectors[0] + vectors[1]).mass
-
-def total_invariant_mass(event): #TODO
+# General Taggers
+def total_invariant_mass(vectors):
     total_vector = TLorentzVector(0,0,0,0)
-    for jet in event.jets: total_vector += jet.vector()
+    for vec in vectors: total_vector += vec
     return total_vector.mass
 
-def stdTag(selector, discriminator, vectors):
-        selected_vectors = selector(vectors)
-        return discriminator(selected_vectors)
 
-selector_options = {
-    'all': all_jets,
-    'maxpt': leading_pt_jets,
-    'mjjmax': partial(mjj_rank, 0),
-    'mjjSL': partial(mjj_rank, 1),
-    'Deta_max': partial(delta_eta_rank, 0),
-    'random': random_jets
-}
+#Tagger_options = {
+#	'mjN': total_invariant_mass, #TODO
+#	'mjj_from_leading_pt': partial(stdTag, leading_pt_jets, mjj), #TODO
+#	'mjjmax': partial( stdTag, partial(mjj_rank,0), mjj),
+#    'Deta_mjjmax': 
+#	'mjjSL': partial( stdTag, partial(mjj_rank,1), mjj), #TODO
+#	'mjj_of_random_jets': partial( stdTag, random_jets, mjj) #TODO
+#}
 
 
-Tagger = {
+Tagger_options = {
 	'mjN': total_invariant_mass,
-	'mjj_from_leading_pt': partial(stdTag, leading_pt_jets, mjj),
-	'mjjmax': partial( stdTag, partial(mjj_rank,0), mjj),
-	'mjjSL': partial( stdTag, partial(mjj_rank,1), mjj),
-	'mjj_of_random_jets': partial( stdTag, random_jets, mjj)
+	'mjjmax': partial( std_tagger, all_pairs, partial(mjj_rank,0), mjj ),
+    'Deta3_mjjmax': partial( std_tagger, partial(delta_eta_cut,3) , partial(mjj_rank,0), mjj )
 }
