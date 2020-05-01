@@ -7,7 +7,8 @@ from matplotlib import pyplot as plt
 
 
 _output_dir = 'figures/'
-_output_ext = '.png'
+#_output_ext = '.png'
+_output_ext = '.pdf'
 
 
 class hist1():
@@ -125,14 +126,21 @@ class hist2():
 class roc():
     def __init__(self, plot_name, plot_title, overlay_list, **kwargs):
         arg_vals = { 
-            'legend_args':{}, 'labelmaker':None, 'normalize': True, 'scale_to_y': False
+            'legend_args':{}, 'labelmaker':None, 'normalize': True, 'scale_to_y': False,
+            'zooms': []
         }
         self.plot_name = plot_name
         self.plot_title = plot_title
         self.data = { label:([],[]) for label in overlay_list }
+        self.marker_requests = { label:[] for label in overlay_list }
 
         arg_vals.update(kwargs)
         for kw,arg in arg_vals.items(): setattr(self, kw, arg)
+
+
+    def add_marker(self, label, marker_value, **kwargs):
+        if 'annotation' not in kwargs: kwargs['annotation'] = ''
+        self.marker_requests[label].append( (marker_value, kwargs) )
 
 
     def fill(self, value, bgd, *label, weight=1):
@@ -146,7 +154,11 @@ class roc():
         else: self.data = cache[self.plot_name]
 
         roc_ax = plt.subplots()
+        set_markers = []
         for label, (signal,background) in self.data.items():
+            pending_markers = self.marker_requests[label]
+            pending_markers.sort(reverse=True) # This way I can use "pop"
+
             signal = numpy.array(signal)
             background = numpy.array(background)
             signal = signal[ signal[:,0].argsort() ]
@@ -176,6 +188,10 @@ class roc():
 
                 efficiency_list.append(efficiency)
                 rejection_list.append(rejection)
+                if len(pending_markers) != 0 and sig_val > pending_markers[-1][0]:
+                    location = (efficiency, rejection)
+                    kwargs = pending_markers.pop()[1]
+                    set_markers.append( (location, kwargs) )
 
             plt.plot(efficiency_list, rejection_list, label=label, linewidth=1)
         plt.legend(prop={'size':6})
@@ -183,7 +199,16 @@ class roc():
         plt.ylabel('Background Rejection')
         plt.title(self.plot_title)
         plt.grid(True)
+        for location, kwargs in set_markers:
+            annotation_text = kwargs.pop('annotation')
+            plt.annotate(annotation_text, xy=location, fontsize='x-small')
+            plt.plot(*location, **kwargs)
+
         plt.savefig(_output_dir+self.plot_name+_output_ext)
+        for index, (xlim, ylim) in enumerate(self.zooms):
+            plt.xlim(*xlim)
+            plt.ylim(*ylim)
+            plt.savefig(_output_dir+self.plot_name+f'_zoom{index}'+_output_ext)
         plt.close()
 
 

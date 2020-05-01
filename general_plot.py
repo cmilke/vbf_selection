@@ -29,9 +29,10 @@ for mass in [0, 1000]:
             40, (0,10), xlabel='$\Delta \eta$', normalize=False, 
             labelmaker=lambda cvv:'$\kappa_{2V} = '+str(cvv)+'$' )
 
-_taggers = ['mjjmax', 'Deta3_mjjmax']
-_plots.add_roc('rocs', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators', _taggers)
+_taggers = ['mjjmax', 'Deta3_mjjmax', 'mjN']
+_plots.add_roc('rocs', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators', _taggers, zooms=[((0,1),(0.8,1))])
 #_plots.add_roc('rocs_bare', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators,\nWithout Normalization', roc_curves, normalize=False)
+_plots['rocs'].add_marker('Deta3_mjjmax', 1000, annotation='1000 GeV', marker='*', color='red')
 
 
 _Nevents = 10000
