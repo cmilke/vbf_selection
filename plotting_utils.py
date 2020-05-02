@@ -123,7 +123,7 @@ class hist2():
 
 
 
-class roc():
+class lazy_roc():
     def __init__(self, plot_name, plot_title, overlay_list, **kwargs):
         arg_vals = { 
             'legend_args':{}, 'labelmaker':None, 'normalize': True, 'scale_to_y': False,
@@ -155,9 +155,10 @@ class roc():
 
         roc_ax = plt.subplots()
         set_markers = []
+
         for label, (signal,background) in self.data.items():
             pending_markers = self.marker_requests[label]
-            pending_markers.sort(reverse=True) # This way I can use "pop"
+            pending_markers.sort(reverse=True)
 
             signal = numpy.array(signal)
             background = numpy.array(background)
@@ -213,6 +214,78 @@ class roc():
 
 
 
+class roc():
+    def __init__(self, plot_name, plot_title, overlay_list, **kwargs):
+        arg_vals = { 
+            'legend_args':{}, 'labelmaker':None, 'normalize': True, 'scale_to_y': False,
+            'zooms': []
+        }
+        self.plot_name = plot_name
+        self.plot_title = plot_title
+        self.data = { label:([],[]) for label in overlay_list }
+        self.marker_requests = { label:[] for label in overlay_list }
+
+        arg_vals.update(kwargs)
+        for kw,arg in arg_vals.items(): setattr(self, kw, arg)
+
+
+    def add_marker(self, label, marker_value, **kwargs):
+        if 'annotation' not in kwargs: kwargs['annotation'] = ''
+        self.marker_requests[label].append( (marker_value, kwargs) )
+
+
+    def fill(self, value, bgd, *label, weight=1):
+        key = list(self.data)[0] if len(label) == 0 else label[0]
+        self.data[key][bgd].append( (value,weight) )
+
+
+    def generate_plot(self, refresh, cache):
+        print('Plotting '+self.plot_name)
+        if refresh: cache[self.plot_name] = self.data
+        else: self.data = cache[self.plot_name]
+
+        roc_ax = plt.subplots()
+        marker_list = []
+
+        num_bins = 100
+        for label, (signal,background) in self.data.items():
+            signal = numpy.array(signal)
+            background = numpy.array(background)
+            signal = signal[ signal[:,0].argsort() ].transpose()
+            background = background[ background[:,0].argsort() ].transpose()
+
+            maximum = max( signal[0][-1], background[0][-1] )+1
+            minimum = min( signal[0][0], background[0][0] )-1
+            efficiency,bins = numpy.histogram( signal[0], weights=signal[1], bins=num_bins, range=(minimum, maximum) )
+            rejection = numpy.histogram( background[0], weights=background[1], bins=num_bins, range=(minimum, maximum) )[0]
+            efficiency = ( efficiency/efficiency.sum() )[::-1].cumsum()[::-1]
+            rejection = ( rejection/rejection.sum() ).cumsum()
+            plt.plot(efficiency, rejection, label=label, linewidth=1)
+
+            pending_markers = self.marker_requests[label]
+            pending_markers.sort(reverse=True)
+            #for marker in pending_markers:
+
+
+        plt.legend(prop={'size':6})
+        plt.xlabel('Signal Efficiency')
+        plt.ylabel('Background Rejection')
+        plt.title(self.plot_title)
+        plt.grid(True)
+        for location, kwargs in marker_list:
+            annotation_text = kwargs.pop('annotation')
+            plt.annotate(annotation_text, xy=location, fontsize='x-small')
+            plt.plot(*location, **kwargs)
+
+        plt.savefig(_output_dir+self.plot_name+_output_ext)
+        for index, (xlim, ylim) in enumerate(self.zooms):
+            plt.xlim(*xlim)
+            plt.ylim(*ylim)
+            plt.savefig(_output_dir+self.plot_name+f'_zoom{index}'+_output_ext)
+        plt.close()
+
+
+
 class plot_wrapper():
     def __init__(self, blacklist):
         self.plot_dict = {}
@@ -226,11 +299,6 @@ class plot_wrapper():
 
     def add_roc(self, plot_name, *args, **kwargs):
         self.plot_dict[plot_name] = roc(plot_name, *args, **kwargs)
-
-    #def add_roc_group(self, plot_name, *args, **kwargs):
-    #    self.plot_dict[plot_name] = roc(plot_name, *args, **kwargs)
-    #    self.plot_dict[plot_name+'_Yscaled'] = roc(plot_name, *args, scale_to_y=True, **kwargs)
-    #    self.plot_dict[plot_name+'_bare'] = roc(plot_name, *args, normalize=False, **kwargs)
 
     def plot_all(self, refresh, cache):
         for key,plot in self.plot_dict.items():

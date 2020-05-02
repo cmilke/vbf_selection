@@ -23,8 +23,12 @@ all_pairs = lambda pairs: pairs
 # Selectors #
 #############
 
-mjj_rank = lambda rank, pairs: sorted(pairs, key=lambda pair: (pair[0]+pair[1]).mass, reverse=True)[rank]
-delta_eta_rank = lambda rank, pairs: sorted(pairs, key=lambda pair: abs(pair[0].eta-pair[1].eta), reverse=True)[rank]
+def feature_rank(rank, pairs, key):
+    pair_ranking = sorted(pairs, key=key, reverse=True)
+    if rank > len(pair_ranking)-1: return pair_ranking[-1]
+    else: return pair_ranking[rank]
+
+mjj_rank = lambda rank, pairs: feature_rank(rank, pairs, lambda pair: (pair[0]+pair[1]).mass)
 random_jets = lambda pairs: random.sample(pairs, 1)
 
 
@@ -35,13 +39,12 @@ random_jets = lambda pairs: random.sample(pairs, 1)
 # Pair Taggers
 mjj = lambda pair: (pair[0] + pair[1]).mass
 
-def std_tagger( filter_func, selector, discriminator, vectors ):
+def pair_tagger( filter_func, selector, discriminator, vectors ):
     viable_pairs = filter_func( make_pairs(vectors) )
     if len(viable_pairs) == 0:
-        return -999
+        return -1
     else:
         return discriminator( selector(viable_pairs) )
-
 
 # General Taggers
 def total_invariant_mass(vectors):
@@ -50,18 +53,11 @@ def total_invariant_mass(vectors):
     return total_vector.mass
 
 
-#Tagger_options = {
-#	'mjN': total_invariant_mass, #TODO
-#	'mjj_from_leading_pt': partial(stdTag, leading_pt_jets, mjj), #TODO
-#	'mjjmax': partial( stdTag, partial(mjj_rank,0), mjj),
-#    'Deta_mjjmax': 
-#	'mjjSL': partial( stdTag, partial(mjj_rank,1), mjj), #TODO
-#	'mjj_of_random_jets': partial( stdTag, random_jets, mjj) #TODO
-#}
 
 
 Tagger_options = {
 	'mjN': total_invariant_mass,
-	'mjjmax': partial( std_tagger, all_pairs, partial(mjj_rank,0), mjj ),
-    'Deta3_mjjmax': partial( std_tagger, partial(delta_eta_cut,3) , partial(mjj_rank,0), mjj )
+	'mjjmax': partial( pair_tagger, all_pairs, partial(mjj_rank,0), mjj ),
+    'mjjSL': partial( pair_tagger, all_pairs, partial(mjj_rank,1), mjj ),
+    'Deta3_mjjmax': partial( pair_tagger, partial(delta_eta_cut,3) , partial(mjj_rank,0), mjj )
 }

@@ -29,10 +29,14 @@ for mass in [0, 1000]:
             40, (0,10), xlabel='$\Delta \eta$', normalize=False, 
             labelmaker=lambda cvv:'$\kappa_{2V} = '+str(cvv)+'$' )
 
-_taggers = ['mjjmax', 'Deta3_mjjmax', 'mjN']
-_plots.add_roc('rocs', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators', _taggers, zooms=[((0,1),(0.8,1))])
-#_plots.add_roc('rocs_bare', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators,\nWithout Normalization', roc_curves, normalize=False)
-_plots['rocs'].add_marker('Deta3_mjjmax', 1000, annotation='1000 GeV', marker='*', color='red')
+_taggers = ['mjjmax', 'mjjSL', 'Deta3_mjjmax', 'mjN']
+_plots.add_roc('rocs', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators', _taggers, zooms=[((0,1),(0.8,1))] )
+_plots.add_roc('rocs_2jet', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators\nFor Events with 2 VBF Candidate Jets', _taggers)
+_plots.add_roc('rocs_3jet', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators\nFor Events with 3 or More VBF Candidate Jets', _taggers)
+
+#_plots['rocs'].add_marker('mjjSL', 735, annotation='735 GeV', marker='*', color='red')
+#_plots['rocs_2jet'].add_marker('mjjSL', 735, annotation='735 GeV', marker='*', color='red')
+#_plots['rocs_3jet'].add_marker('mjjSL', 735, annotation='735 GeV', marker='*', color='red')
 
 
 _Nevents = 10000
@@ -58,8 +62,11 @@ def process_events(events, bgd=False, cvv_value=-1):
         num_jets[len(vecs)] += 1
 
         if len(vecs) > 1 and (cvv_value == 1 or bgd):
-            for tagger in _taggers: _plots['rocs'].fill( Tag[tagger](vecs), bgd, tagger)
-            #_plots['rocs_bare'].fill( Tagger[tag](vecs), bgd, tag, weight=weight)
+            for tagger in _taggers:
+                tag_value = Tag[tagger](vecs)
+                _plots['rocs'].fill( tag_value, bgd, tagger)
+                if len(vecs) == 2: _plots['rocs_2jet'].fill( tag_value, bgd, tagger)
+                else: _plots['rocs_3jet'].fill( tag_value, bgd, tagger)
 
         if not bgd and len(vecs) > 1:
             deta_mjj_list = [ ( (i+j).mass, abs(i.eta - j.eta) ) for i,j in itertools.combinations(vecs, 2) ]
@@ -75,9 +82,9 @@ def process_events(events, bgd=False, cvv_value=-1):
             for v in vecs:
                 _plots['pt'].fill(v.pt)
                 _plots['eta'].fill(v.eta)
-    jet_counts = numpy.array(num_jets[2:10])
+    jet_counts = numpy.array(num_jets[0:10])
     #print(jet_counts)
-    #for count,frac in enumerate(jet_counts/jet_counts.sum()): print(f'{count+2}: {frac*100:4.1f}')
+    #for count,frac in enumerate(jet_counts/jet_counts.sum()): print(f'{count}: {frac*100:4.1f}')
 
 
 
