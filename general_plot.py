@@ -14,8 +14,19 @@ import analysis_utils as autils
 
 #_cvv_vals = [0, 0.5, 1, 1.5, 2, 4]
 _cvv_vals = [1]
-_blacklist = ['Deta_of_VBF_mjjmax_mass']
-#_blacklist = []
+#_cvv_vals = [0]
+_VBF_samples = {
+#    0  : 'MC16d_VBF-HH-bbbb_cvv0',
+#    0.5: 'MC16d_VBF-HH-bbbb_cvv0p5',
+    1  : 'MC16d_VBF-HH-bbbb_cvv1',
+#    1.5: 'MC16d_VBF-HH-bbbb_cvv1p5',
+#    2  : 'MC16d_VBF-HH-bbbb_cvv2',
+#    4  : 'MC16d_VBF-HH-bbbb_cvv4'
+}
+_blacklist = [
+    'Deta_of_VBF_mjjmax_mass',
+    'rocs_2jet', 'rocs_3jet'
+]
 _plots = plot_wrapper(_blacklist)
 
 _plots.add_hist1('pt', '$p_T$ Distribution of VBF Candidate Jets',
@@ -34,13 +45,11 @@ _plots.add_roc('rocs', 'Efficiency/Rejection Performance of Various VBF/ggF Disc
 _plots.add_roc('rocs_2jet', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators\nFor Events with 2 VBF Candidate Jets', _taggers)
 _plots.add_roc('rocs_3jet', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators\nFor Events with 3 or More VBF Candidate Jets', _taggers)
 
-#_plots['rocs'].add_marker('mjjSL', 735, annotation='735 GeV', marker='*', color='red')
+_plots['rocs'].add_marker('Deta3_mjjmax', 1000, annotation='1000 GeV', marker='.', color='green')
+_plots['rocs'].add_marker('mjjmax', 1000, annotation='1000 GeV', marker='.', color='blue')
 #_plots['rocs_2jet'].add_marker('mjjSL', 735, annotation='735 GeV', marker='*', color='red')
 #_plots['rocs_3jet'].add_marker('mjjSL', 735, annotation='735 GeV', marker='*', color='red')
 
-
-_Nevents = 10000
-_VBF_samples = { cvv_val:sample for cvv_val, sample in zip(_cvv_vals, autils.sample_list[1:]) }
 
 _output_branches = [
     'run_number', 'event_number', 'mc_sf', 'ntag', 'njets',
@@ -88,12 +97,12 @@ def process_events(events, bgd=False, cvv_value=-1):
 
 
 
-def extract_data():
+def extract_data(num_events):
     for cvv_value, vbf_sample in _VBF_samples.items():
-        sig_events = event_iterator(autils.output_datasets[vbf_sample], 'VBF_tree', _output_branches, _Nevents)
+        sig_events = event_iterator(autils.output_datasets[vbf_sample], 'VBF_tree', _output_branches, num_events)
         process_events(sig_events, cvv_value=cvv_value)
 
-    bgd_events = event_iterator(autils.output_datasets['MC16d_ggF-HH-bbbb'], 'VBF_tree', _output_branches, _Nevents)
+    bgd_events = event_iterator(autils.output_datasets['MC16d_ggF-HH-bbbb'], 'VBF_tree', _output_branches, num_events)
     process_events(bgd_events, bgd=True)
 
 
@@ -102,12 +111,14 @@ def draw_distributions():
     parser = argparse.ArgumentParser()
     parser.add_argument( "-r", required = False, default = False, action = 'store_true', help = "Refresh cache",) 
     parser.add_argument( "-p", required = False, default = False, action = 'store_true', help = "Print only, do not plot",) 
+    parser.add_argument( "-n", required = False, default = 1000, type=int, help = "How many events to run over",)
     args = parser.parse_args()
 
     refresh = args.r
+    num_events = args.n if args.n > 0 else None
     cache = {}
     cache_file = '.cache/general_plots.p'
-    if refresh: extract_data()
+    if refresh: extract_data(num_events)
     else: cache = pickle.load( open(cache_file, 'rb') )
     if not args.p:
         print('Data extracted, plotting...')

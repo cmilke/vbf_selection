@@ -4,12 +4,9 @@ import os
 
 sample_list = [
     'MC16d_ggF-HH-bbbb',
-    'MC16d_VBF-HH-bbbb_cvv0',
-    'MC16d_VBF-HH-bbbb_cvv0p5',
-    'MC16d_VBF-HH-bbbb_cvv1',
-    'MC16d_VBF-HH-bbbb_cvv1p5',
-    'MC16d_VBF-HH-bbbb_cvv2',
-    'MC16d_VBF-HH-bbbb_cvv4'
+    'MC16d_VBF-HH-bbbb_cvv0', 'MC16d_VBF-HH-bbbb_cvv0p5',
+    'MC16d_VBF-HH-bbbb_cvv1', 'MC16d_VBF-HH-bbbb_cvv1p5',
+    'MC16d_VBF-HH-bbbb_cvv2', 'MC16d_VBF-HH-bbbb_cvv4'
 ]
 
 input_dir = '../input/'
