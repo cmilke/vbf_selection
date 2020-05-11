@@ -29,6 +29,8 @@ _blacklist = [
 ]
 _plots = plot_wrapper(_blacklist)
 
+_plots.add_hist1('num_VBF_candidates', 'Number of Available VBF Candidates',
+        [''], 8, (0,8), xlabel='Number of Jets', normalize=False)
 _plots.add_hist1('pt', '$p_T$ Distribution of VBF Candidate Jets',
         [''], 100, (0,200), xlabel='$p_T$ (GeV)', normalize=False)
 _plots.add_hist1('eta', '$\eta$ Distribution of VBF Candidate Jets',
@@ -69,10 +71,12 @@ def process_events(events, bgd=False, cvv_value=-1):
         weight = event['mc_sf'][0]
         vecs = [ make_nano_vector(jet) for jet in event['jets'] ]
         num_jets[len(vecs)] += 1
+        num_candidates = event['n_vbf_candidates']
+        _plots['num_VBF_candidates'].fill(num_candidates)
 
-        if len(vecs) > 1 and (cvv_value == 1 or bgd):
+        if num_candidates > 1 and (cvv_value == 1 or bgd):
             for tagger in _taggers:
-                tag_value = Tag[tagger](vecs)
+                tag_value = Tag[tagger](num_candidates, vecs)
                 _plots['rocs'].fill( tag_value, bgd, tagger)
                 if len(vecs) == 2: _plots['rocs_2jet'].fill( tag_value, bgd, tagger)
                 else: _plots['rocs_3jet'].fill( tag_value, bgd, tagger)
@@ -111,11 +115,11 @@ def draw_distributions():
     parser = argparse.ArgumentParser()
     parser.add_argument( "-r", required = False, default = False, action = 'store_true', help = "Refresh cache",) 
     parser.add_argument( "-p", required = False, default = False, action = 'store_true', help = "Print only, do not plot",) 
-    parser.add_argument( "-n", required = False, default = 1000, type=int, help = "How many events to run over",)
+    parser.add_argument( "-n", required = False, default = 1e4, type=float, help = "How many events to run over",)
     args = parser.parse_args()
 
     refresh = args.r
-    num_events = args.n if args.n > 0 else None
+    num_events = int(args.n) if args.n > 0 else None
     cache = {}
     cache_file = '.cache/general_plots.p'
     if refresh: extract_data(num_events)
