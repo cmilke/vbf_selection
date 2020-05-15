@@ -8,9 +8,10 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from uproot_methods import TLorentzVector as LV
 from uproot_wrapper import event_iterator
-from tagger_methods import Tagger_options as Tag
 from plotting_utils import plot_wrapper
 import analysis_utils as autils
+from tagger_methods import Tagger_options as Tag
+
 
 #_cvv_vals = [0, 0.5, 1, 1.5, 2, 4]
 _cvv_vals = [1]
@@ -42,7 +43,9 @@ for mass in [0, 1000]:
             40, (0,10), xlabel='$\Delta \eta$', normalize=False, 
             labelmaker=lambda cvv:'$\kappa_{2V} = '+str(cvv)+'$' )
 
-_taggers = ['mjjmax', 'mjjSL', 'Deta3_mjjmax', 'mjjmax_Deta3', 'mjN']
+_simple_taggers = ['mjjmax', 'mjjSL', 'Deta3_mjjmax', 'mjjmax_Deta3', 'mjN']
+_taggers = _simple_taggers + ['BDT']
+
 _plots.add_roc('rocs', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
 _plots.add_roc('rocs_weighted', 'Weighted Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
 _plots.add_roc('rocs_2jet', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators\nFor Events with 2 VBF Candidate Jets', _taggers)
@@ -70,7 +73,7 @@ make_nano_vector = lambda jet: LV.from_ptetaphie(jet['vbf_candidates_pT'], jet['
 def process_events(events, bgd=False, cvv_value=-1):
     basic_efficiency_count = [0,0,0]
     num_jets = [0]*20
-    for event in events:
+    for event_index, event in enumerate(events):
         weight = event['mc_sf'][0]
         vecs = [ make_nano_vector(jet) for jet in event['jets'] ]
         num_jets[len(vecs)] += 1
@@ -78,15 +81,20 @@ def process_events(events, bgd=False, cvv_value=-1):
         _plots['num_VBF_candidates'].fill(num_candidates)
 
         basic_efficiency_count[0] += weight
+        # Handle Roc Curves
         if len(vecs) > 1 and (cvv_value == 1 or bgd):
             basic_efficiency_count[1] += weight
-            for tagger in _taggers:
-                tag_value = Tag[tagger](num_candidates, vecs)
+            # Deal with Simple Taggers
+            for tagger in _simple_taggers:
+                tag_value = Tag[tagger](vecs)
                 _plots['rocs'].fill( tag_value, bgd, tagger)
                 _plots['rocs_weighted'].fill( tag_value, bgd, tagger, weight=weight)
                 if len(vecs) == 2: _plots['rocs_2jet'].fill( tag_value, bgd, tagger)
                 else: _plots['rocs_3jet'].fill( tag_value, bgd, tagger)
                 if tagger == 'mjjmax_Deta3' and tag_value > 1000: basic_efficiency_count[2] += weight
+            # Deal with the not simple taggers
+            _plots['rocs'].fill( Tag['BDT'](cvv_value, event_index), bgd, 'BDT')
+            _plots['rocs_weighted'].fill( Tag['BDT'](cvv_value, event_index), bgd, 'BDT')
 
         if not bgd and len(vecs) > 1:
             deta_mjj_list = [ ( (i+j).mass, abs(i.eta - j.eta) ) for i,j in itertools.combinations(vecs, 2) ]
