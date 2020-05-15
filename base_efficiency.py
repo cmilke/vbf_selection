@@ -1,13 +1,13 @@
 import uproot
 import numpy
 import matplotlib
-#matplotlib.use('Agg')
-matplotlib.use('Qt5Agg')
+matplotlib.use('Agg')
+#matplotlib.use('Qt5Agg')
 from matplotlib import pyplot as plt
 
 
 def get_efficiency(file_base, hist_name, cut1, cut2):
-    output_dir = '/home/cmilke/Documents/slac_local/output/'
+    output_dir = '/home/cmilke/Documents/slac_local/output/V4/output_MC16d_'
     directory = uproot.open(output_dir+file_base+'.root')
 
     hist = directory[hist_name]
@@ -19,16 +19,13 @@ def get_efficiency(file_base, hist_name, cut1, cut2):
 
 def main():
     #plt.xticks(ticks=numpy.arange(0.5,8.5,1), labels=['ggF', '0', '0.5', '1', '1.5', '2', '4'])
-    ggF_base = 'ggF'
-    VBF_bases = { val:'VBF_cvv'+str(val).replace('.','p') for val in [ 0, 0.5, 1, 1.5, 2, 4 ] }
+    ggF_base = 'ggF-HH-bbbb'
+    VBF_bases = { val:'VBF-HH-bbbb_cvv'+str(val).replace('.','p') for val in [ 0, 0.5, 1, 1.5, 2, 4 ] }
 
     hist_name_list = [ ('TwoTagCutflow', '2tag'), ('FourTagCutflow','4tag') ]
+    #hist_name_list = [  ('FourTagCutflow','4tag') ]
     cut_list = [ 
-        ('Valid', 'VBF pTsum'),
-        ('Valid', 'VBF Pairs'),
-        ('VBF Pairs', 'VBF dEta'),
-        ('VBF dEta', 'VBF mjj'),
-        ('VBF mjj', 'VBF pTsum')
+        ('6 jets, pT > 30 GeV', 'VBF mjj'),
     ]
     for cuts in cut_list:
         print(cuts)

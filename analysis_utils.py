@@ -13,7 +13,7 @@ input_dir = '../input/'
 gen_file_list = lambda link: [ input_dir+link+'/'+ntuple for ntuple in os.listdir(input_dir+link) ]
 input_datasets = { sample:gen_file_list('ntuples_'+sample) for sample in sample_list }
 
-output_dir = '../output/V3/'
+output_dir = '../output/V4/'
 output_datasets = { sample:[output_dir+'output_'+sample+'.root'] for sample in sample_list }
 output_datasets['test'] = ['../output/test.root']
 

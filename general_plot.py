@@ -29,6 +29,8 @@ _blacklist = [
 ]
 _plots = plot_wrapper(_blacklist)
 
+_plots.add_hist1('num_VBF_candidates', 'Number of Available VBF Candidates',
+        [''], 8, (0,8), xlabel='Number of Jets', normalize=False)
 _plots.add_hist1('pt', '$p_T$ Distribution of VBF Candidate Jets',
         [''], 100, (0,200), xlabel='$p_T$ (GeV)', normalize=False)
 _plots.add_hist1('eta', '$\eta$ Distribution of VBF Candidate Jets',
@@ -40,13 +42,15 @@ for mass in [0, 1000]:
             40, (0,10), xlabel='$\Delta \eta$', normalize=False, 
             labelmaker=lambda cvv:'$\kappa_{2V} = '+str(cvv)+'$' )
 
-_taggers = ['mjjmax', 'mjjSL', 'Deta3_mjjmax', 'mjN']
-_plots.add_roc('rocs', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators', _taggers, zooms=[((0,1),(0.8,1))] )
+_taggers = ['mjjmax', 'mjjSL', 'Deta3_mjjmax', 'mjjmax_Deta3', 'mjN']
+_plots.add_roc('rocs', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
+_plots.add_roc('rocs_weighted', 'Weighted Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
 _plots.add_roc('rocs_2jet', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators\nFor Events with 2 VBF Candidate Jets', _taggers)
 _plots.add_roc('rocs_3jet', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators\nFor Events with 3 or More VBF Candidate Jets', _taggers)
 
-_plots['rocs'].add_marker('Deta3_mjjmax', 1000, annotation='1000 GeV', marker='.', color='green')
-_plots['rocs'].add_marker('mjjmax', 1000, annotation='1000 GeV', marker='.', color='blue')
+_plots['rocs'].add_marker('mjjmax_Deta3', 1000, annotation='1000 GeV', marker='.', color='red')
+_plots['rocs_weighted'].add_marker('mjjmax_Deta3', 1000, annotation='1000 GeV', marker='.', color='red')
+#_plots['rocs'].add_marker('mjjmax', 1000, annotation='1000 GeV', marker='.', color='blue')
 #_plots['rocs_2jet'].add_marker('mjjSL', 735, annotation='735 GeV', marker='*', color='red')
 #_plots['rocs_3jet'].add_marker('mjjSL', 735, annotation='735 GeV', marker='*', color='red')
 
@@ -64,18 +68,25 @@ make_nano_vector = lambda jet: LV.from_ptetaphie(jet['vbf_candidates_pT'], jet['
 
 
 def process_events(events, bgd=False, cvv_value=-1):
+    basic_efficiency_count = [0,0,0]
     num_jets = [0]*20
     for event in events:
         weight = event['mc_sf'][0]
         vecs = [ make_nano_vector(jet) for jet in event['jets'] ]
         num_jets[len(vecs)] += 1
+        num_candidates = event['n_vbf_candidates']
+        _plots['num_VBF_candidates'].fill(num_candidates)
 
+        basic_efficiency_count[0] += weight
         if len(vecs) > 1 and (cvv_value == 1 or bgd):
+            basic_efficiency_count[1] += weight
             for tagger in _taggers:
-                tag_value = Tag[tagger](vecs)
+                tag_value = Tag[tagger](num_candidates, vecs)
                 _plots['rocs'].fill( tag_value, bgd, tagger)
+                _plots['rocs_weighted'].fill( tag_value, bgd, tagger, weight=weight)
                 if len(vecs) == 2: _plots['rocs_2jet'].fill( tag_value, bgd, tagger)
                 else: _plots['rocs_3jet'].fill( tag_value, bgd, tagger)
+                if tagger == 'mjjmax_Deta3' and tag_value > 1000: basic_efficiency_count[2] += weight
 
         if not bgd and len(vecs) > 1:
             deta_mjj_list = [ ( (i+j).mass, abs(i.eta - j.eta) ) for i,j in itertools.combinations(vecs, 2) ]
@@ -94,6 +105,7 @@ def process_events(events, bgd=False, cvv_value=-1):
     jet_counts = numpy.array(num_jets[0:10])
     #print(jet_counts)
     #for count,frac in enumerate(jet_counts/jet_counts.sum()): print(f'{count}: {frac*100:4.1f}')
+    print(basic_efficiency_count)
 
 
 
@@ -111,11 +123,11 @@ def draw_distributions():
     parser = argparse.ArgumentParser()
     parser.add_argument( "-r", required = False, default = False, action = 'store_true', help = "Refresh cache",) 
     parser.add_argument( "-p", required = False, default = False, action = 'store_true', help = "Print only, do not plot",) 
-    parser.add_argument( "-n", required = False, default = 1000, type=int, help = "How many events to run over",)
+    parser.add_argument( "-n", required = False, default = 1e4, type=float, help = "How many events to run over",)
     args = parser.parse_args()
 
     refresh = args.r
-    num_events = args.n if args.n > 0 else None
+    num_events = int(args.n) if args.n > 0 else None
     cache = {}
     cache_file = '.cache/general_plots.p'
     if refresh: extract_data(num_events)

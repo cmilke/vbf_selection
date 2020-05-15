@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt
 
 
 _output_dir = 'figures/'
-#_output_ext = '.png'
-_output_ext = '.pdf'
+_output_ext = '.png'
+#_output_ext = '.pdf'
 
 
 class hist1():
@@ -183,11 +183,12 @@ class roc():
             plt.annotate(annotation_text, xy=location, fontsize='x-small')
             plt.plot(*location, **kwargs)
 
-        plt.savefig(_output_dir+self.plot_name+_output_ext)
+        dpi=500
+        plt.savefig(_output_dir+self.plot_name+_output_ext, dpi=dpi)
         for index, (xlim, ylim) in enumerate(self.zooms):
             plt.xlim(*xlim)
             plt.ylim(*ylim)
-            plt.savefig(_output_dir+self.plot_name+f'_zoom{index}'+_output_ext)
+            plt.savefig(_output_dir+self.plot_name+f'_zoom{index}'+_output_ext, dpi=dpi)
         plt.close()
 
 
