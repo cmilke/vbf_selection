@@ -43,7 +43,7 @@ for mass in [0, 1000]:
             40, (0,10), xlabel='$\Delta \eta$', normalize=False, 
             labelmaker=lambda cvv:'$\kappa_{2V} = '+str(cvv)+'$' )
 
-_simple_taggers = ['mjjmax', 'mjjSL', 'Deta3_mjjmax', 'mjjmax_Deta3', 'mjN']
+_simple_taggers = ['mjjmax', 'mjjSL', 'mjN', 'mjjmax_Deta3']
 _taggers = _simple_taggers + ['BDT']
 
 _plots.add_roc('rocs', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
@@ -74,6 +74,7 @@ def process_events(events, bgd=False, cvv_value=-1):
     basic_efficiency_count = [0,0,0]
     num_jets = [0]*20
     for event_index, event in enumerate(events):
+        if event_index < 1000: continue
         weight = event['mc_sf'][0]
         vecs = [ make_nano_vector(jet) for jet in event['jets'] ]
         num_jets[len(vecs)] += 1
@@ -94,7 +95,7 @@ def process_events(events, bgd=False, cvv_value=-1):
                 if tagger == 'mjjmax_Deta3' and tag_value > 1000: basic_efficiency_count[2] += weight
             # Deal with the not simple taggers
             _plots['rocs'].fill( Tag['BDT'](cvv_value, event_index), bgd, 'BDT')
-            _plots['rocs_weighted'].fill( Tag['BDT'](cvv_value, event_index), bgd, 'BDT')
+            _plots['rocs_weighted'].fill( Tag['BDT'](cvv_value, event_index), bgd, 'BDT', weight=weight)
 
         if not bgd and len(vecs) > 1:
             deta_mjj_list = [ ( (i+j).mass, abs(i.eta - j.eta) ) for i,j in itertools.combinations(vecs, 2) ]

@@ -16,39 +16,14 @@ _output_branches = [
 ]
 
 
-#def prepare_tuple(vector_list):
-#    mjj_deta_pair_list = [ ( (i+j).mass, abs(i.eta-j.eta) ) for i,j in itertools.combinations(vector_list, 2) ]
-#    if len(mjj_deta_pair_list) > 0:
-#        mjj_deta_pair_list.sort(reverse=True)
-#        prepared_tuple = (
-#            mjj_deta_pair_list[0][0],
-#            mjj_deta_pair_list[0][1]
-#        )
-#    else:
-#        prepared_tuple = (-1,-1)
-#    return prepared_tuple
-
-
 def prepare_tuple(vector_list):
-    if len(vector_list) > 1:
-        mjj_deta_pair_list = [ ( (i+j).mass, abs(i.eta-j.eta) ) for i,j in itertools.combinations(vector_list, 2) ]
+    mjj_deta_pair_list = [ ( (i+j).mass, abs(i.eta-j.eta) ) for i,j in itertools.combinations(vector_list, 2) ]
+    if len(mjj_deta_pair_list) > 0:
         mjj_deta_pair_list.sort(reverse=True)
-        vector_list.sort(key=lambda vec: vec.pt, reverse=True)
-        prepared_tuple = (
-            vector_list[0].pt,
-            vector_list[0].eta,
-            vector_list[0].phi,
-            vector_list[0].E,
-            vector_list[1].pt,
-            vector_list[1].eta,
-            vector_list[1].phi,
-            vector_list[1].E,
-            mjj_deta_pair_list[0][0],
-            mjj_deta_pair_list[0][1],
-        )
+        leading_pair = mjj_deta_pair_list[0]
+        return leading_pair
     else:
-        prepared_tuple = tuple([-1]*10)
-    return prepared_tuple
+        return (-1,-1)
 
 
 def make_data_tuple(event):
@@ -94,9 +69,9 @@ def train_bdt(dump_event_discriminants):
 
     # Create and fit an AdaBoosted decision tree
     bdt = AdaBoostClassifier(
-        DecisionTreeClassifier(max_depth=10),
+        DecisionTreeClassifier(max_depth=5),
         algorithm="SAMME",
-        n_estimators=300
+        n_estimators=200
     )
 
     bdt.fit(train_feature_array, train_label_array)
@@ -109,9 +84,9 @@ def train_bdt(dump_event_discriminants):
     decision_spread = numpy.histogram(decisions, bins = 1000, range = ( min(decisions), max(decisions) ) )[0]
     spread_factor = numpy.count_nonzero(decision_spread) / len(decision_spread) 
     print('Efficiency: ' + str(efficiency) )
-    print('Spread: ' + str(spread_factor) ) # You want something over ~0.2
+    print('Spread: ' + str(spread_factor) )
 
-    dump_bdt = False
+    return
 
     if dump_event_discriminants:
         dump_dictionary = {
@@ -119,7 +94,7 @@ def train_bdt(dump_event_discriminants):
             1: dump_features(bdt, '../output/V4/output_MC16d_VBF-HH-bbbb_cvv1.root')
         }
         pickle.dump( dump_dictionary, open('prediction_dump.p', 'wb') )
-    elif dump_bdt:
+    else:
         pickle.dump( bdt, open('trained_bdt.p', 'wb') )
 
 
