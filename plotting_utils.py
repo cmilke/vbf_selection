@@ -15,7 +15,8 @@ class hist1():
     def __init__(self, plot_name, plot_title, overlay_list, bin_count, bin_range, **kwargs):
         arg_vals = { 
             'normalize': True, 'legend_args':{}, 'xlabel':'', 'ylabel':'',
-            'xlim':None, 'ylim':None, 'ylog':False, 'labelmaker':None
+            'xlim':None, 'ylim':None, 'ylog':False, 'labelmaker':None,
+            'cumulative': 0
         }
         self.plot_name = plot_name
         self.plot_title = plot_title
@@ -51,6 +52,13 @@ class hist1():
                     print( 'Label list contains {} values between {} and {}'.format(len(values), min(values), max(values)) )
                 return
             binned_vals = counts / counts.sum() if self.normalize else counts
+            if self.cumulative != 0:
+                if isinstance(self.cumulative,dict):
+                    sumdir = self.cumulative[label]
+                else:
+                    sumdir = self.cumulative
+                binned_vals = binned_vals[::sumdir].cumsum()[::sumdir]
+
             plot_values['x'].append( bins[:-1] )
             plot_values['weights'].append(binned_vals)
             label_text = label if self.labelmaker == None else self.labelmaker(label)

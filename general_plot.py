@@ -37,6 +37,18 @@ _plots.add_hist1('pt', '$p_T$ Distribution of VBF Candidate Jets',
 _plots.add_hist1('eta', '$\eta$ Distribution of VBF Candidate Jets',
         [''], 100, (-6,6), xlabel='$\eta$', normalize=False)
 
+_plots.add_hist1('mjjmax', 'Leading $M_{jj}$ Distribution of VBF Candidate Jets',
+        [-1,1], 100, (0,3000), xlabel='Leading $M_{jj}$', normalize=False,
+        labelmaker=lambda cvv: 'ggF' if cvv==-1 else '$C_{2V}$='f'{cvv}')
+
+_plots.add_hist1('mjjmax_cumulative', 'Leading $M_{jj}$ Distribution of VBF Candidate Jets,\nCumulatively Summed',
+        [-1,1], 100, (0,3000), xlabel='Leading $M_{jj}$', normalize=False, cumulative=-1,
+        labelmaker=lambda cvv: 'ggF' if cvv==-1 else '$C_{2V}$='f'{cvv}')
+
+_plots.add_hist1('mjjmax_cumulative_norm', 'Leading $M_{jj}$ Distribution of VBF Candidate Jets,\nCumulatively Summed and Normalized',
+        [-1,1], 100, (0,3000), xlabel='Leading $M_{jj}$', cumulative={-1:1,1:-1},
+        labelmaker=lambda cvv: 'ggF' if cvv==-1 else '$C_{2V}$='f'{cvv}')
+
 for mass in [0, 1000]:
     _plots.add_hist1(f'Deta_of_VBF_mjjmax_mass{mass}', '$\Delta \eta$ Distribution of VBF Jets w/ $M_{jj}>$'f'{mass} GeV',
             [ cvv for cvv in _cvv_vals ],
@@ -46,6 +58,7 @@ for mass in [0, 1000]:
 _simple_taggers = ['mjjmax', 'mjjSL', 'mjN', 'mjjmax_Deta3']
 _taggers = _simple_taggers + ['BDT']
 
+_plots.add_roc('roc_example', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', ['mjjmax'] )
 _plots.add_roc('rocs', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
 _plots.add_roc('rocs_weighted', 'Weighted Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
 _plots.add_roc('rocs_2jet', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators\nFor Events with 2 VBF Candidate Jets', _taggers)
@@ -93,6 +106,11 @@ def process_events(events, bgd=False, cvv_value=-1):
                 if len(vecs) == 2: _plots['rocs_2jet'].fill( tag_value, bgd, tagger)
                 else: _plots['rocs_3jet'].fill( tag_value, bgd, tagger)
                 if tagger == 'mjjmax_Deta3' and tag_value > 1000: basic_efficiency_count[2] += weight
+                if tagger == 'mjjmax':
+                    _plots['mjjmax'].fill(tag_value, cvv_value)
+                    _plots['mjjmax_cumulative'].fill(tag_value, cvv_value)
+                    _plots['mjjmax_cumulative_norm'].fill(tag_value, cvv_value)
+                    _plots['roc_example'].fill(tag_value, bgd)
             # Deal with the not simple taggers
             _plots['rocs'].fill( Tag['BDT'](cvv_value, event_index), bgd, 'BDT')
             _plots['rocs_weighted'].fill( Tag['BDT'](cvv_value, event_index), bgd, 'BDT', weight=weight)
