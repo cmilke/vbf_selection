@@ -67,10 +67,12 @@ def smart_total_invariant_mass(vectors):
     return max(mjNs)
 
 
-bdt_dump = pickle.load( open('prediction_dump.p', 'rb') )
-def load_from_bdt_dump(key, event_index):
+def load_from_bdt_dump(bdt_dump, key, event_index):
     return bdt_dump[key][event_index]
 
+
+bdt_dump1 = pickle.load( open('prediction_dump_unweighted.p', 'rb') )
+bdt_dump2 = pickle.load( open('prediction_dump.p', 'rb') )
 
 Tagger_options = {
 	'mjjmax': leading_invariant_mass,
@@ -80,5 +82,6 @@ Tagger_options = {
 	'imjN': smart_total_invariant_mass,
     'Deta3_mjjmax': partial(delta_eta_cut_mjj_tagger, 3),
     'mjjmax_Deta3': partial(mjj_delta_eta_cut_tagger, 3),
-    'BDT': load_from_bdt_dump
+    'BDT1': partial(load_from_bdt_dump, bdt_dump1),
+    'BDT2': partial(load_from_bdt_dump, bdt_dump2)
 }

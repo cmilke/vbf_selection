@@ -66,10 +66,15 @@ def make_data_tuple(event):
 
 
 def get_feature_and_labels(filename, num_events, label):
-    events = event_iterator([filename], 'VBF_tree', _output_branches, num_events)
-    feature_list = [ make_data_tuple(event) for event in events if event['njets'] - event['ntag'] > 1 ]
-    label_list = [label]*len(feature_list)
-    return (feature_list, label_list)
+    feature_list, label_list, weight_list = [], [], []
+    for event in event_iterator([filename], 'VBF_tree', _output_branches, num_events):
+        if event['njets'] - event['ntag'] > 1:
+            feature_list.append( make_data_tuple(event) )
+            label_list.append(label)
+            weight = event['mc_sf'][0] 
+            if weight < 0: weight = 0
+            weight_list.append(weight)
+    return (feature_list, label_list, weight_list)
 
 
 def dump_features(bdt, filename):
@@ -79,17 +84,18 @@ def dump_features(bdt, filename):
 
 
 def train_bdt(dump_event_discriminants):
-    num_events = 1000
+    num_events = 2000
     train_limit = int( num_events * (3/4) )
     #bgd_vbf_data = uproot.open('../output/V4/output_MC16d_ggF-HH-bbbb.root')['VBF_tree']
 
-    bgd_feature_list, bgd_label_list = get_feature_and_labels('../output/V4/output_MC16d_ggF-HH-bbbb.root', num_events, 0)
-    sig_feature_list, sig_label_list = get_feature_and_labels('../output/V4/output_MC16d_VBF-HH-bbbb_cvv1.root', num_events, 1)
+    bgd_data = get_feature_and_labels('../output/V4/output_MC16d_ggF-HH-bbbb.root', num_events, 0)
+    sig_data = get_feature_and_labels('../output/V4/output_MC16d_VBF-HH-bbbb_cvv1.root', num_events, 1)
 
-    train_feature_array = numpy.array( bgd_feature_list[:train_limit] + sig_feature_list[:train_limit] )
-    train_label_array = numpy.array( bgd_label_list[:train_limit] + sig_label_list[:train_limit] )
-    test_feature_array = numpy.array( bgd_feature_list[train_limit:] + sig_feature_list[train_limit:] )
-    test_label_array = numpy.array( bgd_label_list[train_limit:] + sig_label_list[train_limit:] )
+    training_arrays = [ bgd[:train_limit]+sig[:train_limit] for bgd,sig in zip(bgd_data, sig_data) ]
+    testing_arrays = [ bgd[train_limit:]+sig[train_limit:] for bgd,sig in zip(bgd_data, sig_data) ]
+
+    train_features, train_labels, train_weights = training_arrays
+    test_features, test_labels, test_weights = testing_arrays
         
 
     # Create and fit an AdaBoosted decision tree
@@ -99,17 +105,21 @@ def train_bdt(dump_event_discriminants):
         n_estimators=300
     )
 
-    bdt.fit(train_feature_array, train_label_array)
+    print('\nFitting BDT..')
+    #bdt.fit(train_features, train_labels)
+    bdt.fit(train_features, train_labels, sample_weight=train_weights)
 
-    predictions = bdt.predict(test_feature_array)
-    correct = predictions == test_label_array
-    correct_count = numpy.count_nonzero(correct)
-    efficiency = correct_count / len(correct)
-    decisions = bdt.decision_function( numpy.array(test_feature_array) )
-    decision_spread = numpy.histogram(decisions, bins = 1000, range = ( min(decisions), max(decisions) ) )[0]
-    spread_factor = numpy.count_nonzero(decision_spread) / len(decision_spread) 
+    predictions = bdt.predict(test_features)
+    correct = predictions==test_labels
+    efficiency = sum(correct) / len(predictions)
+    weighted_efficiency = sum(correct*test_weights)  / sum(test_weights)
+
+    decisions = bdt.decision_function(test_features)
+    decision_spread = numpy.histogram(decisions, bins = 10000, range = ( min(decisions), max(decisions) ) )[0]
+    spread_factor = numpy.count_nonzero(decision_spread)
     print('Efficiency: ' + str(efficiency) )
-    print('Spread: ' + str(spread_factor) ) # You want something over ~0.2
+    print('Weighted Efficiency: ' + str(weighted_efficiency) )
+    print('Spread: ' + str(spread_factor) ) # You want something over ~300
 
     dump_bdt = False
 

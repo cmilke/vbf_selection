@@ -30,8 +30,16 @@ _blacklist = [
 ]
 _plots = plot_wrapper(_blacklist)
 
+_cvv_labelmaker = lambda cvv: 'ggF' if cvv==-1 else '$C_{2V}$='f'{cvv}'
+
 _plots.add_hist1('num_VBF_candidates', 'Number of Available VBF Candidates',
-        [''], 8, (0,8), xlabel='Number of Jets', normalize=False)
+        [-1,1], 8, (0,8), xlabel='Number of Jets', normalize=False,
+        labelmaker=_cvv_labelmaker)
+
+_plots.add_hist1('num_non_btagged', 'Number of non-B-Tagged Jets',
+        [-1,1], 8, (0,8), xlabel='Number of Jets', normalize=False,
+        labelmaker=_cvv_labelmaker)
+
 _plots.add_hist1('pt', '$p_T$ Distribution of VBF Candidate Jets',
         [''], 100, (0,200), xlabel='$p_T$ (GeV)', normalize=False)
 _plots.add_hist1('eta', '$\eta$ Distribution of VBF Candidate Jets',
@@ -39,24 +47,24 @@ _plots.add_hist1('eta', '$\eta$ Distribution of VBF Candidate Jets',
 
 _plots.add_hist1('mjjmax', 'Leading $M_{jj}$ Distribution of VBF Candidate Jets',
         [-1,1], 100, (0,3000), xlabel='Leading $M_{jj}$', normalize=False,
-        labelmaker=lambda cvv: 'ggF' if cvv==-1 else '$C_{2V}$='f'{cvv}')
+        labelmaker=_cvv_labelmaker)
 
 _plots.add_hist1('mjjmax_cumulative', 'Leading $M_{jj}$ Distribution of VBF Candidate Jets,\nCumulatively Summed',
         [-1,1], 100, (0,3000), xlabel='Leading $M_{jj}$', normalize=False, cumulative=-1,
-        labelmaker=lambda cvv: 'ggF' if cvv==-1 else '$C_{2V}$='f'{cvv}')
+        labelmaker=_cvv_labelmaker)
 
 _plots.add_hist1('mjjmax_cumulative_norm', 'Leading $M_{jj}$ Distribution of VBF Candidate Jets,\nCumulatively Summed and Normalized',
         [-1,1], 100, (0,3000), xlabel='Leading $M_{jj}$', cumulative={-1:1,1:-1},
-        labelmaker=lambda cvv: 'ggF' if cvv==-1 else '$C_{2V}$='f'{cvv}')
+        labelmaker=_cvv_labelmaker)
 
 for mass in [0, 1000]:
     _plots.add_hist1(f'Deta_of_VBF_mjjmax_mass{mass}', '$\Delta \eta$ Distribution of VBF Jets w/ $M_{jj}>$'f'{mass} GeV',
             [ cvv for cvv in _cvv_vals ],
             40, (0,10), xlabel='$\Delta \eta$', normalize=False, 
-            labelmaker=lambda cvv:'$\kappa_{2V} = '+str(cvv)+'$' )
+            labelmaker=_cvv_labelmaker)
 
 _simple_taggers = ['mjjmax', 'mjjSL', 'mjN', 'mjjmax_Deta3']
-_taggers = _simple_taggers + ['BDT']
+_taggers = _simple_taggers + ['BDT1'] + ['BDT2']
 
 _plots.add_roc('roc_example', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', ['mjjmax'] )
 _plots.add_roc('rocs', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
@@ -87,12 +95,12 @@ def process_events(events, bgd=False, cvv_value=-1):
     basic_efficiency_count = [0,0,0]
     num_jets = [0]*20
     for event_index, event in enumerate(events):
-        if event_index < 1000: continue
+        if event_index < 2000: continue
         weight = event['mc_sf'][0]
         vecs = [ make_nano_vector(jet) for jet in event['jets'] ]
         num_jets[len(vecs)] += 1
-        num_candidates = event['n_vbf_candidates']
-        _plots['num_VBF_candidates'].fill(num_candidates)
+        _plots['num_non_btagged'].fill( len(vecs), cvv_value )
+        _plots['num_VBF_candidates'].fill( event['n_vbf_candidates'], cvv_value )
 
         basic_efficiency_count[0] += weight
         # Handle Roc Curves
@@ -112,9 +120,12 @@ def process_events(events, bgd=False, cvv_value=-1):
                     _plots['mjjmax_cumulative_norm'].fill(tag_value, cvv_value)
                     _plots['roc_example'].fill(tag_value, bgd)
             # Deal with the not simple taggers
-            _plots['rocs'].fill( Tag['BDT'](cvv_value, event_index), bgd, 'BDT')
-            _plots['rocs_weighted'].fill( Tag['BDT'](cvv_value, event_index), bgd, 'BDT', weight=weight)
+            _plots['rocs'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1')
+            _plots['rocs_weighted'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1', weight=weight)
+            _plots['rocs'].fill( Tag['BDT2'](cvv_value, event_index), bgd, 'BDT2')
+            _plots['rocs_weighted'].fill( Tag['BDT2'](cvv_value, event_index), bgd, 'BDT2', weight=weight)
 
+        # Create Delta-eta of leading mjj pair distribution
         if not bgd and len(vecs) > 1:
             deta_mjj_list = [ ( (i+j).mass, abs(i.eta - j.eta) ) for i,j in itertools.combinations(vecs, 2) ]
             deta_mjj_list.sort() # Sort by mjj
