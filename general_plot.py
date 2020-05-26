@@ -14,8 +14,7 @@ from tagger_methods import Tagger_options as Tag
 
 
 #_cvv_vals = [0, 0.5, 1, 1.5, 2, 4]
-_cvv_vals = [1]
-#_cvv_vals = [0]
+_cvv_vals = [-1,1]
 _VBF_samples = {
 #    0  : 'MC16d_VBF-HH-bbbb_cvv0',
 #    0.5: 'MC16d_VBF-HH-bbbb_cvv0p5',
@@ -26,6 +25,7 @@ _VBF_samples = {
 }
 _blacklist = [
     'Deta_of_VBF_mjjmax_mass',
+    #'roc',
     'rocs_2jet', 'rocs_3jet'
 ]
 _plots = plot_wrapper(_blacklist)
@@ -57,14 +57,18 @@ _plots.add_hist1('mjjmax_cumulative_norm', 'Leading $M_{jj}$ Distribution of VBF
         [-1,1], 100, (0,3000), xlabel='Leading $M_{jj}$', cumulative={-1:1,1:-1},
         labelmaker=_cvv_labelmaker)
 
+
+_fw_moments = [ fwi for fwi in range(11) ]
+for fwi in _fw_moments:
+    _plots.add_hist1(f'fox-wolfram_{fwi}', f'Fox-Wolfram Moment {fwi} of All Non-B-Tagged Jets',
+        _cvv_vals, 100, (0,3), labelmaker=_cvv_labelmaker)
+
 for mass in [0, 1000]:
     _plots.add_hist1(f'Deta_of_VBF_mjjmax_mass{mass}', '$\Delta \eta$ Distribution of VBF Jets w/ $M_{jj}>$'f'{mass} GeV',
-            [ cvv for cvv in _cvv_vals ],
-            40, (0,10), xlabel='$\Delta \eta$', normalize=False, 
-            labelmaker=_cvv_labelmaker)
+            _cvv_vals, 40, (0,10), xlabel='$\Delta \eta$', normalize=False, labelmaker=_cvv_labelmaker)
 
 _simple_taggers = ['mjjmax', 'mjjSL', 'mjN', 'mjjmax_Deta3']
-_taggers = _simple_taggers + ['BDT1'] + ['BDT2']
+_taggers = _simple_taggers + ['BDT1']# + ['BDT2']
 
 _plots.add_roc('roc_example', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', ['mjjmax'] )
 _plots.add_roc('rocs', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
@@ -83,8 +87,8 @@ _output_branches = [
     'run_number', 'event_number', 'mc_sf', 'ntag', 'njets',
     'n_vbf_candidates',
     ('jets', ['vbf_candidates_E', 'vbf_candidates_pT', 'vbf_candidates_eta', 'vbf_candidates_phi'])
-
 ]
+_output_branches+=[f'FoxWolfram{i}' for i in _fw_moments]
 
 
 make_reco_vector = lambda jet: LV.from_ptetaphie(jet['resolvedJets_pt'], jet['resolvedJets_eta'], jet['resolvedJets_phi'], jet['resolvedJets_E'])
@@ -95,12 +99,14 @@ def process_events(events, bgd=False, cvv_value=-1):
     basic_efficiency_count = [0,0,0]
     num_jets = [0]*20
     for event_index, event in enumerate(events):
-        if event_index < 2000: continue
+        if event_index < 10000: continue
         weight = event['mc_sf'][0]
         vecs = [ make_nano_vector(jet) for jet in event['jets'] ]
         num_jets[len(vecs)] += 1
         _plots['num_non_btagged'].fill( len(vecs), cvv_value )
         _plots['num_VBF_candidates'].fill( event['n_vbf_candidates'], cvv_value )
+
+        for fwi in _fw_moments: _plots[f'fox-wolfram_{fwi}'].fill(event[f'FoxWolfram{fwi}'], cvv_value)
 
         basic_efficiency_count[0] += weight
         # Handle Roc Curves
@@ -122,8 +128,8 @@ def process_events(events, bgd=False, cvv_value=-1):
             # Deal with the not simple taggers
             _plots['rocs'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1')
             _plots['rocs_weighted'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1', weight=weight)
-            _plots['rocs'].fill( Tag['BDT2'](cvv_value, event_index), bgd, 'BDT2')
-            _plots['rocs_weighted'].fill( Tag['BDT2'](cvv_value, event_index), bgd, 'BDT2', weight=weight)
+            #_plots['rocs'].fill( Tag['BDT2'](cvv_value, event_index), bgd, 'BDT2')
+            #_plots['rocs_weighted'].fill( Tag['BDT2'](cvv_value, event_index), bgd, 'BDT2', weight=weight)
 
         # Create Delta-eta of leading mjj pair distribution
         if not bgd and len(vecs) > 1:

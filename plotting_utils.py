@@ -11,7 +11,7 @@ _output_ext = '.png'
 #_output_ext = '.pdf'
 
 
-class hist1():
+class Hist1():
     def __init__(self, plot_name, plot_title, overlay_list, bin_count, bin_range, **kwargs):
         arg_vals = { 
             'normalize': True, 'legend_args':{}, 'xlabel':'', 'ylabel':'',
@@ -36,9 +36,10 @@ class hist1():
             self.data[key0].append(value)
 
 
-    def generate_plot(self, refresh, cache):
+    def generate_plot(self, cache, refresh=None):
         print('Plotting '+self.plot_name)
-        if refresh: cache[self.plot_name] = self.data
+        if refresh == None and cache != None: self.data = cache
+        elif refresh: cache[self.plot_name] = self.data
         else: self.data = cache[self.plot_name]
 
         plot_values = {'x':[],'weights':[],'label':[]}
@@ -82,7 +83,7 @@ class hist1():
 
 
 
-class hist2():
+class Hist2():
     def __init__(self, plot_name, plot_title, bin_count, bin_range, **kwargs):
         arg_vals = { 'normalize': True, 'xlabel':'', 'ylabel':'', 'zlim':None }
         self.plot_name = plot_name
@@ -100,9 +101,10 @@ class hist2():
         self.data[1].append(value1)
 
 
-    def generate_plot(self, refresh, cache):
+    def generate_plot(self, cache, refresh=None):
         print('Plotting '+self.plot_name)
-        if refresh: cache[self.plot_name] = self.data
+        if refresh == None and cache != None: self.data = cache
+        elif refresh: cache[self.plot_name] = self.data
         else: self.data = cache[self.plot_name]
 
         hist_counts, xedges, yedges = numpy.histogram2d(*self.data, bins=self.bins, range=self.range)
@@ -131,7 +133,7 @@ class hist2():
 
 
 
-class roc():
+class Roc():
     def __init__(self, plot_name, plot_title, overlay_list, **kwargs):
         arg_vals = { 
             'legend_args':{}, 'labelmaker':None, 'normalize': True, 'scale_to_y': False,
@@ -157,9 +159,10 @@ class roc():
         self.data[key][bgd][1].append(weight)
 
 
-    def generate_plot(self, refresh, cache):
+    def generate_plot(self, cache, refresh=None):
         print('Plotting '+self.plot_name)
-        if refresh: cache[self.plot_name] = self.data
+        if refresh == None and cache != None: self.data = cache
+        elif refresh: cache[self.plot_name] = self.data
         else: self.data = cache[self.plot_name]
 
         roc_ax = plt.subplots()
@@ -207,13 +210,13 @@ class plot_wrapper():
         self.blacklist = blacklist
 
     def add_hist1(self, plot_name, *args, **kwargs):
-        self.plot_dict[plot_name] = hist1(plot_name, *args, **kwargs)
+        self.plot_dict[plot_name] = Hist1(plot_name, *args, **kwargs)
 
     def add_hist2(self, plot_name, *args, **kwargs):
-        self.plot_dict[plot_name] = hist2(plot_name, *args, **kwargs)
+        self.plot_dict[plot_name] = Hist2(plot_name, *args, **kwargs)
 
     def add_roc(self, plot_name, *args, **kwargs):
-        self.plot_dict[plot_name] = roc(plot_name, *args, **kwargs)
+        self.plot_dict[plot_name] = Roc(plot_name, *args, **kwargs)
 
     def plot_all(self, refresh, cache):
         for key,plot in self.plot_dict.items():
@@ -222,7 +225,7 @@ class plot_wrapper():
                 if substring in key:
                     blacklisted = True
                     break
-            if not blacklisted: plot.generate_plot(refresh, cache)
+            if not blacklisted: plot.generate_plot(cache, refresh=refresh)
 
     def __getitem__(self, plot_name):
         return self.plot_dict[plot_name]
