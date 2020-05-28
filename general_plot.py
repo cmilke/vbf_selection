@@ -25,8 +25,10 @@ _VBF_samples = {
 }
 _blacklist = [
     'Deta_of_VBF_mjjmax_mass',
-    #'roc',
-    'rocs_2jet', 'rocs_3jet'
+    'roc',
+    'roc_example', 
+    'rocs_2jet', 'rocs_3jet',
+    #'fox-wolfram'
 ]
 _plots = plot_wrapper(_blacklist)
 
@@ -67,17 +69,18 @@ for mass in [0, 1000]:
     _plots.add_hist1(f'Deta_of_VBF_mjjmax_mass{mass}', '$\Delta \eta$ Distribution of VBF Jets w/ $M_{jj}>$'f'{mass} GeV',
             _cvv_vals, 40, (0,10), xlabel='$\Delta \eta$', normalize=False, labelmaker=_cvv_labelmaker)
 
-_simple_taggers = ['mjjmax', 'mjjSL', 'mjN', 'mjjmax_Deta3']
-_taggers = _simple_taggers + ['BDT1']# + ['BDT2']
+_simple_taggers = ['mjjmax_Deta3', 'mjjmax']
+_BDT_taggers = ['BDT: mjjmax-Deta', 'BDT: mjjmax-Deta-FW']
+_taggers = _simple_taggers + _BDT_taggers
 
 _plots.add_roc('roc_example', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', ['mjjmax'] )
-_plots.add_roc('rocs', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
-_plots.add_roc('rocs_weighted', 'Weighted Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
+#_plots.add_roc('rocs_base', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers )
+_plots.add_roc('rocs_weighted', 'Weighted Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', _taggers, zooms=[((0.2,0.6),(0.6,1))] )
 _plots.add_roc('rocs_2jet', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators\nFor Events with 2 VBF Candidate Jets', _taggers)
 _plots.add_roc('rocs_3jet', 'Efficiency/Rejection Performance of Various VBF/ggF Discriminators\nFor Events with 3 or More VBF Candidate Jets', _taggers)
 
-_plots['rocs'].add_marker('mjjmax_Deta3', 1000, annotation='1000 GeV', marker='.', color='red')
-_plots['rocs_weighted'].add_marker('mjjmax_Deta3', 1000, annotation='1000 GeV', marker='.', color='red')
+#_plots['rocs'].add_marker('mjjmax_Deta3', 1000, annotation='1000 GeV', marker='.', color='red')
+_plots['rocs_weighted'].add_marker('mjjmax_Deta3', 1000, annotation='1000 GeV', marker='.', color='blue')
 #_plots['rocs'].add_marker('mjjmax', 1000, annotation='1000 GeV', marker='.', color='blue')
 #_plots['rocs_2jet'].add_marker('mjjSL', 735, annotation='735 GeV', marker='*', color='red')
 #_plots['rocs_3jet'].add_marker('mjjSL', 735, annotation='735 GeV', marker='*', color='red')
@@ -115,7 +118,7 @@ def process_events(events, bgd=False, cvv_value=-1):
             # Deal with Simple Taggers
             for tagger in _simple_taggers:
                 tag_value = Tag[tagger](vecs)
-                _plots['rocs'].fill( tag_value, bgd, tagger)
+                #_plots['rocs'].fill( tag_value, bgd, tagger)
                 _plots['rocs_weighted'].fill( tag_value, bgd, tagger, weight=weight)
                 if len(vecs) == 2: _plots['rocs_2jet'].fill( tag_value, bgd, tagger)
                 else: _plots['rocs_3jet'].fill( tag_value, bgd, tagger)
@@ -126,10 +129,10 @@ def process_events(events, bgd=False, cvv_value=-1):
                     _plots['mjjmax_cumulative_norm'].fill(tag_value, cvv_value)
                     _plots['roc_example'].fill(tag_value, bgd)
             # Deal with the not simple taggers
-            _plots['rocs'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1')
-            _plots['rocs_weighted'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1', weight=weight)
-            #_plots['rocs'].fill( Tag['BDT2'](cvv_value, event_index), bgd, 'BDT2')
-            #_plots['rocs_weighted'].fill( Tag['BDT2'](cvv_value, event_index), bgd, 'BDT2', weight=weight)
+            #_plots['rocs'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1')
+            #_plots['rocs_weighted'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1', weight=weight)
+            for bdt in _BDT_taggers:
+                _plots['rocs_weighted'].fill( Tag[bdt](cvv_value, event_index), bgd, bdt, weight=weight)
 
         # Create Delta-eta of leading mjj pair distribution
         if not bgd and len(vecs) > 1:

@@ -16,7 +16,7 @@ class Hist1():
         arg_vals = { 
             'normalize': True, 'legend_args':{}, 'xlabel':'', 'ylabel':'',
             'xlim':None, 'ylim':None, 'ylog':False, 'labelmaker':None,
-            'cumulative': 0
+            'cumulative': 0, 'zooms': []
         }
         self.plot_name = plot_name
         self.plot_title = plot_title
@@ -78,7 +78,12 @@ class Hist1():
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         plt.title(self.plot_title)
-        fig.savefig(_output_dir+self.plot_name+_output_ext)
+        dpi=500
+        fig.savefig(_output_dir+self.plot_name+_output_ext, dpi=dpi)
+        for index, (xlim, ylim) in enumerate(self.zooms):
+            plt.xlim(xlim)
+            plt.ylim(ylim)
+            plt.savefig(_output_dir+self.plot_name+f'_zoom{index}'+_output_ext, dpi=dpi)
         plt.close()
 
 
@@ -197,8 +202,8 @@ class Roc():
         dpi=500
         plt.savefig(_output_dir+self.plot_name+_output_ext, dpi=dpi)
         for index, (xlim, ylim) in enumerate(self.zooms):
-            plt.xlim(*xlim)
-            plt.ylim(*ylim)
+            plt.xlim(xlim)
+            plt.ylim(ylim)
             plt.savefig(_output_dir+self.plot_name+f'_zoom{index}'+_output_ext, dpi=dpi)
         plt.close()
 
