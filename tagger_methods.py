@@ -79,7 +79,16 @@ Tagger_options = {
 	'mjN': total_invariant_mass,
 	'imjN': smart_total_invariant_mass,
     'Deta3_mjjmax': partial(delta_eta_cut_mjj_tagger, 3),
-    'mjjmax_Deta3': partial(mjj_delta_eta_cut_tagger, 3),
-    'BDT: mjjmax-Deta': partial(load_from_bdt_dump, pickle.load(open('prediction_dump_mjj-Deta.p', 'rb')) ),
-    'BDT: mjjmax-Deta-FW': partial(load_from_bdt_dump, pickle.load(open('prediction_dump_mjj-Deta-FW.p', 'rb')) )
+    'mjjmax_Deta3': partial(mjj_delta_eta_cut_tagger, 3)
 }
+
+bdt_list = [
+    'mjj-Deta',
+    'mjj-Deta-FW',
+    'mjj-Deta-FW-Cent',
+    'mjjLSL-Deta-Cent-FW'
+]
+
+for bdt in bdt_list:
+    prediction_dump = pickle.load(open('bdt_output/prediction_dump_'+bdt+'.p', 'rb'))
+    Tagger_options['BDT: '+bdt] = partial(load_from_bdt_dump, prediction_dump)

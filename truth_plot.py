@@ -37,7 +37,7 @@ _plots.add_hist1('truth_num_non_btagged_pt-gt30', 'Number of non-B (Truth-matche
         labelmaker=_cvv_labelmaker, zooms=[((0,8),(0,300000)),((0,8),(0,50000))])
 
 _plots.add_hist1('truthMatched_num_non_btagged', 'Number of non-B (Truth-matched) Jets in Matched Events',
-        [-1,1], 8, (0,8), xlabel='Number of Jets', normalize=False,
+        [-1,1], 8, (0,8), xlabel='Number of Jets', normalize=True,
         labelmaker=_cvv_labelmaker)
 
 _input_branches = [

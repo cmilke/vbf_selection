@@ -25,10 +25,12 @@ _VBF_samples = {
 }
 _blacklist = [
     'Deta_of_VBF_mjjmax_mass',
-    'roc',
+    #'roc',
+    'mjjmax_',
     'roc_example', 
     'rocs_2jet', 'rocs_3jet',
-    #'fox-wolfram'
+    'fox-wolfram',
+    #'centrality'
 ]
 _plots = plot_wrapper(_blacklist)
 
@@ -59,6 +61,22 @@ _plots.add_hist1('mjjmax_cumulative_norm', 'Leading $M_{jj}$ Distribution of VBF
         [-1,1], 100, (0,3000), xlabel='Leading $M_{jj}$', cumulative={-1:1,1:-1},
         labelmaker=_cvv_labelmaker)
 
+_plots.add_hist1('centrality3jet', 'Centrality of 3-Jet Events',
+        [-1,1], 20, (-1,1), xlabel=r'$2 \times (\frac{\eta_C - \eta_L}{\eta_R - \eta_L}) - 1$',
+        labelmaker=_cvv_labelmaker)
+
+_plots.add_hist1('centralityGT3jet', 'Centrality of Events with $\geq$ Four Jets',
+        [-1,1], 20, (-1,1), xlabel=r'$2 \times (\frac{\eta_C - \eta_L}{\eta_R - \eta_L}) - 1$',
+        labelmaker=_cvv_labelmaker)
+
+_plots.add_hist1('centralityPtGT3jet', 'Centrality of Events with $\geq$ Four Jets,\nJets Chosen by Highest $p_T$',
+        [-1,1], 20, (-1,1), xlabel=r'$2 \times (\frac{\eta_C - \eta_L}{\eta_R - \eta_L}) - 1$',
+        labelmaker=_cvv_labelmaker)
+
+_plots.add_hist1('centrality', 'Centrality of Events with $\geq$ Three Jets',
+        [-1,1], 20, (-1,1), xlabel=r'$2 \times (\frac{\eta_C - \eta_L}{\eta_R - \eta_L}) - 1$',
+        labelmaker=_cvv_labelmaker)
+
 
 _fw_moments = [ fwi for fwi in range(11) ]
 for fwi in _fw_moments:
@@ -70,7 +88,7 @@ for mass in [0, 1000]:
             _cvv_vals, 40, (0,10), xlabel='$\Delta \eta$', normalize=False, labelmaker=_cvv_labelmaker)
 
 _simple_taggers = ['mjjmax_Deta3', 'mjjmax']
-_BDT_taggers = ['BDT: mjjmax-Deta', 'BDT: mjjmax-Deta-FW']
+_BDT_taggers = ['BDT: mjjmax-Deta', 'BDT: mjjmax-Deta-FW', 'BDT: mjjmax-Deta-FW-Cent']#, 'BDT: mjjL,SL_Deta_Cent_FW']
 _taggers = _simple_taggers + _BDT_taggers
 
 _plots.add_roc('roc_example', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', ['mjjmax'] )
@@ -101,6 +119,10 @@ make_nano_vector = lambda jet: LV.from_ptetaphie(jet['vbf_candidates_pT'], jet['
 def process_events(events, bgd=False, cvv_value=-1):
     basic_efficiency_count = [0,0,0]
     num_jets = [0]*20
+    num_shared = 0
+    num_not_shared = 0
+    num_pt_matched = 0
+    num_pt_not_matched= 0
     for event_index, event in enumerate(events):
         if event_index < 10000: continue
         weight = event['mc_sf'][0]
@@ -134,6 +156,42 @@ def process_events(events, bgd=False, cvv_value=-1):
             for bdt in _BDT_taggers:
                 _plots['rocs_weighted'].fill( Tag[bdt](cvv_value, event_index), bgd, bdt, weight=weight)
 
+        # Look into Centrality
+        if len(vecs) == 3 and (cvv_value == 1 or bgd):
+            etas = sorted([ v.eta for v in vecs ])
+            centrality = 2*(etas[1] - etas[0]) / (etas[2] - etas[0]) - 1
+            _plots['centrality3jet'].fill(centrality, cvv_value)
+            _plots['centrality'].fill(centrality, cvv_value)
+
+            
+        if len(vecs) > 3 and (cvv_value == 1 or bgd):
+            mjj_pairs = [ ( (vecs[i]+vecs[j]).mass, (i,j) ) for i,j in itertools.combinations(range(len(vecs)), 2) ]
+            mjj_pairs.sort(reverse=True)
+            chosen_jets = { i:vecs[i] for i in mjj_pairs[0][1] }
+            possible_additions = [ (i,vecs[i]) for i in mjj_pairs[1][1] if i not in chosen_jets ]
+            possible_additions.sort(key=lambda t: t[1].pt, reverse=True)
+            if len(possible_additions) > 1: num_not_shared += 1
+            else: num_shared += 1
+            chosen_jets[ possible_additions[0][0] ] = possible_additions[0][1]
+            etas = sorted([ jet.eta for jet in chosen_jets.values() ])
+            centrality = 2*(etas[1] - etas[0]) / (etas[2] - etas[0]) - 1
+            _plots['centralityGT3jet'].fill(centrality, cvv_value)
+            _plots['centrality'].fill(centrality, cvv_value)
+
+            pt_chosen_jets = { i:vec for i,vec in enumerate( sorted(vecs, key=lambda v: v.pt, reverse=True)[:3] ) }
+            etas = sorted([ jet.eta for jet in pt_chosen_jets.values() ])
+            centrality = 2*(etas[1] - etas[0]) / (etas[2] - etas[0]) - 1
+            _plots['centralityPtGT3jet'].fill(centrality, cvv_value)
+
+            mjj_keys = sorted( chosen_jets.keys() )
+            pt_keys = sorted( pt_chosen_jets.keys() )
+            if mjj_keys == pt_keys: num_pt_matched += 1
+            else: num_pt_not_matched += 1
+
+
+
+
+
         # Create Delta-eta of leading mjj pair distribution
         if not bgd and len(vecs) > 1:
             deta_mjj_list = [ ( (i+j).mass, abs(i.eta - j.eta) ) for i,j in itertools.combinations(vecs, 2) ]
@@ -152,7 +210,9 @@ def process_events(events, bgd=False, cvv_value=-1):
     jet_counts = numpy.array(num_jets[0:10])
     #print(jet_counts)
     #for count,frac in enumerate(jet_counts/jet_counts.sum()): print(f'{count}: {frac*100:4.1f}')
-    print(basic_efficiency_count)
+    print(num_shared, num_not_shared)
+    print(num_pt_matched, num_pt_not_matched)
+    #print(basic_efficiency_count)
 
 
 

@@ -1,5 +1,6 @@
 .cache
 figures*
 .figures*
+bdt_output
 *.p
 __pycache__
