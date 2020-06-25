@@ -5,6 +5,14 @@ from uproot_methods import TLorentzVector as LV
 _fourvec_names = [ f'vbf_candidates_{v}' for v in ['pT', 'eta', 'phi', 'E'] ]
 make_vector_list = lambda datarow: [ LV.from_ptetaphie(*vec) for vec in zip(*datarow[_fourvec_names]) ]
 
+
+def valid_vbf(datarow):
+    vector_list = make_vector_list(datarow)
+    Deta = max([ ( (i+j).mass, abs(i.eta-j.eta) ) for i,j in itertools.combinations(vector_list, 2) ])[1]
+    return Deta > 3
+
+
+
 def get_features_mjj_deta(datarow):
     vector_list = make_vector_list(datarow)
     pair_list = [ (i,j) for i,j in itertools.combinations(vector_list, 2) ]

@@ -26,11 +26,11 @@ _VBF_samples = {
 _blacklist = [
     'Deta_of_VBF_mjjmax_mass',
     #'roc',
-    'mjjmax_',
+    #'mjjmax_',
     'roc_example', 
     'rocs_2jet', 'rocs_3jet',
     'fox-wolfram',
-    #'centrality'
+    'centrality'
 ]
 _plots = plot_wrapper(_blacklist)
 
@@ -61,6 +61,14 @@ _plots.add_hist1('mjjmax_cumulative_norm', 'Leading $M_{jj}$ Distribution of VBF
         [-1,1], 100, (0,3000), xlabel='Leading $M_{jj}$', cumulative={-1:1,1:-1},
         labelmaker=_cvv_labelmaker)
 
+_plots.add_hist1('mjjmax_Deta3_cumulative_norm', 'Leading $M_{jj}$ Distribution of VBF Candidate Jets (Post $\Delta \eta > 3$ Cut) ,\nCumulatively Summed and Normalized',
+        [-1,1], 1000, (-2,3000), xlabel='Leading $M_{jj}$', cumulative={-1:1,1:-1},
+        labelmaker=_cvv_labelmaker)
+
+_plots.add_hist1('BDT1_cumulative_norm', 'Cumulative Distribution of BDT 1 Response',
+        [-1,1], 10000, (-1,1), xlabel='BDT Response', cumulative={-1:1,1:-1},
+        zooms=[((-.1,.2),(0,1)), ((-0.03,-0.02),(0.8,0.82))], labelmaker=_cvv_labelmaker)
+
 _plots.add_hist1('centrality3jet', 'Centrality of 3-Jet Events',
         [-1,1], 20, (-1,1), xlabel=r'$2 \times (\frac{\eta_C - \eta_L}{\eta_R - \eta_L}) - 1$',
         labelmaker=_cvv_labelmaker)
@@ -88,7 +96,8 @@ for mass in [0, 1000]:
             _cvv_vals, 40, (0,10), xlabel='$\Delta \eta$', normalize=False, labelmaker=_cvv_labelmaker)
 
 _simple_taggers = ['mjjmax_Deta3', 'mjjmax']
-_BDT_taggers = ['BDT: mjjmax-Deta', 'BDT: mjjmax-Deta-FW', 'BDT: mjjmax-Deta-FW-Cent']#, 'BDT: mjjL,SL_Deta_Cent_FW']
+#_BDT_taggers = ['BDT: mjj-Deta', 'BDT: mjj-Deta-FW', 'BDT: mjj-Deta-FW-Cent']#, 'BDT: mjjLSL_Deta_Cent_FW']
+_BDT_taggers = ['BDT: mjj-Deta-FW']
 _taggers = _simple_taggers + _BDT_taggers
 
 _plots.add_roc('roc_example', 'Efficiency/Rejection Performance\nof Various VBF/ggF Discriminators', ['mjjmax'] )
@@ -116,7 +125,7 @@ make_reco_vector = lambda jet: LV.from_ptetaphie(jet['resolvedJets_pt'], jet['re
 make_nano_vector = lambda jet: LV.from_ptetaphie(jet['vbf_candidates_pT'], jet['vbf_candidates_eta'], jet['vbf_candidates_phi'], jet['vbf_candidates_E'])
 
 
-def process_events(events, bgd=False, cvv_value=-1):
+def process_events(events, skip_num=0, bgd=False, cvv_value=-1):
     basic_efficiency_count = [0,0,0]
     num_jets = [0]*20
     num_shared = 0
@@ -124,7 +133,7 @@ def process_events(events, bgd=False, cvv_value=-1):
     num_pt_matched = 0
     num_pt_not_matched= 0
     for event_index, event in enumerate(events):
-        if event_index < 10000: continue
+        if event_index < skip_num: continue
         weight = event['mc_sf'][0]
         vecs = [ make_nano_vector(jet) for jet in event['jets'] ]
         num_jets[len(vecs)] += 1
@@ -144,7 +153,9 @@ def process_events(events, bgd=False, cvv_value=-1):
                 _plots['rocs_weighted'].fill( tag_value, bgd, tagger, weight=weight)
                 if len(vecs) == 2: _plots['rocs_2jet'].fill( tag_value, bgd, tagger)
                 else: _plots['rocs_3jet'].fill( tag_value, bgd, tagger)
-                if tagger == 'mjjmax_Deta3' and tag_value > 1000: basic_efficiency_count[2] += weight
+                if tagger == 'mjjmax_Deta3': 
+                    _plots['mjjmax_Deta3_cumulative_norm'].fill(tag_value, cvv_value, weight)
+                    if tag_value > 1000: basic_efficiency_count[2] += weight
                 if tagger == 'mjjmax':
                     _plots['mjjmax'].fill(tag_value, cvv_value)
                     _plots['mjjmax_cumulative'].fill(tag_value, cvv_value)
@@ -154,7 +165,10 @@ def process_events(events, bgd=False, cvv_value=-1):
             #_plots['rocs'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1')
             #_plots['rocs_weighted'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1', weight=weight)
             for bdt in _BDT_taggers:
-                _plots['rocs_weighted'].fill( Tag[bdt](cvv_value, event_index), bgd, bdt, weight=weight)
+                bdt_value = Tag[bdt](cvv_value, event_index, vecs)
+                #print(bdt_value, event[f'FoxWolfram1'])
+                _plots['rocs_weighted'].fill( bdt_value, bgd, bdt, weight=weight)
+                _plots['BDT1_cumulative_norm'].fill(bdt_value, cvv_value, weight)
 
         # Look into Centrality
         if len(vecs) == 3 and (cvv_value == 1 or bgd):
@@ -216,13 +230,13 @@ def process_events(events, bgd=False, cvv_value=-1):
 
 
 
-def extract_data(num_events):
+def extract_data(num_events, events_to_skip):
     for cvv_value, vbf_sample in _VBF_samples.items():
         sig_events = event_iterator(autils.output_datasets[vbf_sample], 'VBF_tree', _output_branches, num_events)
-        process_events(sig_events, cvv_value=cvv_value)
+        process_events(sig_events, skip_num=events_to_skip , cvv_value=cvv_value)
 
     bgd_events = event_iterator(autils.output_datasets['MC16d_ggF-HH-bbbb'], 'VBF_tree', _output_branches, num_events)
-    process_events(bgd_events, bgd=True)
+    process_events(bgd_events, skip_num=events_to_skip, bgd=True)
 
 
 
@@ -231,13 +245,15 @@ def draw_distributions():
     parser.add_argument( "-r", required = False, default = False, action = 'store_true', help = "Refresh cache",) 
     parser.add_argument( "-p", required = False, default = False, action = 'store_true', help = "Print only, do not plot",) 
     parser.add_argument( "-n", required = False, default = 1e4, type=float, help = "How many events to run over",)
+    parser.add_argument( "-s", required = False, default = 0, type=float, help = "How many events to skip",)
     args = parser.parse_args()
 
     refresh = args.r
     num_events = int(args.n) if args.n > 0 else None
+    events_to_skip = int(args.s)
     cache = {}
     cache_file = '.cache/general_plots.p'
-    if refresh: extract_data(num_events)
+    if refresh: extract_data(num_events, events_to_skip)
     else: cache = pickle.load( open(cache_file, 'rb') )
     if not args.p:
         print('Data extracted, plotting...')

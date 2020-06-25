@@ -67,8 +67,10 @@ def smart_total_invariant_mass(vectors):
     return max(mjNs)
 
 
-def load_from_bdt_dump(bdt_dump, key, event_index):
-    return bdt_dump[key][event_index]
+def load_from_bdt_dump(bdt_dump, d_eta_cut, key, event_index, vectors):
+    max_mjj_pair = max( [ (mjj(pair), d_eta(pair)) for pair in make_pairs(vectors) ] )
+    if max_mjj_pair[1] < d_eta_cut: return -1
+    else: return bdt_dump[key][event_index]
 
 
 
@@ -91,4 +93,4 @@ bdt_list = [
 
 for bdt in bdt_list:
     prediction_dump = pickle.load(open('bdt_output/prediction_dump_'+bdt+'.p', 'rb'))
-    Tagger_options['BDT: '+bdt] = partial(load_from_bdt_dump, prediction_dump)
+    Tagger_options['BDT: '+bdt] = partial(load_from_bdt_dump, prediction_dump, 3)

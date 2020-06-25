@@ -20,7 +20,7 @@ class Hist1():
         }
         self.plot_name = plot_name
         self.plot_title = plot_title
-        self.data = { label:[] for label in overlay_list }
+        self.data = { label:([],[]) for label in overlay_list }
         self.bins = bin_count
         self.range = bin_range
 
@@ -28,12 +28,10 @@ class Hist1():
         for kw,arg in arg_vals.items(): setattr(self, kw, arg)
 
 
-    def fill(self, value, *label):
-        if len(label) > 0:
-            self.data[label[0]].append(value)
-        else:
-            key0 = list(self.data)[0]
-            self.data[key0].append(value)
+    def fill(self, value, key=None, weight=1):
+        if key == None: key = list(self.data)[0]
+        self.data[key][0].append(value)
+        self.data[key][1].append(weight)
 
 
     def generate_plot(self, cache, refresh=None):
@@ -43,8 +41,8 @@ class Hist1():
         else: self.data = cache[self.plot_name]
 
         plot_values = {'x':[],'weights':[],'label':[]}
-        for label, values in self.data.items():
-            counts, bins = numpy.histogram(values, bins=self.bins, range=self.range)
+        for label, (values, weights) in self.data.items():
+            counts, bins = numpy.histogram(values, weights=weights, bins=self.bins, range=self.range)
             if counts.sum() == 0: 
                 print('WARNING: '+self.plot_name + ' has no data for label ' + str(label))
                 if len(values) == 0:
@@ -146,7 +144,7 @@ class Roc():
         }
         self.plot_name = plot_name
         self.plot_title = plot_title
-        self.data = { label:( ([],[],[]), ([],[],[]) ) for label in overlay_list }
+        self.data = { label:( ([],[]), ([],[]) ) for label in overlay_list }
         self.marker_requests = { label:[] for label in overlay_list }
 
         arg_vals.update(kwargs)
@@ -158,8 +156,8 @@ class Roc():
         self.marker_requests[label].append( (marker_value, kwargs) )
 
 
-    def fill(self, value, bgd, *label, weight=1):
-        key = list(self.data)[0] if len(label) == 0 else label[0]
+    def fill(self, value, bgd, key=None, weight=1):
+        if key == None: key = list(self.data)[0]
         self.data[key][bgd][0].append(value)
         self.data[key][bgd][1].append(weight)
 
@@ -187,6 +185,7 @@ class Roc():
             for marker_val, kwargs in self.marker_requests[label]:
                 bin_index = int( (marker_val-minimum) / bin_width )
                 location = (efficiency[bin_index], rejection[bin_index])
+                print(label, location)
                 marker_list.append( (location, kwargs) )
 
         plt.legend(prop={'size':6})

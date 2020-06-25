@@ -17,7 +17,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 from uproot_wrapper import event_iterator
 from plotting_utils import Hist1, Roc
-from feature_extractors import Extractors
+from feature_extractors import Extractors, valid_vbf
 from koza4ok.skTMVA import convert_bdt_sklearn_tmva
 
 
@@ -35,6 +35,7 @@ def get_feature_and_labels(dataframe, feature_extractor, num_events, label):
     if num_events != None:
         dataframe = dataframe[:num_events]
         dataframe = dataframe[ dataframe['njets']-dataframe['ntag'] > 1 ]
+        dataframe = dataframe[ dataframe.apply(valid_vbf, axis=1) ]
     features = numpy.asarray( dataframe.apply(feature_extractor, axis=1).tolist() )
     labels = numpy.full(len(features), label)
     weights = dataframe['mc_sf'].apply(lambda x: x[0] if x[0] > 0 else 0).to_numpy()
@@ -42,14 +43,15 @@ def get_feature_and_labels(dataframe, feature_extractor, num_events, label):
 
 
 
-def plot_classifier_details(ML_classifier, decisions, train_limit, title, feature_labels):
+def plot_classifier_details(ML_classifier, decisions, weights, train_limit, title, feature_labels):
     # Plot Overtraining Check
     overtrain_check = Hist1('BDT/ot-check_'+title, 'Overtraining Check', [], 40, (-0.5,0.5))
+    print(decisions[0][:5], decisions[0][train_limit:5])
     overtrain_check.generate_plot({
-        'B-Train':decisions[0][:train_limit],
-        'S-Train':decisions[1][:train_limit],
-        'B-Test' :decisions[0][train_limit:],
-        'S-Test' :decisions[1][train_limit:]
+        'B-Train': (decisions[0][:train_limit], weights[0][:train_limit]) ,
+        'S-Train': (decisions[1][:train_limit], weights[1][:train_limit]) ,
+        'B-Test' : (decisions[0][train_limit:], weights[0][train_limit:]) ,
+        'S-Test' : (decisions[1][train_limit:], weights[1][train_limit:]) 
     })
 
     # Plot Feature Ranking
@@ -94,8 +96,8 @@ def train_classifier(data, ML_classifier, n_events, **kwargs):
 
     print('Evaluating Performance...')
     decisions = [ ML_classifier.decision_function(d['X']) for d in data ]
-    weights = [ d['sample_weight'][train_limit:] for d in data ]
-    plot_classifier_details( ML_classifier, decisions, train_limit, kwargs['title'], kwargs['feature_labels'])
+    weights = [ d['sample_weight'] for d in data ]
+    plot_classifier_details( ML_classifier, decisions, weights, train_limit, kwargs['title'], kwargs['feature_labels'])
 
     print('Saving Classifier...') # Output as pickled file (for local analysis) and as xml (for use in Resolved Reconstruction)
     pickle.dump( ML_classifier, open('bdt_output/trained_classifier_'+kwargs['title']+'.p', 'wb') )
@@ -103,12 +105,12 @@ def train_classifier(data, ML_classifier, n_events, **kwargs):
     convert_bdt_sklearn_tmva(ML_classifier, input_format, 'bdt_output/trained_classifier_'+kwargs['title']+'.xml')
 
     # Return overall performance for comparison against other architectures
-    return ( (decisions[1][train_limit:],weights[1]), (decisions[0][train_limit:],weights[0]) )
+    return ( (decisions[1][train_limit:],weights[1][train_limit:]), (decisions[0][train_limit:],weights[0][train_limit:]) )
 
 
 def hyper_parameter_scan(input_frames):
     evaluation_table = {}
-    test_limit = 1500
+    test_limit = 15000
 
     ## Simple mjj & Delta eta BDT
     #data = [ get_feature_and_labels(input_frames[i], Extractors['mjj-Deta'], test_limit, i) for i in (0,1) ]
@@ -123,7 +125,8 @@ def hyper_parameter_scan(input_frames):
 
     # mjj & Delta eta w/ Fox Wolfram Moments
     data = [ get_feature_and_labels(input_frames[i], Extractors['mjj-Deta-FW'], test_limit, i) for i in (0,1) ]
-    for n_events in [(1000,500)]:
+    print('LENGTH ' + str(len(data[0]['X'])) +' '+str(len(data[1]['X'])) )
+    for n_events in [(5000,5000)]:
         for depth in [3]:
             for estimators in [500]:
                 adatree = AdaBoostClassifier( sklearn.tree.DecisionTreeClassifier(max_depth=depth), algorithm="SAMME", n_estimators=estimators)
