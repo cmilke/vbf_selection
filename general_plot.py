@@ -165,7 +165,7 @@ def process_events(events, skip_num=0, bgd=False, cvv_value=-1):
             #_plots['rocs'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1')
             #_plots['rocs_weighted'].fill( Tag['BDT1'](cvv_value, event_index), bgd, 'BDT1', weight=weight)
             for bdt in _BDT_taggers:
-                bdt_value = Tag[bdt](cvv_value, event_index, vecs)
+                bdt_value = Tag[bdt](event=event, vectors=vecs)
                 #print(bdt_value, event[f'FoxWolfram1'])
                 _plots['rocs_weighted'].fill( bdt_value, bgd, bdt, weight=weight)
                 _plots['BDT1_cumulative_norm'].fill(bdt_value, cvv_value, weight)

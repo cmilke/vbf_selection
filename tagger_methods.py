@@ -3,6 +3,30 @@ from uproot_methods import TLorentzVector
 import itertools
 import random
 import pickle
+import array
+import ROOT
+#import ctypes
+
+
+#class bdt_loader:
+#    def __init__(self, title, xml_file, var_list, eval_func):
+#        #branch_list = ROOT.vector('string') ()
+#        #for var in var_list: branch_list.push_back(var)
+#        ROOT.TMVA.Tools.Instance()
+#        self.title = title
+#        #self.reader = ROOT.TMVA.Reader(branch_list, 'V:Color:!Silent')
+#        self.reader = ROOT.TMVA.Reader('V:Color:!Silent')
+#        self.inputs = { var:array.array('f',[-999]) for var in var_list }
+#        for key,val in self.inputs.items(): self.reader.AddVariable(key, val)
+#        self.reader.BookMVA(title, xml_file)
+#        self.loader = eval_func
+#
+#    def evaluate(self, **kwargs):
+#        self.loader(self.inputs, **kwargs)
+#        print(self.inputs)
+#        BDT_response = self.reader.EvaluateMVA(self.title)
+#        return BDT_response
+#        
 
 
 ###########
@@ -73,7 +97,6 @@ def load_from_bdt_dump(bdt_dump, d_eta_cut, key, event_index, vectors):
     else: return bdt_dump[key][event_index]
 
 
-
 Tagger_options = {
 	'mjjmax': leading_invariant_mass,
 	'mjjmin': minimum_invariant_mass,
@@ -84,13 +107,61 @@ Tagger_options = {
     'mjjmax_Deta3': partial(mjj_delta_eta_cut_tagger, 3)
 }
 
-bdt_list = [
-    'mjj-Deta',
-    'mjj-Deta-FW',
-    'mjj-Deta-FW-Cent',
-    'mjjLSL-Deta-Cent-FW'
-]
+#bdt_list = [
+#    #'mjj-Deta',
+#    'mjj-Deta-FW'
+#    #'mjj-Deta-FW-Cent',
+#    #'mjjLSL-Deta-Cent-FW'
+#]
 
-for bdt in bdt_list:
-    prediction_dump = pickle.load(open('bdt_output/prediction_dump_'+bdt+'.p', 'rb'))
-    Tagger_options['BDT: '+bdt] = partial(load_from_bdt_dump, prediction_dump, 3)
+#mjj_Deta_FW00 = bdt_loader('mjj-Deta-FW',
+#        'bdt_output/weights/TMVACrossValidation_cuts50,depth8.weights.xml',
+#        ['mjj', 'mjj_Deta']+[f'FoxWolfram{i}' for i in range(1,8)],
+#        mjj_Deta_FW00_loader )
+
+#Tagger_options['BDT: mjj-Deta-FW'] = mjj_Deta_FW00.evaluate
+#Tagger_options['BDT: mjj-Deta-FW'] = mjj_Deta_FW00.evaluate
+
+
+#tmva_processor_path = '/home/cmilke/Documents/slac_local/uproot_analysis/tmva_processor/tmva_processor.so'
+#tmva_processor = ctypes.CDLL(tmva_processor_path)
+#tmva_processor.get_response.restype=float
+#def load_bdt(bdt_name, bdt_file, input_list):
+#    label = bdt_name.encode('UTF-8')
+#    tmva_processor.init(label)
+#    for var in input_list: tmva_processor.add_variable(label,var.encode('UTF-8'))
+#    tmva_processor.load(label, bdt_file.encode('UTF-8') )
+
+def mjj_Deta_FW00_loader(model_list, event=None, vectors=None):
+    inputs = ROOT.vector('float')()
+    max_mjj_pair = max( [ (mjj(pair), d_eta(pair)) for pair in make_pairs(vectors) ] )
+    inputs.push_back(max_mjj_pair[0])
+    inputs.push_back(max_mjj_pair[1])
+    for key in [f'FoxWolfram{i}' for i in range(1,8)]: inputs.push_back( event[key] )
+    #for model in model_list:
+    #    print( model.Compute(inputs)[0] )
+    response = sum( [model.Compute(inputs)[0] for model in model_list] ) / len(model_list)
+    return response
+    #input_array = ( ctypes.c_float * len(inputs) )()
+    #for i,val in enumerate(inputs): input_array[i] = val
+    #print(input_array)
+
+    #return tmva_processor.get_response( b'mjj-Deta-FW', input_array )
+
+def load_bdt():
+    num_folds = 3
+    bdt_base = 'bdt_output/weights/TMVACrossValidation_cuts10,depth3'
+    weight_files = [ f'{bdt_base}_fold{i}.weights.xml' for i in range(1,num_folds+1) ]
+    models = [ ROOT.TMVA.Experimental.RReader(wf) for wf in weight_files ]
+    return models
+
+
+
+#load_bdt('mjj-Deta-FW', 'bdt_output/weights/TMVACrossValidation_cuts50,depth8.weights.xml', ['mjj', 'mjj_Deta']+[f'FoxWolfram{i}' for i in range(1,8)])
+#load_bdt('mjj-Deta-FW', 'bdt_output/weights/TMVACrossValidation_cuts10,depth3_fold1.weights.xml', ['mjj', 'mjj_Deta']+[f'FoxWolfram{i}' for i in range(1,8)])
+#load_bdt('mjj-Deta-FW', 'trained_classifier_mjj_deta_FW_3.xml', ['mjj', 'Deta']+[f'FW{i}' for i in range(1,8)])
+Tagger_options['BDT: mjj-Deta-FW'] = partial( mjj_Deta_FW00_loader, load_bdt() )
+
+#for bdt in bdt_list:
+    #prediction_dump = pickle.load(open('bdt_output/prediction_dump_'+bdt+'.p', 'rb'))
+    #Tagger_options['BDT: '+bdt] = partial(load_from_bdt_dump, prediction_dump, 3)
