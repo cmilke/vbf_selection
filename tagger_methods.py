@@ -1,6 +1,7 @@
 from functools import partial
 from uproot_methods import TLorentzVector
 import itertools
+import glob
 import random
 import pickle
 import array
@@ -114,23 +115,12 @@ Tagger_options = {
 #    #'mjjLSL-Deta-Cent-FW'
 #]
 
-#mjj_Deta_FW00 = bdt_loader('mjj-Deta-FW',
-#        'bdt_output/weights/TMVACrossValidation_cuts50,depth8.weights.xml',
-#        ['mjj', 'mjj_Deta']+[f'FoxWolfram{i}' for i in range(1,8)],
-#        mjj_Deta_FW00_loader )
 
-#Tagger_options['BDT: mjj-Deta-FW'] = mjj_Deta_FW00.evaluate
-#Tagger_options['BDT: mjj-Deta-FW'] = mjj_Deta_FW00.evaluate
+def load_bdt(bdt_key):
+    bdt_base = 'bdt_output/weights/TMVACrossValidation_'+bdt_key+'_fold'
+    models = [ ROOT.TMVA.Experimental.RReader(wf) for wf in glob.glob(bdt_base+'*.xml') ]
+    return models
 
-
-#tmva_processor_path = '/home/cmilke/Documents/slac_local/uproot_analysis/tmva_processor/tmva_processor.so'
-#tmva_processor = ctypes.CDLL(tmva_processor_path)
-#tmva_processor.get_response.restype=float
-#def load_bdt(bdt_name, bdt_file, input_list):
-#    label = bdt_name.encode('UTF-8')
-#    tmva_processor.init(label)
-#    for var in input_list: tmva_processor.add_variable(label,var.encode('UTF-8'))
-#    tmva_processor.load(label, bdt_file.encode('UTF-8') )
 
 def mjj_Deta_FW00_loader(model_list, event=None, vectors=None):
     inputs = ROOT.vector('float')()
@@ -138,29 +128,11 @@ def mjj_Deta_FW00_loader(model_list, event=None, vectors=None):
     inputs.push_back(max_mjj_pair[0])
     inputs.push_back(max_mjj_pair[1])
     for key in [f'FoxWolfram{i}' for i in range(1,8)]: inputs.push_back( event[key] )
-    #for model in model_list:
-    #    print( model.Compute(inputs)[0] )
     response = sum( [model.Compute(inputs)[0] for model in model_list] ) / len(model_list)
     return response
-    #input_array = ( ctypes.c_float * len(inputs) )()
-    #for i,val in enumerate(inputs): input_array[i] = val
-    #print(input_array)
-
-    #return tmva_processor.get_response( b'mjj-Deta-FW', input_array )
-
-def load_bdt():
-    num_folds = 3
-    bdt_base = 'bdt_output/weights/TMVACrossValidation_cuts10,depth3'
-    weight_files = [ f'{bdt_base}_fold{i}.weights.xml' for i in range(1,num_folds+1) ]
-    models = [ ROOT.TMVA.Experimental.RReader(wf) for wf in weight_files ]
-    return models
 
 
-
-#load_bdt('mjj-Deta-FW', 'bdt_output/weights/TMVACrossValidation_cuts50,depth8.weights.xml', ['mjj', 'mjj_Deta']+[f'FoxWolfram{i}' for i in range(1,8)])
-#load_bdt('mjj-Deta-FW', 'bdt_output/weights/TMVACrossValidation_cuts10,depth3_fold1.weights.xml', ['mjj', 'mjj_Deta']+[f'FoxWolfram{i}' for i in range(1,8)])
-#load_bdt('mjj-Deta-FW', 'trained_classifier_mjj_deta_FW_3.xml', ['mjj', 'Deta']+[f'FW{i}' for i in range(1,8)])
-Tagger_options['BDT: mjj-Deta-FW'] = partial( mjj_Deta_FW00_loader, load_bdt() )
+Tagger_options['BDT: mjj-Deta-FW'] = partial( mjj_Deta_FW00_loader, load_bdt('base') )
 
 #for bdt in bdt_list:
     #prediction_dump = pickle.load(open('bdt_output/prediction_dump_'+bdt+'.p', 'rb'))

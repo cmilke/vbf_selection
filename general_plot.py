@@ -132,9 +132,12 @@ def process_events(events, skip_num=0, bgd=False, cvv_value=-1):
     num_not_shared = 0
     num_pt_matched = 0
     num_pt_not_matched= 0
+    num_negative_weighted=0
     for event_index, event in enumerate(events):
         if event_index < skip_num: continue
         weight = event['mc_sf'][0]
+        if weight < 0: continue #num_negative_weighted+=1
+
         vecs = [ make_nano_vector(jet) for jet in event['jets'] ]
         num_jets[len(vecs)] += 1
         _plots['num_non_btagged'].fill( len(vecs), cvv_value )
@@ -226,16 +229,17 @@ def process_events(events, skip_num=0, bgd=False, cvv_value=-1):
     #for count,frac in enumerate(jet_counts/jet_counts.sum()): print(f'{count}: {frac*100:4.1f}')
     print(num_shared, num_not_shared)
     print(num_pt_matched, num_pt_not_matched)
+    print(f'Negative={num_negative_weighted}')
     #print(basic_efficiency_count)
 
 
 
 def extract_data(num_events, events_to_skip):
     for cvv_value, vbf_sample in _VBF_samples.items():
-        sig_events = event_iterator(autils.output_datasets[vbf_sample], 'VBF_tree', _output_branches, num_events)
+        sig_events = event_iterator(autils.NanoNtuples[vbf_sample], 'VBF_tree', _output_branches, num_events)
         process_events(sig_events, skip_num=events_to_skip , cvv_value=cvv_value)
 
-    bgd_events = event_iterator(autils.output_datasets['MC16d_ggF-HH-bbbb'], 'VBF_tree', _output_branches, num_events)
+    bgd_events = event_iterator(autils.NanoNtuples['MC16d_ggF-HH-bbbb'], 'VBF_tree', _output_branches, num_events)
     process_events(bgd_events, skip_num=events_to_skip, bgd=True)
 
 

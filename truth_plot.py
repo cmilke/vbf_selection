@@ -43,6 +43,7 @@ _plots.add_hist1('truthMatched_num_non_btagged', 'Number of non-B (Truth-matched
 _input_branches = [
     'eventNumber',
     'nresolvedJets',
+    ('tjs', ['truth_pdgId', 'truth_status', 'truth_barcode', 'truth_nParents', 'truth_parent_pdgId']),
     ('resolved_jets', [ 'resolvedJets_pt', 'resolvedJets_phi', 'resolvedJets_eta', 'resolvedJets_E', #resolved pt in GeV
         'resolvedJets_HadronConeExclTruthLabelID'
     ])
@@ -61,25 +62,31 @@ make_nano_vector = lambda jet: LV.from_ptetaphie(jet['vbf_candidates_pT'], jet['
 
 
 def process_events(in_events, out_events, bgd=False, cvv_value=-1):
-    out_event_dictionary = {}
-    for event_index, event in enumerate(out_events):
-        out_event_dictionary[ event['event_number'] ] = [ make_nano_vector(jet) for jet in event['jets'] ]
+    #out_event_dictionary = {}
+    #for event_index, event in enumerate(out_events):
+    #    out_event_dictionary[ event['event_number'] ] = [ make_nano_vector(jet) for jet in event['jets'] ]
 
+    base_pdg = [-5,-5,5,5,25,25]
     for event_index, event in enumerate(in_events):
-        in_vecs = []
-        in_vecs_ptGT30 = []
-        for jet in event['resolved_jets']:
-            if jet['resolvedJets_HadronConeExclTruthLabelID'] == 5: continue
-            vec = make_reco_vector(jet) 
-            in_vecs.append(vec)
-            if jet['resolvedJets_pt'] > 30: in_vecs_ptGT30.append(vec)
-        #in_vecs = [ make_reco_vector(jet) for jet in event['resolved_jets'] ]
-        #print( len(out_vecs), len(in_vecs) )
-        _plots['truth_num_non_btagged'].fill(len(in_vecs), cvv_value)
-        _plots['truth_num_non_btagged_pt-gt30'].fill(len(in_vecs_ptGT30), cvv_value)
-        if event['eventNumber'] in out_event_dictionary:
-            _plots['truthMatched_num_non_btagged'].fill(len(in_vecs_ptGT30), cvv_value)
-        #out_vecs = out_event_dictionary[ event['eventNumber'] ]
+        pdgs = []
+        for tj in event['tjs']:
+            pdgs.append(tj['truth_pdgId'])
+        pdgs.sort()
+        print(pdgs, pdgs==base_pdg)
+        #in_vecs = []
+        #in_vecs_ptGT30 = []
+        #for jet in event['resolved_jets']:
+        #    if jet['resolvedJets_HadronConeExclTruthLabelID'] == 5: continue
+        #    vec = make_reco_vector(jet) 
+        #    in_vecs.append(vec)
+        #    if jet['resolvedJets_pt'] > 30: in_vecs_ptGT30.append(vec)
+        ##in_vecs = [ make_reco_vector(jet) for jet in event['resolved_jets'] ]
+        ##print( len(out_vecs), len(in_vecs) )
+        #_plots['truth_num_non_btagged'].fill(len(in_vecs), cvv_value)
+        #_plots['truth_num_non_btagged_pt-gt30'].fill(len(in_vecs_ptGT30), cvv_value)
+        ##if event['eventNumber'] in out_event_dictionary:
+        ##    _plots['truthMatched_num_non_btagged'].fill(len(in_vecs_ptGT30), cvv_value)
+        ##out_vecs = out_event_dictionary[ event['eventNumber'] ]
 
 
         

@@ -1,3 +1,4 @@
+import sys
 import uproot
 import numpy
 import matplotlib
@@ -7,7 +8,7 @@ from matplotlib import pyplot as plt
 
 
 def get_efficiency(file_base, hist_name, cut1, cut2):
-    output_dir = '/home/cmilke/Documents/slac_local/output/V4/output_MC16d_'
+    output_dir = '/home/cmilke/Documents/slac_local/output/'+sys.argv[1]+'/output_MC16d_'
     directory = uproot.open(output_dir+file_base+'.root')
 
     hist = directory[hist_name]
