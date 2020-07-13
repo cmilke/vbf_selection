@@ -10,12 +10,12 @@ sample_list = [
 ]
 
 minintuple_dir = '../mini_ntuples/'
-gen_file_list = lambda link: [ input_dir+link+'/'+ntuple for ntuple in os.listdir(input_dir+link) ]
+gen_file_list = lambda link: [ minintuple_dir+link+'/'+ntuple for ntuple in os.listdir(minintuple_dir+link) ]
 MiniNtuples = { sample:gen_file_list('ntuples_'+sample) for sample in sample_list }
 
 nanontuple_dir = '../nano_ntuples/V5/'
-NanoNtuples = { sample:[output_dir+'output_'+sample+'.root'] for sample in sample_list }
-NanoNtuples['test'] = ['../output/test.root']
+NanoNtuples = { sample:[nanontuple_dir+'output_'+sample+'.root'] for sample in sample_list }
+NanoNtuples['test'] = ['../nano_ntuples/test.root']
 
 
 PDGID = {
